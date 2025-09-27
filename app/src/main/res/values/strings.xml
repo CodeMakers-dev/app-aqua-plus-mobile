@@ -1,0 +1,73 @@
+<resources>
+    <string name="app_name">AquaPlus</string>
+    <string name="copy_sign_in">Iniciar Sesión</string>
+    <string name="copy_username">Usuario</string>
+    <string name="copy_password">Contraseña</string>
+    <string name="copy_hidde">Ocultar</string>
+    <string name="copy_show">Mostrar</string>
+    <string name="copy_document_type">Tipo de documento</string>
+    <string name="copy_forgot_your_password">¿Olvidó su contraseña?</string>
+    <string name="copy_username_required">El usuario es requerido</string>
+    <string name="copy_password_required">La contraseña es requerida</string>
+    <string name="copy_generic_error">Error generico</string>
+    <string name="copy_logout">Cerrar Sesión</string>
+    <string name="copy_download_route">Descargar ruta</string>
+    <string name="copy_logout_title">Confirmar cierre de sesión</string>
+    <string name="copy_logout_message">¿Está seguro de que desea cerrar sesión?</string>
+    <string name="copy_logout_confirm">Cerrar Sesión</string>
+    <string name="copy_logout_cancel">Cancelar</string>
+    <string name="copy_accept">Aceptar</string>
+    <string name="copy_readings">Lecturas</string>
+    <string name="copy_sync">Sincronizar</string>
+    <string name="copy_serial">Serial</string>
+    <string name="copy_address">Dirección</string>
+    <string name="copy_input_search">Ingrese búsqueda...</string>
+    <string name="copy_download_route_title">Sincronizar lecturas</string>
+    <string name="copy_download_route_message">¿Estás seguro de sincronizar las lecturas?</string>
+    <string name="copy_save">Guardar</string>
+
+    <!-- Recovery -->
+    <string name="copy_recover">Recuperar</string>
+    <string name="copy_email">Correo electrónico</string>
+    <string name="copy_email_invalid">El formato del correo electrónico no es válido.</string>
+    <string name="copy_email_required">El correo electrónico no puede estar vacío.</string>
+    <string name="copy_recover_password">Recuperar Contraseña</string>
+    <string name="copy_recovery_message">Ingresa tu dirección de correo electrónico y te enviaremos un mail con instrucciones para recuperar tu contraseña</string>
+
+    <!-- New Password -->
+    <string name="copy_new_password">Nueva Contraseña</string>
+    <string name="copy_new_password_create">Crear Nueva Contraseña</string>
+    <string name="copy_new_password_required">Los campos de contraseña no pueden estar vacíos.</string>
+    <string name="copy_new_password_not_match">Las contraseñas no coinciden.</string>
+    <string name="copy_change_password">Cambiar Contraseña</string>
+    <string name="copy_new_password_confirm">Confirmar Nueva Contraseña</string>
+    <string name="copy_new_password_update">Contraseña Actualizada</string>
+
+    <!-- Form -->
+    <string name="screen_form_title">Registrar lectura del contador</string>
+    <string name="meter_reading_hint">Serial del contador</string>
+    <string name="reading_input_label">Ingrese lectura (cantidad de m³)...</string>
+    <string name="abnormal_consumption_optional">Consumo anormal (opcional)...</string>
+    <string name="observations_optional">Observaciones (opcional)...</string>
+    <string name="abnormal_high_option">Anormal alto</string>
+    <string name="abnormal_low_option">Anormal bajo</string>
+    <string name="copy_reading_form_success_message">Lectura registrada correctamente</string>
+    <string name="abnormal_consumption_high">Si</string>
+    <string name="abnormal_consumption_low">No</string>
+    <string name="copy_no_routes_found">No se encontraron rutas asignadas, intenta sincronizando nuevamente.</string>
+    <string name="copy_change_photo">Cambiar foto</string>
+    <string name="copy_first_name">Primer nombre</string>
+    <string name="copy_middle_name">Segundo nombre</string>
+    <string name="copy_last_name">Primer apellido</string>
+    <string name="copy_second_last_name">Segundo apellido</string>
+    <string name="copy_document_type_short">Tipo de documento</string>
+    <string name="copy_id_number">Numero de documento</string>
+    <string name="copy_profile_title">Perfil</string>
+
+    <string name="copy_generate_invoice">Generar Factura</string>
+    <string name="copy_generate_invoice_description">¿Está seguro que desea generar la factura?</string>
+    <string name="copy_continue">Continuar</string>
+
+    <string name="copy_reading_last">Lectura Anterior</string>
+
+</resources>

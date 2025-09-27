@@ -1,0 +1,32 @@
+package com.codemakers.aquaplus.ui.modules.home.features.route
+
+import com.codemakers.aquaplus.domain.models.EmployeeRoute
+import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
+import com.codemakers.aquaplus.domain.models.ReadingFormData
+
+data class RouteUiState(
+    val isLoading: Boolean = true,
+    val error: String? = null,
+
+    val allRoutes: List<EmployeeRoute>? = null,
+    val allData: List<ReadingFormData> = emptyList(),
+
+    val routes: List<EmployeeRoute> = emptyList(),
+
+    val search: String = "",
+
+    val route: EmployeeRoute? = null,
+    val config: EmployeeRouteConfig? = null,
+    val data: ReadingFormData? = null,
+) {
+
+    fun isInvoiceAvailable(employeeRouteId: Int): Boolean =
+        allData.any { it.employeeRouteId == employeeRouteId }
+
+    val pendingRoutes: List<EmployeeRoute>
+        get() = routes.filter { !isInvoiceAvailable(it.id) }
+
+    val completedRoutes: List<EmployeeRoute>
+        get() = routes.filter { isInvoiceAvailable(it.id) }
+
+}
