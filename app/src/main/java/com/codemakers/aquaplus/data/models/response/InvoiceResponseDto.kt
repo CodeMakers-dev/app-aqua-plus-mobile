@@ -1,6 +1,6 @@
 package com.codemakers.aquaplus.data.models.response
 
-import com.codemakers.aquaplus.domain.models.Invoice
+import com.codemakers.aquaplus.domain.models.InvoiceResponse
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
@@ -12,7 +12,7 @@ data class InvoiceResponseDto(
     @SerializedName("insertedIds") val insertedIds: List<Int>? = null,
 )
 
-fun InvoiceResponseDto.toDomain(): Invoice = Invoice(
+fun InvoiceResponseDto.toDomain(): InvoiceResponse = InvoiceResponse(
     updated = updated,
     inserted = inserted,
     updatedIds = updatedIds,
