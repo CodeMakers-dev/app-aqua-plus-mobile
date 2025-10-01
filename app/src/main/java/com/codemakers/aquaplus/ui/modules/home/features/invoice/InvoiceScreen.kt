@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -48,57 +50,161 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import com.codemakers.aquaplus.domain.models.DeudaAbonoSaldo
 import com.codemakers.aquaplus.ui.composables.Base64Image
+import com.codemakers.aquaplus.ui.extensions.cop
 import com.codemakers.aquaplus.ui.models.Client
+import com.codemakers.aquaplus.ui.models.ConceptDetail
 import com.codemakers.aquaplus.ui.models.FeeSection
 import com.codemakers.aquaplus.ui.models.HistoryEntry
 import com.codemakers.aquaplus.ui.models.Invoice
 import com.codemakers.aquaplus.ui.models.InvoiceMeta
 import com.codemakers.aquaplus.ui.models.MeterInfo
 import com.codemakers.aquaplus.ui.models.ReadingInfo
+import com.codemakers.aquaplus.ui.models.StratumValueDetail
 import com.codemakers.aquaplus.ui.theme.AquaPlusTheme
-import java.text.NumberFormat
+import com.codemakers.aquaplus.ui.theme.Border
+import com.codemakers.aquaplus.ui.theme.LightRow
+import com.codemakers.aquaplus.ui.theme.NoteBg
+import com.codemakers.aquaplus.ui.theme.primaryColor
+import com.codemakers.aquaplus.ui.theme.secondaryColor
+import com.codemakers.aquaplus.ui.theme.tertiaryColor
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Currency
-import java.util.Locale
 import kotlin.math.max
-
-private val AquaBlue = Color(0xFF1066DA)
-private val SectionBg = AquaBlue
-private val LightRow = Color(0xFFF6F7F9)
-private val Border = Color(0xFFE5E7EB)
-private val NoteBg = Color(0xFFEFF6FF)
 
 private val dateFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-private fun Long.cop(): String {
-    val nf = NumberFormat.getCurrencyInstance(Locale("es", "CO"))
-    nf.maximumFractionDigits = 2
-    nf.minimumFractionDigits = 2
-    nf.currency = Currency.getInstance("COP")
-    return nf.format(this)
-}
-
-private fun Double.cop(): String {
-    val nf = NumberFormat.getCurrencyInstance(Locale("es", "CO"))
-    nf.maximumFractionDigits = 2
-    nf.minimumFractionDigits = 2
-    nf.currency = Currency.getInstance("COP")
-    return nf.format(this)
-}
-
 /* ---------- Componentes ---------- */
+
+@SuppressLint("UnusedBoxWithConstraintsScope")
+@Composable
+private fun PaymentSummaryCard(
+    fees: List<FeeSection>,
+    modifier: Modifier = Modifier
+) {
+    // Agrupar fees por tipo y calcular totales
+    val feeGroups = fees.groupBy { it.title }
+        .mapValues { (_, feeList) ->
+            feeList.sumOf { fee ->
+                fee.conceptos?.sumOf { it.total } ?: 0.0
+            }
+        }
+
+    val totalAmount = feeGroups.values.sum()
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),      // el ancho que quieras
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    feeGroups.forEach { item ->
+                        PaymentFeeCard(
+                            name = item.key,
+                            amount = item.value,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Total section
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFE8F5E8), RoundedCornerShape(8.dp))
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Total a pagar:",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                )
+                Text(
+                    text = totalAmount.cop(),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = primaryColor
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PaymentFeeCard(
+    name: String,
+    amount: Double,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .fillMaxHeight(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // Header with fee name
+            Text(
+                text = name,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                textAlign = TextAlign.Start,
+                modifier = Modifier.weight(0.6f)
+            )
+
+            // Amount
+            Text(
+                text = amount.cop(),
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = primaryColor
+                ),
+                textAlign = TextAlign.End,
+                maxLines = 1,
+                modifier = Modifier.weight(0.4f)
+            )
+        }
+    }
+}
 
 @Composable
 private fun SectionHeader(title: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(SectionBg, RoundedCornerShape(8.dp))
+            .background(tertiaryColor, RoundedCornerShape(8.dp))
             .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
         Text(
-            text = title,
+            text = title.uppercase(),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -152,8 +258,8 @@ private fun TableHeader(
         modifier = modifier
             .fillMaxWidth()
             .background(LightRow)
-            .border(1.dp, Border, RoundedCornerShape(10.dp))
-            .padding(horizontal = 12.dp)
+            .border(1.dp, primaryColor, RoundedCornerShape(10.dp))
+            .padding(horizontal = 8.dp)
     ) {
         headers.forEachIndexed { i, text ->
             Text(
@@ -176,7 +282,7 @@ private fun TableRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 8.dp)
     ) {
         cells.forEachIndexed { i, text ->
             Text(
@@ -220,7 +326,7 @@ private fun BarsHistory(
                         .width(barWidth)
                 ) {
                     drawLine(
-                        color = AquaBlue,
+                        color = secondaryColor,
                         start = Offset(size.width / 2, size.height),
                         end = Offset(size.width / 2, 0f),
                         strokeWidth = size.width,
@@ -256,7 +362,6 @@ private fun DeudaConceptSection(
     lastIndex: Int,
 ) {
     val weights = listOf(0.65f, 0.35f)
-    Spacer(Modifier.height(10.dp))
     TableHeader(
         headers = listOf("Descripción", "Valor"),
         weights = weights
@@ -279,7 +384,6 @@ private fun OtherConceptSection(
     lastIndex: Int,
 ) {
     val weights = listOf(0.31f, 0.18f, 0.25f, 0.25f)
-    Spacer(Modifier.height(10.dp))
     TableHeader(
         headers = listOf("Descripción", "Consumo", "Tarifa", "Valor"),
         weights = weights
@@ -358,34 +462,37 @@ fun InvoiceScreen(invoice: Invoice) {
                             base64String = invoice.companyImage,
                             contentDescription = "Company Picture",
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(60.dp)
                                 .clip(CircleShape)
                         )
                         Spacer(Modifier.width(8.dp))
                     }
-                    Text(
-                        text = invoice.companyName,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
-                        color = AquaBlue
-                    )
-                }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        "NIT: ${invoice.companyNit}",
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
-                    )
-                    Text(
-                        "Código empresa: ${invoice.companyCode}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = invoice.companyName,
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
+                            color = primaryColor
+                        )
+                        Text(
+                            "NIT: ${invoice.companyNit}",
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                        Text(
+                            "Código empresa: ${invoice.companyCode}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
             Text(
                 text = "FACTURA DE SERVICIO N° ${invoice.codInvoice}",
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
 
             Spacer(Modifier.height(8.dp))
@@ -474,7 +581,8 @@ fun InvoiceScreen(invoice: Invoice) {
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 border = CardDefaults.outlinedCardBorder(),
-                shape = RoundedCornerShape(10.dp)
+                shape = RoundedCornerShape(10.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 BarsHistory(invoice.history.sortedBy { it.mes })
             }
@@ -482,98 +590,49 @@ fun InvoiceScreen(invoice: Invoice) {
             Spacer(Modifier.height(12.dp))
 
             // Nota importante
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(NoteBg, RoundedCornerShape(8.dp))
-                    .border(1.dp, Border, RoundedCornerShape(8.dp))
-                    .padding(12.dp)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = NoteBg),
+                border = CardDefaults.outlinedCardBorder(),
+                shape = RoundedCornerShape(10.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             ) {
                 Text(
                     "IMPORTANTE: Le recordamos que el pago oportuno de su factura evitará intereses por mora y posibles cortes de servicio. Si ya realizó el pago, por favor hacer caso omiso a este aviso.",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(12.dp)
                 )
             }
 
             Spacer(Modifier.height(8.dp))
 
-            // QR + Totales
-            TwoPane(
-                left = {
-                    Column {
-                        Text("Codigo QR", fontSize = 12.sp)
-                        Spacer(Modifier.height(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .size(140.dp)
-                                .background(Color(0xFFEDEDED))
-                                .border(1.dp, Border)
-                                .align(Alignment.CenterHorizontally)
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            "Observaciones: ${invoice.observations}",
-                            fontSize = 12.sp
-                        )
-                        Text(
-                            "Código de Verificación: ${invoice.verificationCode}",
-                            fontSize = 12.sp
-                        )
-                    }
-                },
-                right = {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        border = CardDefaults.outlinedCardBorder(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Column(
-                            Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Subtotal:", fontWeight = FontWeight.SemiBold)
-                                Text(invoice.totals.subtotal.cop())
-                            }
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Saldo anterior:", fontWeight = FontWeight.SemiBold)
-                                Text(invoice.totals.previousBalance.cop())
-                            }
-                            HorizontalDivider(
-                                Modifier,
-                                DividerDefaults.Thickness,
-                                DividerDefaults.color
-                            )
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text("TOTAL A PAGAR:", fontWeight = FontWeight.ExtraBold)
-                                Text(
-                                    invoice.totals.totalToPay.cop(),
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 18.sp
-                                )
-                            }
-                        }
-                    }
-                }
+            // Payment Summary Card
+            SectionHeader("INFORMACIÓN DE PAGO")
+
+            Spacer(Modifier.height(8.dp))
+
+            PaymentSummaryCard(fees = invoice.fees)
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                "Observaciones: ${invoice.observations}",
+                fontSize = 12.sp
             )
 
-            Spacer(Modifier.height(24.dp))
+            Text(
+                "Código de Verificación: ${invoice.verificationCode}",
+                fontSize = 12.sp
+            )
+
+            Spacer(Modifier.height(8.dp))
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Border)
             Spacer(Modifier.height(12.dp))
             Text(
                 "MULTI ACUEDUCTOS S.A. - Todos los derechos reservados 2025\n" +
                         "Línea de atención al cliente: 018000-123456 | www.multiaqueductos.com.co\n" +
                         "Generado por: SISTEMA DE FACTURACIÓN v3.2 | Fecha: ${
-                            invoice.meta.issueDate.format(
-                                dateFmt
-                            )
+                            invoice.meta.issueDate
                         } 10:32 AM",
                 fontSize = 11.sp,
                 lineHeight = 14.sp,
@@ -584,8 +643,7 @@ fun InvoiceScreen(invoice: Invoice) {
 }
 
 /* ---------- Preview con datos de ejemplo (como en la imagen) ---------- */
-
-@Preview(showBackground = true, widthDp = 412, heightDp = 1700)
+@Preview(showBackground = true, widthDp = 412, heightDp = 2700)
 @Composable
 private fun AquaPlusInvoicePreview() {
     val invoice = Invoice(
@@ -630,7 +688,72 @@ private fun AquaPlusInvoicePreview() {
         ),
         verificationCode = "AC85B721F",
         observations = "Sin anomalías detectadas en la lectura actual.",
-        fees = listOf(),
+        fees = listOf(
+            FeeSection(
+                id = 1,
+                title = "AcuedAcueductoAcueductoAcueductoAcueductoAcueductoucto",
+                code = "ACU",
+                conceptos = listOf(
+                    ConceptDetail(
+                        id = 1,
+                        title = "Servicio de acueducto",
+                        code = "ACU001",
+                        indCalcularMc = true,
+                        stratumValue = StratumValueDetail(value = 90.0, stratum = 3),
+                        value = null,
+                        consumption = 16
+                    )
+                )
+            ),
+            FeeSection(
+                id = 2,
+                title = "Aseo",
+                code = "ASE",
+                conceptos = listOf(
+                    ConceptDetail(
+                        id = 2,
+                        title = "Servicio de aseo",
+                        code = "ASE001",
+                        indCalcularMc = false,
+                        stratumValue = null,
+                        value = 278.0,
+                        consumption = null
+                    )
+                )
+            ),
+            FeeSection(
+                id = 3,
+                title = "Alcantarillado",
+                code = "ALC",
+                conceptos = listOf(
+                    ConceptDetail(
+                        id = 3,
+                        title = "Servicio de alcantarillado",
+                        code = "ALC001",
+                        indCalcularMc = true,
+                        stratumValue = StratumValueDetail(value = 153.0, stratum = 3),
+                        value = null,
+                        consumption = 16
+                    )
+                )
+            ),
+            FeeSection(
+                id = 4,
+                title = "Otros",
+                code = "OTR",
+                conceptos = listOf(
+                    ConceptDetail(
+                        id = 4,
+                        title = "Cargo por mora",
+                        code = "OTR001",
+                        indCalcularMc = false,
+                        stratumValue = null,
+                        value = 54.0,
+                        consumption = null
+                    )
+                )
+            )
+        ),
         deudaAbonoSaldo = DeudaAbonoSaldo(
             deudaTotal = 0.0,
             moraActual = 0.0,

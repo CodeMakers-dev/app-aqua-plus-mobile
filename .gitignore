@@ -62,3 +62,8 @@ DataAccessLayer/
 /gradle/
 /.idea/
 .gradle/
+
+/.idea/workspace.xml
+/.idea/libraries
+/.gradle
+/.idea
