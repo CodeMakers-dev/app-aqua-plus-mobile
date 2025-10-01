@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import com.codemakers.aquaplus.domain.repository.PreferencesRepository
 import com.google.gson.Gson
 
+const val REFRESH_TOKEN = "refresh_token"
 const val TOKEN = "token"
 const val USER = "user"
 

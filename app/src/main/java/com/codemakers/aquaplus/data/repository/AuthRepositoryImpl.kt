@@ -1,18 +1,19 @@
 package com.codemakers.aquaplus.data.repository
 
 import com.codemakers.aquaplus.data.common.BaseRepository
-import com.codemakers.aquaplus.data.datasource.remote.LoginApi
+import com.codemakers.aquaplus.data.datasource.remote.AuthApi
 import com.codemakers.aquaplus.data.models.request.LoginRequestDto
 import com.codemakers.aquaplus.data.models.response.toDomain
 import com.codemakers.aquaplus.domain.common.Result
 import com.codemakers.aquaplus.domain.models.LoginSession
-import com.codemakers.aquaplus.domain.repository.LoginRepository
+import com.codemakers.aquaplus.domain.models.Token
+import com.codemakers.aquaplus.domain.repository.AuthRepository
 import com.codemakers.aquaplus.domain.repository.PreferencesRepository
 
-class LoginRepositoryImpl(
-    private val loginApi: LoginApi,
+class AuthRepositoryImpl(
+    private val authApi: AuthApi,
     private val preferencesRepository: PreferencesRepository,
-) : LoginRepository, BaseRepository() {
+) : AuthRepository, BaseRepository() {
 
     override suspend fun login(
         username: String,
@@ -23,8 +24,21 @@ class LoginRepositoryImpl(
             preferencesRepository.remove(USER)
         },
         action = {
-            val response = loginApi.login(LoginRequestDto(username, password))
+            val response = authApi.login(LoginRequestDto(username, password))
             preferencesRepository.setString(TOKEN, response.response.token)
+            Result.Success(response.response.toDomain())
+        }
+    )
+
+    override suspend fun refreshToken(
+        refreshToken: String
+    ): Result<Token> = handlerErrorMapper(
+        errorHandler = { _, _ ->
+            preferencesRepository.remove(REFRESH_TOKEN)
+        },
+        action = {
+            val response = authApi.refreshToken(refreshToken)
+            preferencesRepository.setString(REFRESH_TOKEN, response.response.token)
             Result.Success(response.response.toDomain())
         }
     )

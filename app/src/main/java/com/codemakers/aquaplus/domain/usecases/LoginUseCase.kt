@@ -1,14 +1,14 @@
 package com.codemakers.aquaplus.domain.usecases
 
 import com.codemakers.aquaplus.domain.common.Result
-import com.codemakers.aquaplus.domain.repository.LoginRepository
+import com.codemakers.aquaplus.domain.repository.AuthRepository
 import com.codemakers.aquaplus.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 
 class LoginUseCase(
-    private val loginRepository: LoginRepository,
+    private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
 ) {
 
@@ -17,7 +17,7 @@ class LoginUseCase(
         password: String
     ): Flow<Result<Unit>> = flow {
         try {
-            val loginResult = loginRepository.login(username, password)
+            val loginResult = authRepository.login(username, password)
             when (loginResult) {
                 is Result.Success -> {
                     val userId = loginResult.data.id
