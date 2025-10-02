@@ -89,6 +89,8 @@ data class Invoice(
     val companyName: String,
     val companyNit: String,
     val companyCode: String,
+    val companyQrCode: String?,
+    val methodsPayment: List<String?>? = emptyList(),
     val codInvoice: String,
     val client: Client,
     val meta: InvoiceMeta,
@@ -117,10 +119,12 @@ data class Invoice(
         config: EmployeeRouteConfig,
         data: ReadingFormData,
     ) : this(
-        companyImage = route.empresa.image,
+        companyImage = config.config?.empresa?.logoEmpresa?.imagen,
         companyName = route.empresa.nombre ?: "",
         companyNit = route.empresa.nit ?: "",
         companyCode = route.empresa.codigo ?: "",
+        companyQrCode = config.config?.empresa?.codigoQr?.imagen,
+        methodsPayment = config.config?.empresa?.puntosPago?.map { it.imagen },
         codInvoice = route.codFactura,
         client = Client(
             name = "${route.personaCliente.primerNombre} ${route.personaCliente.primerApellido}",

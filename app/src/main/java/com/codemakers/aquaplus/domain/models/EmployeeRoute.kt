@@ -24,8 +24,10 @@ data class Empresa(
     val activo: Boolean?,
     val codigo: String?,
     val nombre: String?,
-    val image: String?,
     val direccion: Direccion?,
+    val logoEmpresa: GenericEmpresa? = null,
+    val puntosPago: List<GenericEmpresa>? = null,
+    val codigoQr: GenericEmpresa? = null,
 )
 
 @Serializable
@@ -95,4 +97,10 @@ data class Direccion(
     val descripcion: String?,
     val departamento: String?,
     val corregimiento: String?
+)
+
+@Serializable
+data class GenericEmpresa(
+    val nombre: String?,
+    val imagen: String?,
 )

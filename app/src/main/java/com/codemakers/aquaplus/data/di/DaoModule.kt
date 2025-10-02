@@ -15,6 +15,7 @@ import com.codemakers.aquaplus.data.datasource.local.tables.RealmDireccion
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmployeeRoute
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmployeeRouteConfig
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmpresa
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmGenericEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmHistoricoConsumo
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmPersonaCliente
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmReadingFormData
@@ -58,6 +59,7 @@ val daoModule = module {
                 RealmTipoTarifa::class,
                 RealmCatalogos::class,
                 RealmReadingFormData::class,
+                RealmGenericEmpresa::class,
             )
         )
             .name("acueducto-app.realm")

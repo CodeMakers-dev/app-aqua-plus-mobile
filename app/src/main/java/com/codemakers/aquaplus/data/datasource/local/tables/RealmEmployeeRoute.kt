@@ -7,6 +7,7 @@ import com.codemakers.aquaplus.domain.models.DiasFactura
 import com.codemakers.aquaplus.domain.models.Direccion
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.Empresa
+import com.codemakers.aquaplus.domain.models.GenericEmpresa
 import com.codemakers.aquaplus.domain.models.HistoricoConsumo
 import com.codemakers.aquaplus.domain.models.PersonaCliente
 import com.codemakers.aquaplus.domain.models.UltimaLecturaHistorica
@@ -35,9 +36,11 @@ open class RealmEmpresa : EmbeddedRealmObject {
     var nit: String? = ""
     var codigo: String? = ""
     var nombre: String? = ""
-    var image: String? = ""
     var activo: Boolean? = null
     var direccion: RealmDireccion? = null
+    var logoEmpresa: RealmGenericEmpresa? = null
+    var puntosPago: RealmList<RealmGenericEmpresa> = realmListOf()
+    var codigoQr: RealmGenericEmpresa? = null
 }
 
 open class RealmContador : EmbeddedRealmObject {
@@ -102,6 +105,11 @@ open class RealmDireccion : EmbeddedRealmObject {
     var corregimiento: String? = ""
 }
 
+open class RealmGenericEmpresa : EmbeddedRealmObject {
+    var nombre: String? = ""
+    var imagen: String? = ""
+}
+
 
 fun RealmDireccion.toDomain(): Direccion = Direccion(
     ciudad = ciudad,
@@ -130,9 +138,11 @@ fun RealmEmpresa.toDomain(): Empresa = Empresa(
     nit = nit,
     codigo = codigo,
     nombre = nombre,
-    image = image,
     direccion = direccion?.toDomain(),
     activo = activo,
+    logoEmpresa = logoEmpresa?.toDomain(),
+    puntosPago = puntosPago.map { it.toDomain() },
+    codigoQr = codigoQr?.toDomain(),
 )
 
 fun RealmContador.toDomain(): Contador = Contador(
@@ -189,3 +199,9 @@ fun RealmPersonaCliente.toDomain(): PersonaCliente = PersonaCliente(
     primerApellido = primerApellido,
     segundoApellido = segundoApellido,
 )
+
+fun RealmGenericEmpresa.toDomain(): GenericEmpresa = GenericEmpresa(
+    nombre = nombre,
+    imagen = imagen,
+)
+

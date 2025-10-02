@@ -33,9 +33,6 @@ class EmployeeRouteRepositoryImpl(
                 val employeeRouteConfigResult =
                     employeeRouteApi.getEmployeeRouteConfig(userId = userId)
                 employeeRouteDao.saveNewEmployeeRouteConfig(employeeRouteConfigResult.response)
-
-
-
                 Result.Success(employeeRouteResult.response.data.map { it.empresaClienteContador.toDomain() })
             }
         )
@@ -52,9 +49,9 @@ class EmployeeRouteRepositoryImpl(
 
     override suspend fun getAllEmployeeRouteFlow(): Flow<List<EmployeeRoute>> = flow {
         employeeRouteDao.getAllEmployeeRouteFlow().collect { result ->
-                val data = result.list
-                emit(data.map { it.toDomain() })
-            }
+            val data = result.list
+            emit(data.map { it.toDomain() })
+        }
     }
 
     override suspend fun getAllEmployeeRouteConfigFlow(): Flow<List<EmployeeRouteConfig>> = flow {

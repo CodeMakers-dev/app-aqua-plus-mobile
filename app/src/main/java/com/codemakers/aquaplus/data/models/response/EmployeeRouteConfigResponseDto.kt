@@ -4,6 +4,7 @@ import com.codemakers.aquaplus.domain.models.Catalogos
 import com.codemakers.aquaplus.domain.models.Concepto
 import com.codemakers.aquaplus.domain.models.Config
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
+import com.codemakers.aquaplus.domain.models.GenericEmpresa
 import com.codemakers.aquaplus.domain.models.TarifaEmpresa
 import com.codemakers.aquaplus.domain.models.TipoConcepto
 import com.codemakers.aquaplus.domain.models.TipoTarifa
@@ -68,6 +69,12 @@ data class CatalogosDto(
     val tiposConcepto: List<TipoConceptoDto>? = null
 )
 
+@Serializable
+data class GenericEmpresaDto(
+    val nombre: String? = null,
+    val imagen: String? = null
+)
+
 fun EmployeeRouteConfigDto.toDomain(): EmployeeRouteConfig = EmployeeRouteConfig(
     config = config?.toDomain(),
     catalogos = catalogos?.toDomain()
@@ -115,4 +122,9 @@ fun TipoTarifaDto.toDomain(): TipoTarifa = TipoTarifa(
 fun CatalogosDto.toDomain(): Catalogos = Catalogos(
     tiposTarifa = tiposTarifa?.map { it.toDomain() },
     tiposConcepto = tiposConcepto?.map { it.toDomain() }
+)
+
+fun GenericEmpresaDto.toDomain(): GenericEmpresa = GenericEmpresa(
+    nombre = nombre,
+    imagen = imagen
 )

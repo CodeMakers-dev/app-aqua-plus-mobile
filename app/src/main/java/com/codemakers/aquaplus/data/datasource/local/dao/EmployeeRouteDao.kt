@@ -11,9 +11,9 @@ import com.codemakers.aquaplus.data.datasource.local.tables.RealmDireccion
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmployeeRoute
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmployeeRouteConfig
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmpresa
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmGenericEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmHistoricoConsumo
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmPersonaCliente
-import com.codemakers.aquaplus.data.datasource.local.tables.RealmReadingFormData
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoConcepto
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoTarifa
@@ -186,6 +186,24 @@ class EmployeeRouteDao(
                             descripcion = data.config?.empresa?.direccion?.descripcion
                             departamento = data.config?.empresa?.direccion?.departamento
                             corregimiento = data.config?.empresa?.direccion?.corregimiento
+                        }
+                        logoEmpresa = RealmGenericEmpresa().apply {
+                            nombre = data.config?.empresa?.logoEmpresa?.nombre
+                            imagen = data.config?.empresa?.logoEmpresa?.imagen
+                        }
+                        puntosPago = realmListOf<RealmGenericEmpresa>().apply {
+                            data.config?.empresa?.puntosPago?.forEach {
+                                add(
+                                    RealmGenericEmpresa().apply {
+                                        nombre = it.nombre
+                                        imagen = it.imagen
+                                    }
+                                )
+                            }
+                        }
+                        codigoQr = RealmGenericEmpresa().apply {
+                            nombre = data.config?.empresa?.codigoQr?.nombre
+                            imagen = data.config?.empresa?.codigoQr?.imagen
                         }
                     }
                     tarifasEmpresa = realmListOf<RealmTarifaEmpresa>().apply {

@@ -25,7 +25,7 @@ data class TarifaEmpresa(
 @Serializable
 data class Concepto(
     val id: Int? = null,
-    val valor: Double? = null, // Usamos Long por si los valores son muy grandes
+    val valor: Double? = null,
     val tipoConcepto: TipoConcepto? = null,
     val indCalcularMc: Boolean? = null,
     val valoresEstrato: List<ValorEstrato>? = null
@@ -41,7 +41,7 @@ data class TipoConcepto(
 @Serializable
 data class ValorEstrato(
     val id: Int? = null,
-    val valor: Double? = null, // Usamos Long por si los valores son muy grandes
+    val valor: Double? = null,
     val estrato: Int? = null
 )
 
