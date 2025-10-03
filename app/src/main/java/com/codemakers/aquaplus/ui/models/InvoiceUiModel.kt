@@ -90,6 +90,8 @@ data class Invoice(
     val companyNit: String,
     val companyCode: String,
     val companyQrCode: String?,
+    val companyFooter: String?,
+    val companyFooterNote: String?,
     val methodsPayment: List<String?>? = emptyList(),
     val codInvoice: String,
     val client: Client,
@@ -126,6 +128,8 @@ data class Invoice(
         companyQrCode = config.config?.empresa?.codigoQr?.imagen,
         methodsPayment = config.config?.empresa?.puntosPago?.map { it.imagen },
         codInvoice = route.codFactura,
+        companyFooter = config.config?.empresa?.piePagina,
+        companyFooterNote = config.config?.empresa?.nota,
         client = Client(
             name = "${route.personaCliente.primerNombre} ${route.personaCliente.primerApellido}",
             idLabel = route.personaCliente.codigo.orEmpty(),

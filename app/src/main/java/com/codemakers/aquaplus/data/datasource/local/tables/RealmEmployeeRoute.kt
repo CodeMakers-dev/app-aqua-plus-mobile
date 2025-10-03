@@ -41,6 +41,10 @@ open class RealmEmpresa : EmbeddedRealmObject {
     var logoEmpresa: RealmGenericEmpresa? = null
     var puntosPago: RealmList<RealmGenericEmpresa> = realmListOf()
     var codigoQr: RealmGenericEmpresa? = null
+    var correoEmpresa: String? = ""
+    var telefonoEmpresa: String? = ""
+    var piePagina: String? = ""
+    var nota: String? = ""
 }
 
 open class RealmContador : EmbeddedRealmObject {
@@ -143,6 +147,10 @@ fun RealmEmpresa.toDomain(): Empresa = Empresa(
     logoEmpresa = logoEmpresa?.toDomain(),
     puntosPago = puntosPago.map { it.toDomain() },
     codigoQr = codigoQr?.toDomain(),
+    correoEmpresa = correoEmpresa,
+    telefonoEmpresa = telefonoEmpresa,
+    piePagina = piePagina,
+    nota = nota
 )
 
 fun RealmContador.toDomain(): Contador = Contador(

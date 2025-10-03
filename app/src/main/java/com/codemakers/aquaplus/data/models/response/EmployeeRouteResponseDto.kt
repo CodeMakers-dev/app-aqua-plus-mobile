@@ -48,6 +48,10 @@ data class EmpresaDto(
     val logoEmpresa: GenericEmpresaDto? = null,
     val puntosPago: List<GenericEmpresaDto>? = null,
     val codigoQr: GenericEmpresaDto? = null,
+    val correoEmpresa: String? = null,
+    val telefonoEmpresa: String? = null,
+    val piePagina: String? = null,
+    val nota: String? = null,
 )
 
 @Serializable
@@ -150,6 +154,10 @@ fun EmpresaDto.toDomain(): Empresa = Empresa(
     logoEmpresa = logoEmpresa?.toDomain(),
     puntosPago = puntosPago?.map { it.toDomain() },
     codigoQr = codigoQr?.toDomain(),
+    correoEmpresa = correoEmpresa,
+    telefonoEmpresa = telefonoEmpresa,
+    piePagina = piePagina,
+    nota = nota
 )
 
 fun ContadorDto.toDomain(): Contador = Contador(

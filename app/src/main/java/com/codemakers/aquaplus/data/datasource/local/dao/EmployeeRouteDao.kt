@@ -205,6 +205,10 @@ class EmployeeRouteDao(
                             nombre = data.config?.empresa?.codigoQr?.nombre
                             imagen = data.config?.empresa?.codigoQr?.imagen
                         }
+                        correoEmpresa = data.config?.empresa?.correoEmpresa
+                        telefonoEmpresa = data.config?.empresa?.telefonoEmpresa
+                        piePagina = data.config?.empresa?.piePagina
+                        nota = data.config?.empresa?.nota
                     }
                     tarifasEmpresa = realmListOf<RealmTarifaEmpresa>().apply {
                         data.config?.tarifasEmpresa?.forEach {

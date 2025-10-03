@@ -28,6 +28,10 @@ data class Empresa(
     val logoEmpresa: GenericEmpresa? = null,
     val puntosPago: List<GenericEmpresa>? = null,
     val codigoQr: GenericEmpresa? = null,
+    val correoEmpresa: String? = null,
+    val telefonoEmpresa: String? = null,
+    val piePagina: String? = null,
+    val nota: String? = null,
 )
 
 @Serializable
