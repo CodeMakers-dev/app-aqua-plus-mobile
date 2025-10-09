@@ -51,7 +51,7 @@ data class EmpresaDto(
     val correoEmpresa: String? = null,
     val telefonoEmpresa: String? = null,
     val piePagina: String? = null,
-    val nota: String? = null,
+    val avisoFactura: String? = null,
 )
 
 @Serializable
@@ -157,7 +157,7 @@ fun EmpresaDto.toDomain(): Empresa = Empresa(
     correoEmpresa = correoEmpresa,
     telefonoEmpresa = telefonoEmpresa,
     piePagina = piePagina,
-    nota = nota
+    avisoFactura = avisoFactura
 )
 
 fun ContadorDto.toDomain(): Contador = Contador(

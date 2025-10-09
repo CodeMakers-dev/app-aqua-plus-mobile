@@ -11,6 +11,7 @@ composeBom = "2025.09.00"
 koin-bom = "4.1.1"
 appCompatVersion = "1.7.1"
 navigationComposeVersion = "2.9.4"
+print = "1.1.0"
 retrofitVersion = "3.0.0"
 okhttp3LoggingVersion = "5.1.0"
 roomVersion = "2.7.2"
@@ -26,6 +27,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-print = { module = "androidx.print:print", version.ref = "print" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }

@@ -1,6 +1,5 @@
 package com.codemakers.aquaplus.data.datasource.local.tables
 
-import com.codemakers.aquaplus.domain.models.Catalogos
 import com.codemakers.aquaplus.domain.models.Concepto
 import com.codemakers.aquaplus.domain.models.Config
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
@@ -17,7 +16,6 @@ open class RealmEmployeeRouteConfig : RealmObject {
     @PrimaryKey
     var id: Int = 0
     var config: RealmConfig? = null
-    var catalogos: RealmCatalogos? = null
 }
 
 open class RealmConfig : EmbeddedRealmObject {
@@ -59,14 +57,8 @@ open class RealmTipoTarifa : EmbeddedRealmObject {
     var descripcion: String? = null
 }
 
-open class RealmCatalogos : EmbeddedRealmObject {
-    var tiposTarifa: RealmList<RealmTipoTarifa>? = null
-    var tiposConcepto: RealmList<RealmTipoConcepto>? = null
-}
-
 fun RealmEmployeeRouteConfig.toDomain(): EmployeeRouteConfig = EmployeeRouteConfig(
-    config = config?.toDomain(),
-    catalogos = catalogos?.toDomain()
+    config = config?.toDomain()
 )
 
 fun RealmConfig.toDomain(): Config = Config(
@@ -106,10 +98,5 @@ fun RealmTipoTarifa.toDomain(): TipoTarifa = TipoTarifa(
     codigo = codigo,
     nombre = nombre,
     descripcion = descripcion
-)
-
-fun RealmCatalogos.toDomain(): Catalogos = Catalogos(
-    tiposTarifa = tiposTarifa?.map { it.toDomain() },
-    tiposConcepto = tiposConcepto?.map { it.toDomain() }
 )
 

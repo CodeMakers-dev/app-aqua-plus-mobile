@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class EmployeeRouteConfig(
     val config: Config? = null,
-    val catalogos: Catalogos? = null
 )
 
 @Serializable
@@ -51,10 +50,4 @@ data class TipoTarifa(
     val codigo: String? = null,
     val nombre: String? = null,
     val descripcion: String? = null
-)
-
-@Serializable
-data class Catalogos(
-    val tiposTarifa: List<TipoTarifa>? = null,
-    val tiposConcepto: List<TipoConcepto>? = null
 )

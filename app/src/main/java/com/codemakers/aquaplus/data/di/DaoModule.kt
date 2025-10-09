@@ -4,7 +4,6 @@ import androidx.room.Room
 import com.codemakers.aquaplus.data.datasource.local.AppDatabase
 import com.codemakers.aquaplus.data.datasource.local.dao.EmployeeRouteDao
 import com.codemakers.aquaplus.data.datasource.local.dao.ReadingFormDataDao
-import com.codemakers.aquaplus.data.datasource.local.tables.RealmCatalogos
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmConcepto
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmConfig
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmContador
@@ -57,7 +56,6 @@ val daoModule = module {
                 RealmTipoConcepto::class,
                 RealmValorEstrato::class,
                 RealmTipoTarifa::class,
-                RealmCatalogos::class,
                 RealmReadingFormData::class,
                 RealmGenericEmpresa::class,
             )

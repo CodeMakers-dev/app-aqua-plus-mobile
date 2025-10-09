@@ -101,4 +101,8 @@ dependencies {
 
     //Lottie
     implementation(libs.lottie.compose)
+
+    implementation(libs.androidx.print)
+    implementation("dev.shreyaspatil:capturable:3.0.1")
+
 }

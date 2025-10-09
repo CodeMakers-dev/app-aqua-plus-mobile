@@ -1,6 +1,5 @@
 package com.codemakers.aquaplus.data.models.response
 
-import com.codemakers.aquaplus.domain.models.Catalogos
 import com.codemakers.aquaplus.domain.models.Concepto
 import com.codemakers.aquaplus.domain.models.Config
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
@@ -15,7 +14,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class EmployeeRouteConfigDto(
     @SerializedName("data") val config: ConfigDto? = null,
-    val catalogos: CatalogosDto? = null
 )
 
 @Serializable
@@ -64,12 +62,6 @@ data class TipoTarifaDto(
 )
 
 @Serializable
-data class CatalogosDto(
-    val tiposTarifa: List<TipoTarifaDto>? = null,
-    val tiposConcepto: List<TipoConceptoDto>? = null
-)
-
-@Serializable
 data class GenericEmpresaDto(
     val nombre: String? = null,
     val imagen: String? = null
@@ -77,7 +69,6 @@ data class GenericEmpresaDto(
 
 fun EmployeeRouteConfigDto.toDomain(): EmployeeRouteConfig = EmployeeRouteConfig(
     config = config?.toDomain(),
-    catalogos = catalogos?.toDomain()
 )
 
 fun ConfigDto.toDomain(): Config = Config(
@@ -117,11 +108,6 @@ fun TipoTarifaDto.toDomain(): TipoTarifa = TipoTarifa(
     codigo = codigo,
     nombre = nombre,
     descripcion = descripcion
-)
-
-fun CatalogosDto.toDomain(): Catalogos = Catalogos(
-    tiposTarifa = tiposTarifa?.map { it.toDomain() },
-    tiposConcepto = tiposConcepto?.map { it.toDomain() }
 )
 
 fun GenericEmpresaDto.toDomain(): GenericEmpresa = GenericEmpresa(

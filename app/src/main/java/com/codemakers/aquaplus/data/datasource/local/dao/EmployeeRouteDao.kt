@@ -1,6 +1,5 @@
 package com.codemakers.aquaplus.data.datasource.local.dao
 
-import com.codemakers.aquaplus.data.datasource.local.tables.RealmCatalogos
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmConcepto
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmConfig
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmContador
@@ -208,7 +207,7 @@ class EmployeeRouteDao(
                         correoEmpresa = data.config?.empresa?.correoEmpresa
                         telefonoEmpresa = data.config?.empresa?.telefonoEmpresa
                         piePagina = data.config?.empresa?.piePagina
-                        nota = data.config?.empresa?.nota
+                        avisoFactura = data.config?.empresa?.avisoFactura
                     }
                     tarifasEmpresa = realmListOf<RealmTarifaEmpresa>().apply {
                         data.config?.tarifasEmpresa?.forEach {
@@ -252,31 +251,6 @@ class EmployeeRouteDao(
                                             )
                                         }
                                     }
-                                }
-                            )
-                        }
-                    }
-                }
-                catalogos = RealmCatalogos().apply {
-                    tiposTarifa = realmListOf<RealmTipoTarifa>().apply {
-                        data.catalogos?.tiposTarifa?.forEach {
-                            add(
-                                RealmTipoTarifa().apply {
-                                    id = it.id
-                                    codigo = it.codigo
-                                    nombre = it.nombre
-                                    descripcion = it.descripcion
-                                }
-                            )
-                        }
-                    }
-                    tiposConcepto = realmListOf<RealmTipoConcepto>().apply {
-                        data.catalogos?.tiposConcepto?.forEach {
-                            add(
-                                RealmTipoConcepto().apply {
-                                    id = it.id
-                                    codigo = it.codigo
-                                    descripcion = it.descripcion
                                 }
                             )
                         }

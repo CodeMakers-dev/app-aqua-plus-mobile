@@ -129,7 +129,7 @@ data class Invoice(
         methodsPayment = config.config?.empresa?.puntosPago?.map { it.imagen },
         codInvoice = route.codFactura,
         companyFooter = config.config?.empresa?.piePagina,
-        companyFooterNote = config.config?.empresa?.nota,
+        companyFooterNote = config.config?.empresa?.avisoFactura,
         client = Client(
             name = "${route.personaCliente.primerNombre} ${route.personaCliente.primerApellido}",
             idLabel = route.personaCliente.codigo.orEmpty(),

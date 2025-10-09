@@ -44,7 +44,7 @@ open class RealmEmpresa : EmbeddedRealmObject {
     var correoEmpresa: String? = ""
     var telefonoEmpresa: String? = ""
     var piePagina: String? = ""
-    var nota: String? = ""
+    var avisoFactura: String? = ""
 }
 
 open class RealmContador : EmbeddedRealmObject {
@@ -150,7 +150,7 @@ fun RealmEmpresa.toDomain(): Empresa = Empresa(
     correoEmpresa = correoEmpresa,
     telefonoEmpresa = telefonoEmpresa,
     piePagina = piePagina,
-    nota = nota
+    avisoFactura = avisoFactura
 )
 
 fun RealmContador.toDomain(): Contador = Contador(

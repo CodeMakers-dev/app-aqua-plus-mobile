@@ -31,7 +31,7 @@ data class Empresa(
     val correoEmpresa: String? = null,
     val telefonoEmpresa: String? = null,
     val piePagina: String? = null,
-    val nota: String? = null,
+    val avisoFactura: String? = null,
 )
 
 @Serializable
