@@ -132,7 +132,6 @@ private fun PaymentSummaryCard(
                         PaymentFeeCard(
                             name = item.key,
                             amount = item.value,
-                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
@@ -172,45 +171,35 @@ private fun PaymentSummaryCard(
 private fun PaymentFeeCard(
     name: String,
     amount: Double,
-    modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // Header with fee name
-            Text(
-                text = name,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
-                textAlign = TextAlign.Start,
-                modifier = Modifier.weight(0.6f)
-            )
+        // Header with fee name
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodySmall.copy(
+                fontWeight = FontWeight.SemiBold
+            ),
+            textAlign = TextAlign.Start,
+            modifier = Modifier.weight(0.65f)
+        )
 
-            // Amount
-            Text(
-                text = amount.cop(),
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = primaryColor
-                ),
-                textAlign = TextAlign.End,
-                maxLines = 1,
-                modifier = Modifier.weight(0.4f)
-            )
-        }
+        // Amount
+        Text(
+            text = amount.cop(),
+            style = MaterialTheme.typography.bodySmall.copy(
+                fontWeight = FontWeight.Bold,
+                color = primaryColor
+            ),
+            textAlign = TextAlign.End,
+            maxLines = 1,
+            modifier = Modifier.weight(0.35f)
+        )
     }
+
 }
 
 @Composable
