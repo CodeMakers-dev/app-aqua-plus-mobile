@@ -1,9 +1,6 @@
 package com.codemakers.aquaplus.ui.modules.home.features.invoice
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.os.Handler
-import android.os.Looper
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ExperimentalComposeApi
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,9 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,13 +52,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.graphics.applyCanvas
-import androidx.core.graphics.createBitmap
-import androidx.core.view.drawToBitmap
 import com.codemakers.aquaplus.domain.models.DeudaAbonoSaldo
 import com.codemakers.aquaplus.ui.composables.Base64Image
 import com.codemakers.aquaplus.ui.extensions.cop
+import com.codemakers.aquaplus.ui.extensions.doPrint
+import com.codemakers.aquaplus.ui.extensions.getBitmap
 import com.codemakers.aquaplus.ui.extensions.unescapeNewlines
 import com.codemakers.aquaplus.ui.models.Client
 import com.codemakers.aquaplus.ui.models.ConceptDetail
@@ -81,9 +74,6 @@ import com.codemakers.aquaplus.ui.theme.NoteBg
 import com.codemakers.aquaplus.ui.theme.primaryColor
 import com.codemakers.aquaplus.ui.theme.secondaryColor
 import com.codemakers.aquaplus.ui.theme.tertiaryColor
-import com.codemakers.aquaplus.ui.utils.doPrint
-import com.codemakers.aquaplus.ui.utils.writeBitmap
-import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -444,30 +434,17 @@ private fun TwoPane(
 fun InvoiceScreen(invoice: Invoice) {
     val scroll = rememberScrollState()
     val context = LocalContext.current
-    val view = LocalView.current
-    val screenshotableComposable = screenShotableComposable(
-        content = {
-            InvoiceContent(invoice = invoice)
-        }
-    )
+    val captureView = remember { mutableStateOf<InvoiceView?>(null) }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                val handler = Handler(Looper.getMainLooper())
-                handler.postDelayed({
-                    val bmp = createBitmap(view.measuredWidth, view.measuredHeight).applyCanvas {
-                        view.draw(this)
-                    }
-                    bmp.let {
-                        File(context.filesDir, "screenshot.png")
-                            .writeBitmap(bmp, Bitmap.CompressFormat.PNG, 100)
-                        doPrint(context, it)
-                    }
-                }, 1000)
-
-                /*                val bitmap = screenshotableComposable.invoke()
-                                doPrint(context, bitmap)*/
+                val bitmap = try {
+                    captureView.value?.getBitmap()
+                } catch (e: Exception) {
+                    null
+                }
+                bitmap?.let { context.doPrint(it) }
             }) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -487,262 +464,246 @@ fun InvoiceScreen(invoice: Invoice) {
                 .verticalScroll(scroll)
                 .padding(16.dp)
         ) {
-            InvoiceContent(invoice = invoice)
+            InvoicePrint(invoice = invoice) { captureView.value = it }
+            //InvoiceContent(invoice = invoice)
         }
     }
-}
-
-@Composable
-fun screenShotableComposable(content: @Composable () -> Unit): () -> Bitmap {
-    val context = LocalContext.current
-    val composeView = remember { ComposeView(context = context) }
-    fun captureBitmap(): Bitmap = composeView.drawToBitmap()
-    AndroidView(
-        factory = {
-            composeView.apply {
-                setContent {
-                    content()
-                }
-            }
-        },
-        modifier = Modifier.wrapContentSize(unbounded = true)
-    )
-    return ::captureBitmap
 }
 
 @Composable
 fun InvoiceContent(invoice: Invoice) {
     // Top: Logo & NIT
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            if (!invoice.companyImage.isNullOrEmpty()) {
-                Base64Image(
-                    base64String = invoice.companyImage,
-                    contentDescription = "Company Picture",
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                )
-                Spacer(Modifier.width(8.dp))
-            }
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = invoice.companyName,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
-                    color = primaryColor
-                )
-                Text(
-                    "NIT: ${invoice.companyNit}",
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
-                )
-                Text(
-                    "Código empresa: ${invoice.companyCode}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
-        }
-    }
-
-    Spacer(Modifier.height(8.dp))
-
-    Text(
-        text = "FACTURA DE SERVICIO N° ${invoice.codInvoice}",
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-    )
-
-    Spacer(Modifier.height(8.dp))
-    SectionHeader("INFORMACIÓN CLIENTE")
-
-    TwoPane(
-        left = {
-            InfoCard(title = "") {
-                KeyValueRow("Nombre", invoice.client.name)
-                KeyValueRow(invoice.client.idLabel, invoice.client.id)
-                KeyValueRow("Dirección", invoice.client.address)
-                KeyValueRow("Ciudad", invoice.client.city)
-            }
-        },
-        right = {
-            InfoCard(title = "") {
-                KeyValueRow("Fecha Emisión", invoice.meta.issueDate.format(dateFmt))
-                KeyValueRow("Fecha Vencimiento", invoice.meta.dueDate.format(dateFmt))
-                KeyValueRow("Tipo Pago", invoice.meta.payType)
-                KeyValueRow("Estado", invoice.meta.state)
-            }
-        }
-    )
-
-    Spacer(Modifier.height(8.dp))
-
-    SectionHeader("INFORMACIÓN DEL MEDIDOR")
-
-    TwoPane(
-        left = {
-            InfoCard(title = "") {
-                KeyValueRow("N° Medidor", invoice.meter.number)
-                KeyValueRow(
-                    "Fecha de Instalación",
-                    invoice.meter.installDate.format(dateFmt)
-                )
-                KeyValueRow("Tipo", invoice.meter.type)
-            }
-        },
-        right = {
-            InfoCard(title = "") {
-                KeyValueRow(
-                    "Lectura Anterior",
-                    "${invoice.reading.prevReading} m³ (${
-                        invoice.reading.prevDate.format(
-                            dateFmt
-                        )
-                    })"
-                )
-                KeyValueRow(
-                    "Lectura Actual",
-                    "${invoice.reading.currentReading} m³ (${
-                        invoice.reading.currentDate.format(
-                            dateFmt
-                        )
-                    })"
-                )
-                KeyValueRow("Consumo", "${invoice.reading.consumptionM3} m³")
-            }
-        }
-    )
-
-    invoice.fees.forEachIndexed { index, fee ->
-        Spacer(Modifier.height(8.dp))
-        SectionHeader(fee.title)
-        if (fee.code == "OTR") {
-            DeudaConceptSection(
-                fee = fee,
-                lastIndex = invoice.fees.lastIndex,
-            )
-        } else {
-            OtherConceptSection(
-                fee = fee,
-                lastIndex = invoice.fees.lastIndex,
-            )
-        }
-    }
-
-    Spacer(Modifier.height(8.dp))
-
-    SectionHeader("HISTÓRICO DE CONSUMO (m³)")
-
-    Spacer(Modifier.height(8.dp))
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = CardDefaults.outlinedCardBorder(),
-        shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        BarsHistory(invoice.history.sortedBy { it.mes })
-    }
-
-    Spacer(Modifier.height(8.dp))
-
-    // Payment Summary Card
-    SectionHeader("DETALLE DE PAGO")
-
-    Spacer(Modifier.height(8.dp))
-
-    PaymentSummaryCard(fees = invoice.fees)
-
-    Spacer(Modifier.height(8.dp))
-
-    // Payment Summary Card
-    SectionHeader("INFORMACIÓN DE PAGO")
-
-    Spacer(Modifier.height(8.dp))
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-    ) {
-        // QR + Totales
-        if (!invoice.companyQrCode.isNullOrEmpty()) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text("Codigo QR", style = MaterialTheme.typography.bodyLarge)
-                Base64Image(
-                    base64String = invoice.companyQrCode,
-                    contentDescription = "Company Picture",
-                    modifier = Modifier.size(120.dp)
-                )
-            }
-        }
-
-        Spacer(Modifier.width(8.dp))
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text("Punto de Pago", style = MaterialTheme.typography.bodyLarge)
-            val items = invoice.methodsPayment.orEmpty().chunked(3)
-            items.onEach { item ->
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+    Column {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                if (!invoice.companyImage.isNullOrEmpty()) {
+                    Base64Image(
+                        base64String = invoice.companyImage,
+                        contentDescription = "Company Picture",
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                }
+                Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    item.onEach { image ->
-                        Base64Image(
-                            base64String = image.orEmpty(),
-                            contentDescription = "Company Picture",
-                            modifier = Modifier
-                                .size(90.dp)
-                                .padding(4.dp)
-                        )
+                    Text(
+                        text = invoice.companyName,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
+                        color = primaryColor
+                    )
+                    Text(
+                        "NIT: ${invoice.companyNit}",
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
+                    )
+                    Text(
+                        "Código empresa: ${invoice.companyCode}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            text = "FACTURA DE SERVICIO N° ${invoice.codInvoice}",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+        )
+
+        Spacer(Modifier.height(8.dp))
+        SectionHeader("INFORMACIÓN CLIENTE")
+
+        TwoPane(
+            left = {
+                InfoCard(title = "") {
+                    KeyValueRow("Nombre", invoice.client.name)
+                    KeyValueRow(invoice.client.idLabel, invoice.client.id)
+                    KeyValueRow("Dirección", invoice.client.address)
+                    KeyValueRow("Ciudad", invoice.client.city)
+                }
+            },
+            right = {
+                InfoCard(title = "") {
+                    KeyValueRow("Fecha Emisión", invoice.meta.issueDate.format(dateFmt))
+                    KeyValueRow("Fecha Vencimiento", invoice.meta.dueDate.format(dateFmt))
+                    KeyValueRow("Tipo Pago", invoice.meta.payType)
+                    KeyValueRow("Estado", invoice.meta.state)
+                }
+            }
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        SectionHeader("INFORMACIÓN DEL MEDIDOR")
+
+        TwoPane(
+            left = {
+                InfoCard(title = "") {
+                    KeyValueRow("N° Medidor", invoice.meter.number)
+                    KeyValueRow(
+                        "Fecha de Instalación",
+                        invoice.meter.installDate.format(dateFmt)
+                    )
+                    KeyValueRow("Tipo", invoice.meter.type)
+                }
+            },
+            right = {
+                InfoCard(title = "") {
+                    KeyValueRow(
+                        "Lectura Anterior",
+                        "${invoice.reading.prevReading} m³ (${
+                            invoice.reading.prevDate.format(
+                                dateFmt
+                            )
+                        })"
+                    )
+                    KeyValueRow(
+                        "Lectura Actual",
+                        "${invoice.reading.currentReading} m³ (${
+                            invoice.reading.currentDate.format(
+                                dateFmt
+                            )
+                        })"
+                    )
+                    KeyValueRow("Consumo", "${invoice.reading.consumptionM3} m³")
+                }
+            }
+        )
+
+        invoice.fees.forEachIndexed { index, fee ->
+            Spacer(Modifier.height(8.dp))
+            SectionHeader(fee.title)
+            if (fee.code == "OTR") {
+                DeudaConceptSection(
+                    fee = fee,
+                    lastIndex = invoice.fees.lastIndex,
+                )
+            } else {
+                OtherConceptSection(
+                    fee = fee,
+                    lastIndex = invoice.fees.lastIndex,
+                )
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        SectionHeader("HISTÓRICO DE CONSUMO (m³)")
+
+        Spacer(Modifier.height(8.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = CardDefaults.outlinedCardBorder(),
+            shape = RoundedCornerShape(10.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            BarsHistory(invoice.history.sortedBy { it.mes })
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        // Payment Summary Card
+        SectionHeader("DETALLE DE PAGO")
+
+        Spacer(Modifier.height(8.dp))
+
+        PaymentSummaryCard(fees = invoice.fees)
+
+        Spacer(Modifier.height(8.dp))
+
+        // Payment Summary Card
+        SectionHeader("INFORMACIÓN DE PAGO")
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+        ) {
+            // QR + Totales
+            if (!invoice.companyQrCode.isNullOrEmpty()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text("Codigo QR", style = MaterialTheme.typography.bodyLarge)
+                    Base64Image(
+                        base64String = invoice.companyQrCode,
+                        contentDescription = "Company Picture",
+                        modifier = Modifier.size(120.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.width(8.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("Punto de Pago", style = MaterialTheme.typography.bodyLarge)
+                val items = invoice.methodsPayment.orEmpty().chunked(3)
+                items.onEach { item ->
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        item.onEach { image ->
+                            Base64Image(
+                                base64String = image.orEmpty(),
+                                contentDescription = "Company Picture",
+                                modifier = Modifier
+                                    .size(90.dp)
+                                    .padding(4.dp)
+                            )
+                        }
                     }
                 }
             }
         }
-    }
-    Spacer(Modifier.height(8.dp))
-    if (invoice.observations.isNotEmpty()) {
-        Text(
-            "Observaciones: ${invoice.observations}",
-            fontSize = 12.sp
-        )
         Spacer(Modifier.height(8.dp))
-    }
-
-    HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Border)
-    Spacer(Modifier.height(12.dp))
-
-    // Nota importante
-    if (!invoice.companyFooterNote.isNullOrEmpty()) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = NoteBg),
-            border = CardDefaults.outlinedCardBorder(),
-            shape = RoundedCornerShape(10.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        ) {
+        if (invoice.observations.isNotEmpty()) {
             Text(
-                invoice.companyFooterNote.unescapeNewlines(),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(12.dp)
+                "Observaciones: ${invoice.observations}",
+                fontSize = 12.sp
             )
+            Spacer(Modifier.height(8.dp))
         }
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Border)
         Spacer(Modifier.height(12.dp))
+
+        // Nota importante
+        if (!invoice.companyFooterNote.isNullOrEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = NoteBg),
+                border = CardDefaults.outlinedCardBorder(),
+                shape = RoundedCornerShape(10.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            ) {
+                Text(
+                    invoice.companyFooterNote.unescapeNewlines(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+        }
+
+        Text(
+            "${invoice.companyFooter.unescapeNewlines()} ${Date()}",
+            fontSize = 11.sp,
+            lineHeight = 14.sp,
+            textAlign = TextAlign.Center
+        )
     }
-
-    Text(
-        "${invoice.companyFooter.unescapeNewlines()} ${Date()}",
-        fontSize = 11.sp,
-        lineHeight = 14.sp,
-        textAlign = TextAlign.Center
-    )
-
 }
 
 /* ---------- Preview con datos de ejemplo (como en la imagen) ---------- */

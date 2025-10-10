@@ -4,8 +4,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.graphics.Bitmap
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.print.PrintHelper
 import com.codemakers.aquaplus.R
 
 // Notifications
@@ -43,5 +45,13 @@ fun Context.showNotification(
     NotificationManagerCompat.from(this).apply {
         createNotificationChannel(channel)
         notify(System.currentTimeMillis().toInt(), builder.build())
+    }
+}
+
+fun Context.doPrint(bitmap: Bitmap) {
+    PrintHelper(this).apply {
+        scaleMode = PrintHelper.SCALE_MODE_FIT
+    }.also { printHelper ->
+        printHelper.printBitmap("droids.jpg - test print", bitmap)
     }
 }
