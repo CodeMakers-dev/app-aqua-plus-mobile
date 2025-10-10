@@ -379,7 +379,7 @@ fun InvoiceContent(invoice: Invoice) {
 }
 
 /* ---------- Preview con datos de ejemplo (como en la imagen) ---------- */
-@Preview(showBackground = true, widthDp = 412, heightDp = 2700)
+@Preview(showBackground = true, widthDp = 328, heightDp = 2700)
 @Composable
 private fun AquaPlusInvoicePreview() {
     val invoice = Invoice(
@@ -426,12 +426,12 @@ private fun AquaPlusInvoicePreview() {
             consumptionM3 = 16
         ),
         history = listOf(
-            HistoryEntry("DIC 14", 1400.0, 1),
-            HistoryEntry("ENE 10", 14000.0, 2),
-            HistoryEntry("FEB 13", 1400.0, 2),
-            HistoryEntry("MAR 15", 1400.0, 2),
-            HistoryEntry("ABR 15", 1400.0, 2),
-            HistoryEntry("MAY 16", 1400.0, 2),
+            HistoryEntry("2025-05", 1400.0, 15),
+            HistoryEntry("2025-05", 14000.0, 25),
+            HistoryEntry("2025-05", 1400.0, 27),
+            HistoryEntry("2025-05", 1400.0, 230),
+            HistoryEntry("2025-05", 1400.0, 23),
+            HistoryEntry("2025-05", 1400.0, 212),
         ),
         verificationCode = "AC85B721F",
         observations = "Sin anomalías detectadas en la lectura actual.",

@@ -8,3 +8,4 @@
 /qa
 /local.properties
 local.properties
+ .gradle/

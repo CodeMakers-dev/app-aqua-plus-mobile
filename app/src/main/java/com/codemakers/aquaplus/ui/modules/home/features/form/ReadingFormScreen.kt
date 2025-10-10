@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +43,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -50,9 +52,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.codemakers.aquaplus.R
-import com.codemakers.aquaplus.domain.models.EmployeeRoute
-import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
-import com.codemakers.aquaplus.domain.models.ReadingFormData
 import com.codemakers.aquaplus.ui.composables.ConfirmationDialog
 import com.codemakers.aquaplus.ui.composables.DialogType
 import com.codemakers.aquaplus.ui.composables.LoadingWidget
@@ -61,6 +60,7 @@ import com.codemakers.aquaplus.ui.theme.AquaPlusTheme
 import com.codemakers.aquaplus.ui.theme.primaryDarkColor
 import com.codemakers.aquaplus.ui.theme.secondaryDarkColor
 import com.codemakers.aquaplus.ui.theme.tertiaryDarkColor
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -126,6 +126,8 @@ fun ReadingFormContent(
     onAbnormalConsumptionChange: (Boolean) -> Unit = {},
     onObservationsChange: (String) -> Unit = {},
 ) {
+    val focusRequest = remember { FocusRequester() }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -158,8 +160,6 @@ fun ReadingFormContent(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
@@ -246,7 +246,9 @@ fun ReadingFormContent(
                         value = state.meterReading,
                         onValueChange = onMeterReadingChange,
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequest),
                         label = {
                             Text(
                                 text = stringResource(R.string.reading_input_label),
@@ -329,6 +331,11 @@ fun ReadingFormContent(
                 Text(text = stringResource(R.string.copy_save))
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        delay(200)// <-- This is crucial.
+        focusRequest.requestFocus()
     }
 }
 

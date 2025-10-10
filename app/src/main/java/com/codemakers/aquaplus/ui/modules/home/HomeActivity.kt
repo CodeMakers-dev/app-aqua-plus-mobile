@@ -55,7 +55,7 @@ class HomeActivity : ComponentActivity() {
             val navController = rememberNavController()
 
             Scaffold(
-                modifier = Modifier.background(primaryDarkColor), // Asegura fondo oscuro para Scaffold
+                modifier = Modifier.background(primaryDarkColor),
                 content = { paddingValues ->
                     val navGraph = remember(navController) {
                         navController.createGraph(startDestination = HomeRoutes.HomeRoute) {

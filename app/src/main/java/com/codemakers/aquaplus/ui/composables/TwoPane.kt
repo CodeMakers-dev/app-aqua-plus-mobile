@@ -18,7 +18,7 @@ fun TwoPane(
     gap: Dp = 16.dp
 ) {
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        if (maxWidth < 379.dp) {
+        if (maxWidth < 327.dp) {
             Column(verticalArrangement = Arrangement.spacedBy(gap)) {
                 left(); right()
             }

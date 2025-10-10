@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Cookie
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -291,7 +290,8 @@ fun RouteListContent(
                     containerColor = secondaryDarkColor
                 ),
                 shape = RoundedCornerShape(8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                onClick = { onNavigateToForm(item.id) }
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -334,23 +334,6 @@ fun RouteListContent(
                         )
                     }
 
-                    IconButton(
-                        modifier = Modifier
-                            .background(
-                                color = Color.DarkGray,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .size(32.dp),
-                        onClick = { onNavigateToForm(item.id) },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Edit,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = Color(0xFF42A5F5),
-                        )
-                    }
-
                     if (isInvoiceAvailable(item.id)) {
                         Spacer(modifier = Modifier.width(4.dp))
 
@@ -366,7 +349,7 @@ fun RouteListContent(
                             Icon(
                                 imageVector = Icons.Outlined.Receipt,
                                 contentDescription = null,
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier.size(32.dp),
                                 tint = Color(0xFF66BB6A)
                             )
                         }
