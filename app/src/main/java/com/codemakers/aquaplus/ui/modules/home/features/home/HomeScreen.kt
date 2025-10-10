@@ -72,7 +72,7 @@ sealed class BottomNavItem(
 fun HomeScreen(
     onNavigateToLogin: () -> Unit = {},
     onNavigateToForm: (employeeRouteId: Int) -> Unit = {},
-    onNavigateToInvoice: (route: EmployeeRoute, config: EmployeeRouteConfig, data: ReadingFormData) -> Unit,
+    onNavigateToInvoice: (employeeRouteId: Int) -> Unit,
 ) {
     val internalNavController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)

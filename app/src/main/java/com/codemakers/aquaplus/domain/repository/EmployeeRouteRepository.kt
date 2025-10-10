@@ -41,6 +41,10 @@ interface EmployeeRouteRepository {
         employeeRouteId: Int,
     ): Flow<ReadingFormData?>
 
+    suspend fun getReadingFormDataByEmployeeRouteId(
+        employeeRouteId: Int,
+    ): ReadingFormData?
+
     suspend fun saveNewReadingFormData(
         employeeRouteId: Int,
         meterReading: String,

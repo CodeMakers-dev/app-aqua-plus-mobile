@@ -7,29 +7,43 @@ import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.query.max
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 class ReadingFormDataDao(
     private val realm: Realm,
 ) {
 
-    fun getReadingFormDataByEmployeeRouteId(
-        employeeRouteId: Int
+    fun getReadingFormDataByEmployeeRouteIdFlow(
+        employeeRouteId: Int,
     ): Flow<SingleQueryChange<RealmReadingFormData>> {
         return realm.query<RealmReadingFormData>("employeeRouteId = $0", employeeRouteId)
             .first()
             .asFlow()
     }
 
-    fun getAllReadingFormDataFlow(): Flow<ResultsChange<RealmReadingFormData>> {
-        return realm.query<RealmReadingFormData>().find().asFlow()
+    suspend fun getReadingFormDataByEmployeeRouteId(
+        employeeRouteId: Int,
+    ): RealmReadingFormData? {
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmReadingFormData>("employeeRouteId = $0", employeeRouteId)
+                .first().find()
+        }
     }
 
-    fun getAllReadingFormDataForSync(): List<RealmReadingFormData> {
-        return realm.query<RealmReadingFormData>("isSynced == $0", false).find()
+    suspend fun getAllReadingFormDataFlow(): Flow<ResultsChange<RealmReadingFormData>> {
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmReadingFormData>().find().asFlow()
+        }
     }
 
+    suspend fun getAllReadingFormDataForSync(): List<RealmReadingFormData> {
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmReadingFormData>("isSynced == $0", false).find()
+        }
+    }
 
     suspend fun updateReadingFormDataIsSynced(
         employeeRouteId: Int,

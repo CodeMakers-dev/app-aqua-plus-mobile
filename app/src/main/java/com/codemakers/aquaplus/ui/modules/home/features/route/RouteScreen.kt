@@ -53,8 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codemakers.aquaplus.R
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
-import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
-import com.codemakers.aquaplus.domain.models.ReadingFormData
 import com.codemakers.aquaplus.ui.composables.ClickableTabs
 import com.codemakers.aquaplus.ui.composables.ConfirmationDialog
 import com.codemakers.aquaplus.ui.composables.DialogType
@@ -70,7 +68,7 @@ import java.util.Locale
 fun RouteScreen(
     viewModel: RouteViewModel = koinViewModel(),
     onNavigateToForm: (employeeRouteId: Int) -> Unit,
-    onNavigateToInvoice: (route: EmployeeRoute, config: EmployeeRouteConfig, data: ReadingFormData) -> Unit,
+    onNavigateToInvoice: (employeeRouteId: Int) -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -110,8 +108,10 @@ fun RouteScreen(
     }
 
     LaunchedEffect(state.config, state.data) {
-        if (state.config != null && state.data != null) {
-            onNavigateToInvoice(state.route!!, state.config!!, state.data!!)
+        val config = state.config
+        val data = state.data
+        if (config != null && data != null) {
+            onNavigateToInvoice(data.employeeRouteId)
             viewModel.cleanReadingFormData()
         }
     }

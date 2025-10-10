@@ -101,11 +101,16 @@ class EmployeeRouteRepositoryImpl(
     override suspend fun getReadingFormDataByEmployeeRouteIdFlow(
         employeeRouteId: Int,
     ): Flow<ReadingFormData?> = flow {
-        readingFormDataDao.getReadingFormDataByEmployeeRouteId(employeeRouteId).collect { result ->
+        readingFormDataDao.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId).collect { result ->
             val data = result.obj
             emit(data?.toDomain())
         }
     }
+
+    override suspend fun getReadingFormDataByEmployeeRouteId(
+        employeeRouteId: Int,
+    ): ReadingFormData? =
+        readingFormDataDao.getReadingFormDataByEmployeeRouteId(employeeRouteId)?.toDomain()
 
     override suspend fun saveNewReadingFormData(
         employeeRouteId: Int,

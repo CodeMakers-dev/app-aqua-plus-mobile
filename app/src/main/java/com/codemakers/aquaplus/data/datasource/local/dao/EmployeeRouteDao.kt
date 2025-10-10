@@ -26,42 +26,54 @@ import io.realm.kotlin.ext.query
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.SingleQueryChange
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class EmployeeRouteDao(
     private val realm: Realm,
 ) {
 
-    fun getAllEmployeeRouteFlow(): Flow<ResultsChange<RealmEmployeeRoute>> {
-        return realm.query<RealmEmployeeRoute>().find().asFlow()
+    suspend fun getAllEmployeeRouteFlow(): Flow<ResultsChange<RealmEmployeeRoute>> {
+        return withContext(Dispatchers.IO) { realm.query<RealmEmployeeRoute>().find().asFlow() }
     }
 
-    fun getAllEmployeeRouteConfigFlow(): Flow<ResultsChange<RealmEmployeeRouteConfig>> {
-        return realm.query<RealmEmployeeRouteConfig>().find().asFlow()
+    suspend fun getAllEmployeeRouteConfigFlow(): Flow<ResultsChange<RealmEmployeeRouteConfig>> {
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmEmployeeRouteConfig>().find().asFlow()
+        }
     }
 
-    fun getEmployeeRouteByIdFlow(id: Int): Flow<SingleQueryChange<RealmEmployeeRoute>> {
-        return realm.query<RealmEmployeeRoute>("id == $0", id)
-            .first()
-            .asFlow()
+    suspend fun getEmployeeRouteByIdFlow(id: Int): Flow<SingleQueryChange<RealmEmployeeRoute>> {
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmEmployeeRoute>("id == $0", id)
+                .first()
+                .asFlow()
+        }
     }
 
-    fun getEmployeeRouteById(id: Int): RealmEmployeeRoute? {
-        return realm.query<RealmEmployeeRoute>("id == $0", id)
-            .first()
-            .find()
+    suspend fun getEmployeeRouteById(id: Int): RealmEmployeeRoute? {
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmEmployeeRoute>("id == $0", id)
+                .first()
+                .find()
+        }
     }
 
-    fun getEmployeeRouteConfigByIdFlow(empresaId: Int): Flow<SingleQueryChange<RealmEmployeeRouteConfig>> {
-        return realm.query<RealmEmployeeRouteConfig>("id == $0", empresaId)
-            .first()
-            .asFlow()
+    suspend fun getEmployeeRouteConfigByIdFlow(empresaId: Int): Flow<SingleQueryChange<RealmEmployeeRouteConfig>> {
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmEmployeeRouteConfig>("id == $0", empresaId)
+                .first()
+                .asFlow()
+        }
     }
 
-    fun getEmployeeRouteConfigById(empresaId: Int): RealmEmployeeRouteConfig? {
-        return realm.query<RealmEmployeeRouteConfig>("id == $0", empresaId)
-            .first()
-            .find()
+    suspend fun getEmployeeRouteConfigById(empresaId: Int): RealmEmployeeRouteConfig? {
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmEmployeeRouteConfig>("id == $0", empresaId)
+                .first()
+                .find()
+        }
     }
 
     suspend fun saveNewEmployeeRoute(

@@ -1,15 +1,9 @@
 package com.codemakers.aquaplus.ui.modules.home.features.invoice
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -35,26 +29,33 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ExperimentalComposeApi
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codemakers.aquaplus.domain.models.DeudaAbonoSaldo
+import com.codemakers.aquaplus.ui.composables.BarsHistory
 import com.codemakers.aquaplus.ui.composables.Base64Image
-import com.codemakers.aquaplus.ui.extensions.cop
+import com.codemakers.aquaplus.ui.composables.ConceptSection
+import com.codemakers.aquaplus.ui.composables.DebtSection
+import com.codemakers.aquaplus.ui.composables.InfoCard
+import com.codemakers.aquaplus.ui.composables.KeyValueRow
+import com.codemakers.aquaplus.ui.composables.LoadingWidget
+import com.codemakers.aquaplus.ui.composables.PaymentSummaryCard
+import com.codemakers.aquaplus.ui.composables.SectionHeader
+import com.codemakers.aquaplus.ui.composables.TwoPane
 import com.codemakers.aquaplus.ui.extensions.doPrint
 import com.codemakers.aquaplus.ui.extensions.getBitmap
 import com.codemakers.aquaplus.ui.extensions.unescapeNewlines
@@ -67,384 +68,37 @@ import com.codemakers.aquaplus.ui.models.InvoiceMeta
 import com.codemakers.aquaplus.ui.models.MeterInfo
 import com.codemakers.aquaplus.ui.models.ReadingInfo
 import com.codemakers.aquaplus.ui.models.StratumValueDetail
+import com.codemakers.aquaplus.ui.modules.home.features.print.InvoicePrint
+import com.codemakers.aquaplus.ui.modules.home.features.print.PrintInvoiceView
 import com.codemakers.aquaplus.ui.theme.AquaPlusTheme
 import com.codemakers.aquaplus.ui.theme.Border
-import com.codemakers.aquaplus.ui.theme.LightRow
 import com.codemakers.aquaplus.ui.theme.NoteBg
 import com.codemakers.aquaplus.ui.theme.primaryColor
-import com.codemakers.aquaplus.ui.theme.secondaryColor
-import com.codemakers.aquaplus.ui.theme.tertiaryColor
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
-import kotlin.math.max
 
 private val dateFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-/* ---------- Componentes ---------- */
-
-@SuppressLint("UnusedBoxWithConstraintsScope")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-private fun PaymentSummaryCard(
-    fees: List<FeeSection>,
-    modifier: Modifier = Modifier
-) {
-    // Agrupar fees por tipo y calcular totales
-    val feeGroups = fees.groupBy { it.title }
-        .mapValues { (_, feeList) ->
-            feeList.sumOf { fee ->
-                fee.conceptos?.sumOf { it.total } ?: 0.0
-            }
-        }
-
-    val totalAmount = feeGroups.values.sum()
-
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(8.dp)
-        ) {
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-            ) {
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),      // el ancho que quieras
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    feeGroups.forEach { item ->
-                        PaymentFeeCard(
-                            name = item.key,
-                            amount = item.value,
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Total section
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFE8F5E8), RoundedCornerShape(8.dp))
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Total a pagar:",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                )
-                Text(
-                    text = totalAmount.cop(),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = primaryColor
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PaymentFeeCard(
-    name: String,
-    amount: Double,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxSize(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // Header with fee name
-        Text(
-            text = name,
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontWeight = FontWeight.SemiBold
-            ),
-            textAlign = TextAlign.Start,
-            modifier = Modifier.weight(0.65f)
-        )
-
-        // Amount
-        Text(
-            text = amount.cop(),
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontWeight = FontWeight.Bold,
-                color = primaryColor
-            ),
-            textAlign = TextAlign.End,
-            maxLines = 1,
-            modifier = Modifier.weight(0.35f)
-        )
-    }
-
-}
-
-@Composable
-private fun SectionHeader(title: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(tertiaryColor, RoundedCornerShape(8.dp))
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = title.uppercase(),
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        )
-    }
-}
-
-@Composable
-private fun KeyValueRow(label: String, value: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "$label:",
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 2
-        )
-    }
-}
-
-@Composable
-private fun InfoCard(
-    title: String, content:
-    @Composable ColumnScope.() -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(10.dp)
-    ) {
-        Column(Modifier.padding(8.dp)) {
-            if (title.isNotBlank()) {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                )
-                Spacer(Modifier.height(8.dp))
-            }
-            content()
-        }
-    }
-}
-
-@Composable
-private fun TableHeader(
-    headers: List<String>,
-    weights: List<Float>,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(LightRow)
-            .border(1.dp, primaryColor, RoundedCornerShape(10.dp))
-            .padding(horizontal = 8.dp)
-    ) {
-        headers.forEachIndexed { i, text ->
-            Text(
-                text = text,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-                modifier = Modifier.weight(weights[i]),
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-private fun TableRow(
-    cells: List<String>,
-    weights: List<Float>,
-    bottomDivider: Boolean = true
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp)
-    ) {
-        cells.forEachIndexed { i, text ->
-            Text(
-                text = text,
-                fontSize = 13.sp,
-                modifier = Modifier.weight(weights[i]),
-                textAlign = if (i == 0) TextAlign.Start else TextAlign.Center
-            )
-        }
-    }
-    if (bottomDivider) {
-        HorizontalDivider(thickness = 1.dp, color = Border)
-    }
-}
-
-@Composable
-private fun BarsHistory(
-    data: List<HistoryEntry>,
-    maxBarHeight: Dp = 120.dp,
-    barWidth: Dp = 30.dp,
-    barSpacing: Dp = 24.dp
-
-) {
-    val maxValue = max(1, data.maxOfOrNull { it.consumo } ?: 1)
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp, start = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Bottom
-    ) {
-        data.forEach { item ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom
-            ) {
-                // Barra
-                Canvas(
-                    modifier = Modifier
-                        .height((item.consumo.toFloat() / maxValue) * maxBarHeight)
-                        .width(barWidth)
-                ) {
-                    drawLine(
-                        color = secondaryColor,
-                        start = Offset(size.width / 2, size.height),
-                        end = Offset(size.width / 2, 0f),
-                        strokeWidth = size.width,
-                        cap = StrokeCap.Round
-                    )
-                }
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text = item.mes.substringBefore(" "),
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "${item.consumo} m³",
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = item.precio.cop(),
-                    fontSize = 10.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
-            Spacer(Modifier.height(barSpacing))
-
-        }
-    }
-}
-
-@Composable
-private fun DeudaConceptSection(
-    fee: FeeSection,
-    lastIndex: Int,
-) {
-    val weights = listOf(0.65f, 0.35f)
-    TableHeader(
-        headers = listOf("Descripción", "Valor"),
-        weights = weights
+fun InvoiceScreen(employeeRouteId: Int) {
+    val viewModel = koinViewModel<InvoiceViewModel>(
+        parameters = { parametersOf(employeeRouteId) }
     )
-    fee.conceptos?.forEachIndexed { index, concept ->
-        TableRow(
-            cells = listOf(
-                concept.title,
-                concept.total.cop()
-            ),
-            weights = weights,
-            bottomDivider = index != lastIndex
-        )
-    }
-}
 
-@Composable
-private fun OtherConceptSection(
-    fee: FeeSection,
-    lastIndex: Int,
-) {
-    val weights = listOf(0.31f, 0.18f, 0.25f, 0.25f)
-    TableHeader(
-        headers = listOf("Descripción", "Consumo", "Tarifa", "Valor"),
-        weights = weights
-    )
-    fee.conceptos?.forEachIndexed { index, concept ->
-        TableRow(
-            cells = listOf(
-                concept.title,
-                concept.consumptionTotal?.let { "$it m³" } ?: "-",
-                concept.tarifa?.cop().orEmpty(),
-                concept.total.cop()
-            ),
-            weights = weights,
-            bottomDivider = index != lastIndex
-        )
-    }
-}
-
-/* ---------- Helpers de layout responsivo ---------- */
-
-@Composable
-private fun TwoPane(
-    left: @Composable () -> Unit,
-    right: @Composable () -> Unit,
-    gap: Dp = 16.dp
-) {
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        if (maxWidth < 379.dp) {
-            Column(verticalArrangement = Arrangement.spacedBy(gap)) {
-                left(); right()
-            }
-        } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(gap)
-            ) {
-                Box(Modifier.weight(0.5f)) { left() }
-                Box(Modifier.weight(0.5f)) { right() }
-            }
-        }
-    }
-}
-
-/* ---------- Pantalla principal ---------- */
-@OptIn(ExperimentalComposeApi::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UseKtx")
-@Composable
-fun InvoiceScreen(invoice: Invoice) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val scroll = rememberScrollState()
     val context = LocalContext.current
-    val captureView = remember { mutableStateOf<InvoiceView?>(null) }
+    val captureView = remember { mutableStateOf<PrintInvoiceView?>(null) }
+    var showPrintPreview by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                val bitmap = try {
-                    captureView.value?.getBitmap()
-                } catch (e: Exception) {
-                    null
-                }
-                bitmap?.let { context.doPrint(it) }
+                showPrintPreview = true
             }) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -464,8 +118,26 @@ fun InvoiceScreen(invoice: Invoice) {
                 .verticalScroll(scroll)
                 .padding(16.dp)
         ) {
-            InvoicePrint(invoice = invoice) { captureView.value = it }
-            //InvoiceContent(invoice = invoice)
+            if (showPrintPreview) {
+                InvoicePrint(state.invoice) { captureView.value = it }
+            } else {
+                state.invoice?.let { InvoiceContent(invoice = it) }
+            }
+        }
+    }
+
+    LoadingWidget(isLoading = state.isLoading or showPrintPreview)
+
+    LaunchedEffect(captureView.value) {
+        if (captureView.value != null) {
+            showPrintPreview = false
+            val bitmap = try {
+                captureView.value?.getBitmap()
+            } catch (e: Exception) {
+                null
+            }
+            bitmap?.let { context.doPrint(it) }
+            captureView.value = null
         }
     }
 }
@@ -578,12 +250,12 @@ fun InvoiceContent(invoice: Invoice) {
             Spacer(Modifier.height(8.dp))
             SectionHeader(fee.title)
             if (fee.code == "OTR") {
-                DeudaConceptSection(
+                DebtSection(
                     fee = fee,
                     lastIndex = invoice.fees.lastIndex,
                 )
             } else {
-                OtherConceptSection(
+                ConceptSection(
                     fee = fee,
                     lastIndex = invoice.fees.lastIndex,
                 )
@@ -837,6 +509,6 @@ private fun AquaPlusInvoicePreview() {
     )
 
     AquaPlusTheme {
-        InvoiceScreen(invoice)
+        InvoiceContent(invoice)
     }
 }

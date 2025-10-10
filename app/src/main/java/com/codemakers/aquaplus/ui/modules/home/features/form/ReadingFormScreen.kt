@@ -68,7 +68,7 @@ import org.koin.core.parameter.parametersOf
 fun ReadingFormScreen(
     employeeRouteId: Int,
     onBackAction: () -> Unit,
-    onNavigateToInvoice: (route: EmployeeRoute, config: EmployeeRouteConfig, data: ReadingFormData) -> Unit,
+    onNavigateToInvoice: (employeeRouteId: Int) -> Unit,
 ) {
     val viewModel = koinViewModel<ReadingFormViewModel>(
         parameters = { parametersOf(employeeRouteId) }
@@ -97,11 +97,7 @@ fun ReadingFormScreen(
 
     if (state.isCreatedOrUpdatedSuccess) {
         viewModel.cleanSuccess()
-        onNavigateToInvoice(
-            state.route!!,
-            state.config!!,
-            state.readingFormData!!
-        )
+        onNavigateToInvoice(state.employeeRouteId)
     }
 
     if (showConfirmDialog) {
