@@ -6,9 +6,10 @@ import com.codemakers.aquaplus.domain.common.Result
 import com.codemakers.aquaplus.domain.usecases.CreateOrUpdateReadingFormData
 import com.codemakers.aquaplus.domain.usecases.GetEmployeeRouteByIdUseCase
 import com.codemakers.aquaplus.domain.usecases.GetReadingFormDataByEmployeeRouteId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,15 +27,16 @@ class ReadingFormViewModel(
     )
 
     private val _state = MutableStateFlow(initialState)
-    val state = _state.onStart {
-        init()
-    }.stateIn(
-        viewModelScope, SharingStarted.WhileSubscribed(), initialState
+    private var loadDataJob: Job? = null
+    private var saveDataJob: Job? = null
+    
+    val state = _state.stateIn(
+        viewModelScope, SharingStarted.Lazily, initialState
     )
 
-    //Init
+    private var isInitialized = false
 
-    fun init() {
+    init {
         loadDataFromId(state.value.employeeRouteId)
     }
 
@@ -65,39 +67,51 @@ class ReadingFormViewModel(
     }
 
     fun onSave() {
-        viewModelScope.launch {
+        saveDataJob?.cancel()
+        
+        saveDataJob = viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
-            createOrUpdateReadingFormData(
-                employeeRouteId = state.value.employeeRouteId,
-                meterReading = state.value.meterReading,
-                abnormalConsumption = state.value.abnormalConsumption,
-                observations = state.value.observations,
-                readingFormDataId = state.value.readingFormDataId,
-                date = LocalDate.now(),
-            ).collect { result ->
-                when (result) {
-                    is Result.Success -> {
-                        _state.update {
+            
+            try {
+                createOrUpdateReadingFormData(
+                    employeeRouteId = state.value.employeeRouteId,
+                    meterReading = state.value.meterReading,
+                    abnormalConsumption = state.value.abnormalConsumption,
+                    observations = state.value.observations,
+                    readingFormDataId = state.value.readingFormDataId,
+                    date = LocalDate.now(),
+                ).collect { result ->
+                    when (result) {
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(
+                                    isCreatedOrUpdatedSuccess = true,
+                                    readingFormData = result.data,
+                                )
+                            }
+                        }
+
+                        is Result.Error -> _state.update {
                             it.copy(
-                                isCreatedOrUpdatedSuccess = true,
-                                readingFormData = result.data,
+                                isLoading = false,
+                                error = result.error.message,
+                            )
+                        }
+
+                        is Result.Exception -> _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.error.message,
                             )
                         }
                     }
-
-                    is Result.Error -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
-                    }
-
-                    is Result.Exception -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
-                    }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Error al guardar: ${e.message}",
+                    )
                 }
             }
         }
@@ -106,68 +120,98 @@ class ReadingFormViewModel(
     //Validations
 
     private fun loadDataFromId(employeeRouteId: Int) {
-        viewModelScope.launch {
+        if (isInitialized) return
+        isInitialized = true
+        
+        loadDataJob?.cancel()
+        
+        loadDataJob = viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
-            getEmployeeRouteByIdUseCase(employeeRouteId = employeeRouteId).collect { result ->
-                when (result) {
-                    is Result.Success -> {
-                        _state.update {
+            
+            try {
+                getEmployeeRouteByIdUseCase(employeeRouteId = employeeRouteId).collect { result ->
+                    when (result) {
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(
+                                    route = result.data.first,
+                                    serial = result.data.first?.contador?.serial ?: "",
+                                    config = result.data.second,
+                                )
+                            }
+                            loadReadingFormData(employeeRouteId = employeeRouteId)
+                        }
+
+                        is Result.Error -> _state.update {
                             it.copy(
-                                route = result.data.first,
-                                serial = result.data.first?.contador?.serial ?: "",
-                                config = result.data.second,
+                                isLoading = false,
+                                error = result.error.message,
                             )
                         }
-                        loadReadingFormData(employeeRouteId = employeeRouteId)
-                    }
 
-                    is Result.Error -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
+                        is Result.Exception -> _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.error.message,
+                            )
+                        }
                     }
-
-                    is Result.Exception -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
-                    }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Error al cargar datos: ${e.message}",
+                    )
                 }
             }
         }
     }
 
     private fun loadReadingFormData(employeeRouteId: Int) {
-        viewModelScope.launch {
-            getReadingFormDataByEmployeeRouteId(employeeRouteId = employeeRouteId).collect { result ->
-                when (result) {
-                    is Result.Success -> _state.update {
-                        it.copy(
-                            readingFormData = result.data,
-                            meterReading = result.data?.meterReading ?: "",
-                            abnormalConsumption = result.data?.abnormalConsumption,
-                            observations = result.data?.observations ?: "",
-                            isLoading = false
-                        )
-                    }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                getReadingFormDataByEmployeeRouteId(employeeRouteId = employeeRouteId).collect { result ->
+                    when (result) {
+                        is Result.Success -> _state.update {
+                            it.copy(
+                                readingFormData = result.data,
+                                meterReading = result.data?.meterReading ?: "",
+                                abnormalConsumption = result.data?.abnormalConsumption,
+                                observations = result.data?.observations ?: "",
+                                isLoading = false
+                            )
+                        }
 
-                    is Result.Error -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
-                    }
+                        is Result.Error -> _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.error.message,
+                            )
+                        }
 
-                    is Result.Exception -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
+                        is Result.Exception -> _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.error.message,
+                            )
+                        }
                     }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Error al cargar formulario: ${e.message}",
+                    )
                 }
             }
         }
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        loadDataJob?.cancel()
+        saveDataJob?.cancel()
     }
 }

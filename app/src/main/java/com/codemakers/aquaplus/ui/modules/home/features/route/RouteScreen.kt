@@ -32,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -77,7 +76,7 @@ fun RouteScreen(
         onSearchChange = viewModel::onSearchChange,
         loadRoutes = { showLogoutDialog = true },
         onNavigateToForm = onNavigateToForm,
-        loadReadingFormData = viewModel::loadReadingFormData,
+        onNavigateToInvoice = onNavigateToInvoice,
     )
 
     LoadingWidget(isLoading = state.isLoading)
@@ -105,15 +104,6 @@ fun RouteScreen(
             },
         )
     }
-
-    LaunchedEffect(state.config, state.data) {
-        val config = state.config
-        val data = state.data
-        if (config != null && data != null) {
-            onNavigateToInvoice(data.employeeRouteId)
-            viewModel.cleanReadingFormData()
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,7 +113,7 @@ fun RouteContent(
     onSearchChange: (String) -> Unit = {},
     loadRoutes: () -> Unit = {},
     onNavigateToForm: (employeeRouteId: Int) -> Unit = {},
-    loadReadingFormData: (route: EmployeeRoute) -> Unit = {},
+    onNavigateToInvoice: (employeeRouteId: Int) -> Unit = {},
 ) {
     Scaffold { paddingValues ->
         if (state.allRoutes == null) return@Scaffold
@@ -262,7 +252,7 @@ fun RouteContent(
                     routes = if (selectedItem == 0) state.pendingRoutes else state.completedRoutes,
                     isInvoiceAvailable = state::isInvoiceAvailable,
                     onNavigateToForm = onNavigateToForm,
-                    loadReadingFormData = loadReadingFormData
+                    onNavigateToInvoice = onNavigateToInvoice
                 )
             }
         }
@@ -274,13 +264,16 @@ fun RouteListContent(
     routes: List<EmployeeRoute>,
     isInvoiceAvailable: (employeeRouteId: Int) -> Boolean,
     onNavigateToForm: (employeeRouteId: Int) -> Unit,
-    loadReadingFormData: (route: EmployeeRoute) -> Unit,
+    onNavigateToInvoice: (employeeRouteId: Int) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-
-        items(routes.size) { index ->
+        items(
+            count = routes.size,
+            key = { index -> routes[index].id },
+            contentType = { "RouteCard" }
+        ) { index ->
             val item = routes[index]
             Card(
                 modifier = Modifier
@@ -340,7 +333,7 @@ fun RouteListContent(
                                     shape = RoundedCornerShape(8.dp)
                                 )
                                 .size(32.dp),
-                            onClick = { loadReadingFormData(item) },
+                            onClick = { onNavigateToInvoice(item.id) },
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Receipt,

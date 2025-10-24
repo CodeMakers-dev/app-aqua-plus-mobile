@@ -16,12 +16,14 @@ class ReadingFormDataDao(
     private val realm: Realm,
 ) {
 
-    fun getReadingFormDataByEmployeeRouteIdFlow(
+    suspend fun getReadingFormDataByEmployeeRouteIdFlow(
         employeeRouteId: Int,
     ): Flow<SingleQueryChange<RealmReadingFormData>> {
-        return realm.query<RealmReadingFormData>("employeeRouteId = $0", employeeRouteId)
-            .first()
-            .asFlow()
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmReadingFormData>("employeeRouteId = $0", employeeRouteId)
+                .first()
+                .asFlow()
+        }
     }
 
     suspend fun getReadingFormDataByEmployeeRouteId(

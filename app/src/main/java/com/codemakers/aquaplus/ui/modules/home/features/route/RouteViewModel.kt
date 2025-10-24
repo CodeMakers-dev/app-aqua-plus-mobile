@@ -3,14 +3,16 @@ package com.codemakers.aquaplus.ui.modules.home.features.route
 import androidx.lifecycle.viewModelScope
 import com.codemakers.aquaplus.base.BaseViewModel
 import com.codemakers.aquaplus.domain.common.Result
-import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.usecases.GetAllEmployeeRouteUseCase
 import com.codemakers.aquaplus.domain.usecases.GetAllReadingFormDataUseCase
-import com.codemakers.aquaplus.domain.usecases.GetEmployeeRouteConfigAndReadingFormDataByIdUseCase
 import com.codemakers.aquaplus.domain.usecases.LoadAllEmployeeRouteUseCase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -18,29 +20,44 @@ import kotlinx.coroutines.launch
 class RouteViewModel(
     private val getAllEmployeeRouteUseCase: GetAllEmployeeRouteUseCase,
     private val loadAllEmployeeRouteUseCase: LoadAllEmployeeRouteUseCase,
-    private val getEmployeeRouteConfigAndReadingFormDataByIdUseCase: GetEmployeeRouteConfigAndReadingFormDataByIdUseCase,
     private val getAllReadingFormDataUseCase: GetAllReadingFormDataUseCase,
 ) : BaseViewModel() {
 
     private val initialState = RouteUiState()
 
     private val _state = MutableStateFlow(initialState)
-    val state = _state.onStart {
-        init()
-    }.stateIn(
-        viewModelScope, SharingStarted.WhileSubscribed(), initialState
+    private val _searchQuery = MutableStateFlow("")
+    private var searchJob: Job? = null
+    private var loadRoutesJob: Job? = null
+
+    val state = _state.stateIn(
+        viewModelScope, SharingStarted.Lazily, initialState
     )
 
-    //Init
-
-    fun init() {
+    init {
         loadAllEmployeeRoutes()
+        observeSearchQuery()
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun observeSearchQuery() {
+        viewModelScope.launch {
+            _searchQuery
+                .debounce(300) // Espera 300ms después del último cambio
+                .distinctUntilChanged()
+                .collect { search ->
+                    performSearch(search)
+                }
+        }
     }
 
     //Actions
 
     fun loadAllRoutes() {
-        viewModelScope.launch {
+        // Cancel previous job if still running
+        loadRoutesJob?.cancel()
+        
+        loadRoutesJob = viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
             loadAllEmployeeRouteUseCase().collect { result ->
                 when (result) {
@@ -50,6 +67,7 @@ class RouteViewModel(
                                 allRoutes = result.data,
                                 routes = result.data,
                                 search = "",
+                                isLoading = false,
                             )
                         }
                     }
@@ -73,123 +91,101 @@ class RouteViewModel(
     }
 
     fun onSearchChange(search: String) {
+        _state.update { it.copy(search = search) }
+        _searchQuery.value = search
+    }
+
+    private fun performSearch(search: String) {
         val routesSearched = if (search.isNotBlank()) {
             _state.value.allRoutes?.filter {
-                it.toString().lowercase().contains(search.lowercase())
+                val route = it
+                route.personaCliente.direccion.descripcion?.lowercase()?.contains(search.lowercase()) == true ||
+                        route.personaCliente.primerNombre.lowercase().contains(search.lowercase()) ||
+                        route.personaCliente.primerApellido.lowercase().contains(search.lowercase()) ||
+                        route.personaCliente.numeroCedula.contains(search) ||
+                        route.contador.serial.lowercase().contains(search.lowercase())
             }
         } else {
             _state.value.allRoutes
         }
-        _state.update { it.copy(search = search, routes = routesSearched.orEmpty()) }
-    }
-
-    fun loadReadingFormData(route: EmployeeRoute) {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            val employeeRouteId = route.id
-            val empresaId = route.empresa.id ?: 0
-            getEmployeeRouteConfigAndReadingFormDataByIdUseCase(
-                employeeRouteId = employeeRouteId,
-                empresaId = empresaId,
-            ).collect { result ->
-                when (result) {
-                    is Result.Success -> {
-                        val data = result.data.second
-                        if (data == null) {
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    error = "No se encontraron datos para la ruta seleccionada",
-                                )
-                            }
-                            return@collect
-                        }
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                route = route,
-                                config = result.data.first,
-                                data = result.data.second,
-                            )
-                        }
-                    }
-
-                    is Result.Error -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
-                    }
-
-                    is Result.Exception -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
-                    }
-                }
-            }
-        }
+        _state.update { it.copy(routes = routesSearched.orEmpty()) }
     }
 
     fun cleanError() {
         _state.update { it.copy(error = null) }
     }
-    fun cleanReadingFormData() {
-        _state.update { it.copy(route = null, config = null, data = null) }
-    }
 
     //Validations
 
     private fun loadAllEmployeeRoutes() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
-            getAllEmployeeRouteUseCase().collect { result ->
-                when (result) {
-                    is Result.Success -> {
-                        _state.update {
+            
+            try {
+                getAllEmployeeRouteUseCase().collect { result ->
+                    when (result) {
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(
+                                    allRoutes = result.data,
+                                    routes = result.data,
+                                    search = "",
+                                )
+                            }
+                            loadAllReadingFormDataRoutes()
+                        }
+
+                        is Result.Error -> _state.update {
                             it.copy(
-                                allRoutes = result.data,
-                                routes = result.data,
-                                search = "",
+                                isLoading = false,
+                                error = result.error.message,
                             )
                         }
-                        loadAllReadingFormDataRoutes()
-                    }
 
-                    is Result.Error -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
+                        is Result.Exception -> _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.error.message,
+                            )
+                        }
                     }
-
-                    is Result.Exception -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.message,
-                        )
-                    }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Error al cargar rutas: ${e.message}",
+                    )
                 }
             }
         }
     }
 
     private fun loadAllReadingFormDataRoutes() {
-        viewModelScope.launch {
-            getAllReadingFormDataUseCase().collect { result ->
-                when (result) {
-                    is Result.Success -> _state.update {
-                        it.copy(isLoading = false, allData = result.data)
-                    }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                getAllReadingFormDataUseCase().collect { result ->
+                    when (result) {
+                        is Result.Success -> _state.update {
+                            it.copy(isLoading = false, allData = result.data)
+                        }
 
-                    else -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                        )
+                        else -> _state.update {
+                            it.copy(isLoading = false)
+                        }
                     }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(isLoading = false)
                 }
             }
         }
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        searchJob?.cancel()
+        loadRoutesJob?.cancel()
     }
 }

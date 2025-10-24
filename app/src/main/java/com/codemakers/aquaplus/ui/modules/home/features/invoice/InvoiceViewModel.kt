@@ -3,9 +3,9 @@ package com.codemakers.aquaplus.ui.modules.home.features.invoice
 import androidx.lifecycle.viewModelScope
 import com.codemakers.aquaplus.base.BaseViewModel
 import com.codemakers.aquaplus.domain.usecases.GetInvoiceDataUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -20,40 +20,63 @@ class InvoiceViewModel(
     )
 
     private val _state = MutableStateFlow(initialState)
-    val state = _state.onStart {
-        init()
-    }.stateIn(
-        viewModelScope, SharingStarted.WhileSubscribed(), initialState
+    val state = _state.stateIn(
+        viewModelScope, SharingStarted.Lazily, initialState
     )
 
-    //Init
+    private var isInitialized = false
 
-    fun init() {
-        getInvoice()
+    init {
+        // Load data immediately in background to avoid UI lag
+        loadInvoiceData()
     }
 
     //Actions
 
-    fun getInvoice() {
-        viewModelScope.launch {
+    private fun loadInvoiceData() {
+        if (isInitialized) return
+        isInitialized = true
+        
+        viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
-            val invoiceData = getInvoiceDataUseCase(state.value.employeeRouteId)
+            
+            try {
+                val invoiceData = getInvoiceDataUseCase(state.value.employeeRouteId)
 
-            if (invoiceData != null) {
-                _state.update {
-                    it.copy(
-                        invoice = invoiceData,
-                        isLoading = false,
-                    )
+                if (invoiceData != null) {
+                    _state.update {
+                        it.copy(
+                            invoice = invoiceData,
+                            isLoading = false,
+                        )
+                    }
+                } else {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = "No se encontró información de factura",
+                        )
+                    }
                 }
-            } else {
+            } catch (e: Exception) {
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        error = "error",
+                        error = "Error al cargar la factura: ${e.message}",
                     )
                 }
             }
         }
+    }
+    
+    fun refreshInvoice() {
+        isInitialized = false
+        loadInvoiceData()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // Clear any cached data to prevent memory leaks
+        _state.value = initialState
     }
 }

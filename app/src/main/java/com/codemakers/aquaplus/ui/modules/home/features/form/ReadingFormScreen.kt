@@ -90,7 +90,17 @@ fun ReadingFormScreen(
         onObservationsChange = viewModel::onObservationsChange,
     )
 
-    LoadingWidget(isLoading = state.isLoading)
+    // Show loading only when dialog is active and saving
+    if (showConfirmDialog && state.isLoading) {
+        LoadingWidget(isLoading = true)
+    }
+
+    // Close dialog on error
+    LaunchedEffect(state.error) {
+        if (state.error != null) {
+            showConfirmDialog = false
+        }
+    }
 
     if (state.error != null) {
         SnackBarWidget(
@@ -99,12 +109,15 @@ fun ReadingFormScreen(
         )
     }
 
-    if (state.isCreatedOrUpdatedSuccess) {
-        viewModel.cleanSuccess()
-        onNavigateToInvoice(state.employeeRouteId)
+    // Navigate only after successful save
+    LaunchedEffect(state.isCreatedOrUpdatedSuccess) {
+        if (state.isCreatedOrUpdatedSuccess) {
+            viewModel.cleanSuccess()
+            onNavigateToInvoice(state.employeeRouteId)
+        }
     }
 
-    if (showConfirmDialog) {
+    if (showConfirmDialog && !state.isLoading) {
         ConfirmationDialog(
             title = stringResource(R.string.copy_generate_invoice),
             message = stringResource(R.string.copy_generate_invoice_description),
