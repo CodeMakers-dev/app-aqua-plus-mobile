@@ -6,6 +6,7 @@ import com.codemakers.aquaplus.domain.common.Result
 import com.codemakers.aquaplus.domain.usecases.CreateOrUpdateReadingFormData
 import com.codemakers.aquaplus.domain.usecases.GetEmployeeRouteByIdUseCase
 import com.codemakers.aquaplus.domain.usecases.GetReadingFormDataByEmployeeRouteId
+import com.codemakers.aquaplus.domain.usecases.SaveInvoiceUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ class ReadingFormViewModel(
     private val getEmployeeRouteByIdUseCase: GetEmployeeRouteByIdUseCase,
     private val getReadingFormDataByEmployeeRouteId: GetReadingFormDataByEmployeeRouteId,
     private val createOrUpdateReadingFormData: CreateOrUpdateReadingFormData,
+    private val saveInvoiceUseCase: SaveInvoiceUseCase,
 ) : BaseViewModel() {
 
     private val initialState = ReadingFormUiState(
@@ -85,9 +87,34 @@ class ReadingFormViewModel(
                         is Result.Success -> {
                             _state.update {
                                 it.copy(
-                                    isCreatedOrUpdatedSuccess = true,
                                     readingFormData = result.data,
                                 )
+                            }
+                            
+                            // Generate and save invoice after successful reading form save
+                            try {
+                                val invoice = saveInvoiceUseCase(state.value.employeeRouteId)
+                                if (invoice != null) {
+                                    _state.update {
+                                        it.copy(
+                                            isCreatedOrUpdatedSuccess = true,
+                                        )
+                                    }
+                                } else {
+                                    _state.update {
+                                        it.copy(
+                                            isLoading = false,
+                                            error = "Error al generar la factura",
+                                        )
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                _state.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        error = "Error al guardar factura: ${e.message}",
+                                    )
+                                }
                             }
                         }
 

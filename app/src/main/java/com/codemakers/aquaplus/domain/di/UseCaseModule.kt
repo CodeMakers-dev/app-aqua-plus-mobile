@@ -14,6 +14,7 @@ import com.codemakers.aquaplus.domain.usecases.GetProfileUseCase
 import com.codemakers.aquaplus.domain.usecases.GetReadingFormDataByEmployeeRouteId
 import com.codemakers.aquaplus.domain.usecases.LoginUseCase
 import com.codemakers.aquaplus.domain.usecases.RecoveryPasswordUseCase
+import com.codemakers.aquaplus.domain.usecases.SaveInvoiceUseCase
 import com.codemakers.aquaplus.domain.usecases.UpdatePasswordUseCase
 import com.codemakers.aquaplus.domain.usecases.UpdateReadingFormDataIsSyncedUseCase
 import org.koin.core.module.dsl.singleOf
@@ -36,5 +37,6 @@ val useCaseModule = module {
     singleOf(::GetEmployeeRouteAndConfigByIdUseCase)
     singleOf(::UpdateReadingFormDataIsSyncedUseCase)
     singleOf(::GetInvoiceDataUseCase)
+    singleOf(::SaveInvoiceUseCase)
 }
 

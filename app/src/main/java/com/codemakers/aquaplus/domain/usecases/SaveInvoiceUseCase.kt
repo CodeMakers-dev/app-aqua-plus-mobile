@@ -7,22 +7,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 
-class GetInvoiceDataUseCase(
+class SaveInvoiceUseCase(
     private val employeeRouteRepository: EmployeeRouteRepository,
     private val invoiceDao: InvoiceDao,
 ) {
 
-    suspend operator fun invoke(
-        employeeRouteId: Int,
-    ): Invoice? = withContext(Dispatchers.IO) {
-        // Try to get cached invoice first
-        val cachedInvoice = invoiceDao.getInvoiceByEmployeeRouteId(employeeRouteId)
-        if (cachedInvoice != null) {
-            return@withContext cachedInvoice
-        }
-
-        // If not cached, generate invoice from data
-        // Optimize: Execute both queries in parallel instead of sequentially
+    suspend operator fun invoke(employeeRouteId: Int): Invoice? = withContext(Dispatchers.IO) {
+        // Generate invoice from current data
         val readingFormDataDeferred = async {
             employeeRouteRepository.getReadingFormDataByEmployeeRouteId(employeeRouteId = employeeRouteId)
         }
@@ -37,17 +28,21 @@ class GetInvoiceDataUseCase(
         val employeeRoute = employeeRouteDeferred.await()
         if (employeeRoute == null) return@withContext null
         
-        // Only fetch config if we have the employeeRoute
         val employeeRouteConfig = employeeRouteRepository.getEmployeeRouteConfigById(
             empresaId = employeeRoute.empresa.id ?: 0
         )
         
         if (employeeRouteConfig == null) return@withContext null
 
-        Invoice(
+        val invoice = Invoice(
             route = employeeRoute,
             config = employeeRouteConfig,
             data = readingFormData
         )
+        
+        // Save invoice to cache
+        invoiceDao.saveInvoice(employeeRouteId, invoice)
+        
+        invoice
     }
 }
