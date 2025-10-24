@@ -56,6 +56,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.codemakers.aquaplus.R
+import com.codemakers.aquaplus.ui.composables.BarcodeScannerScreen
 import com.codemakers.aquaplus.ui.composables.ConfirmationDialog
 import com.codemakers.aquaplus.ui.composables.DialogType
 import com.codemakers.aquaplus.ui.composables.LoadingWidget
@@ -145,6 +146,8 @@ fun ReadingFormContent(
 ) {
     val focusRequest = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+    var showBarcodeScanner by remember { mutableStateOf(false) }
+    var showScannerDisabledMessage by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -204,20 +207,30 @@ fun ReadingFormContent(
                             )
                         },
                         trailingIcon = {
+                            val isScannerEnabled = state.serial.isEmpty()
                             Card(
                                 shape = RoundedCornerShape(8.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = tertiaryDarkColor,
-                                    contentColor = Color.White
+                                    containerColor = if (isScannerEnabled) tertiaryDarkColor else Color.Gray,
+                                    contentColor = if (isScannerEnabled) Color.White else Color.DarkGray
                                 ),
                                 elevation = CardDefaults.cardElevation(2.dp),
                                 modifier = Modifier.padding(end = 8.dp)
                             ) {
-                                IconButton(onClick = { /* Handle camera click */ }) {
+                                IconButton(
+                                    onClick = {
+                                        if (isScannerEnabled) {
+                                            showBarcodeScanner = true
+                                        } else {
+                                            showScannerDisabledMessage = true
+                                        }
+                                    },
+                                    enabled = true
+                                ) {
                                     Icon(
                                         imageVector = Icons.Default.QrCodeScanner,
-                                        contentDescription = "Camera",
-                                        tint = Color.White
+                                        contentDescription = "Escanear código de barras",
+                                        tint = if (isScannerEnabled) Color.White else Color.DarkGray
                                     )
                                 }
                             }
@@ -366,6 +379,31 @@ fun ReadingFormContent(
                 focusRequest.requestFocus()
             }
         }
+    }
+
+    // Cerrar teclado cuando se abre el escáner
+    LaunchedEffect(showBarcodeScanner) {
+        if (showBarcodeScanner) {
+            focusManager.clearFocus()
+        }
+    }
+
+    // Barcode Scanner Overlay
+    if (showBarcodeScanner) {
+        BarcodeScannerScreen(
+            onBarcodeScanned = { scannedValue ->
+                onSerialChange(scannedValue)
+            },
+            onClose = { showBarcodeScanner = false }
+        )
+    }
+
+    // Mensaje cuando el escáner está deshabilitado
+    if (showScannerDisabledMessage) {
+        SnackBarWidget(
+            message = "El escáner solo está disponible cuando no hay un serial registrado",
+            onDismissListener = { showScannerDisabledMessage = false }
+        )
     }
 }
 

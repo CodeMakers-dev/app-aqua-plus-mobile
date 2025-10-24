@@ -1,5 +1,7 @@
 [versions]
 agp = "8.12.0"
+barcodeScanning = "17.3.0"
+cameraCore = "1.5.1"
 kotlin = "2.2.10"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -22,6 +24,10 @@ lottie = "6.6.9"
 workRuntimeKtx = "2.10.4"
 
 [libraries]
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraCore" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraCore" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appCompatVersion" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
@@ -36,6 +42,7 @@ androidx-material-icons = { group = "androidx.compose.material", name = "materia
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationComposeVersion" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
+barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanning" }
 koin-android = { module = "io.insert-koin:koin-android" }
 koin-androidx-navigation = { module = "io.insert-koin:koin-androidx-navigation" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }

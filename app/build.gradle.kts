@@ -57,6 +57,9 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 }
 
@@ -111,4 +114,13 @@ dependencies {
     implementation(libs.lottie.compose)
 
     implementation(libs.androidx.print)
+
+    //CameraX
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
+    //ML Kit Barcode Scanning
+    implementation(libs.barcode.scanning)
 }
