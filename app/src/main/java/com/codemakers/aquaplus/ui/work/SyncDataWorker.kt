@@ -31,6 +31,8 @@ class SyncDataWorker(
         if (data.isNullOrEmpty()) return Result.failure()
 
         val request = mutableListOf<InvoiceRequest>()
+        val employeeRouteIds = mutableListOf<Int>() // Track employeeRouteIds being synced
+
         data.forEach { readingFormData ->
             val employeeRouteId = readingFormData.employeeRouteId
             val result = getEmployeeRouteAndConfigByIdUseCase(employeeRouteId = employeeRouteId)
@@ -45,6 +47,9 @@ class SyncDataWorker(
                 config = employeeRouteConfig,
                 data = readingFormData
             )
+
+            employeeRouteIds.add(employeeRouteId)
+
             request.add(
                 InvoiceRequest(
                     code = employeeRoute.codFactura,
@@ -66,7 +71,9 @@ class SyncDataWorker(
         if (request.isEmpty()) return Result.failure()
         val requestResult = invoiceRepository.sendInvoice(request = request)
         if (requestResult.isSuccess) {
-            updateReadingFormDataIsSyncedUseCase(requestResult.getOrNull?.allIds.orEmpty())
+            updateReadingFormDataIsSyncedUseCase(employeeRouteIds)
+        } else {
+            return Result.failure()
         }
 
         return Result.success()

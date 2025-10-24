@@ -36,6 +36,7 @@ class RouteViewModel(
 
     init {
         loadAllEmployeeRoutes()
+        loadAllReadingFormDataRoutes() // Observe reading form data continuously
         observeSearchQuery()
     }
 
@@ -56,7 +57,7 @@ class RouteViewModel(
     fun loadAllRoutes() {
         // Cancel previous job if still running
         loadRoutesJob?.cancel()
-        
+
         loadRoutesJob = viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
             loadAllEmployeeRouteUseCase().collect { result ->
@@ -99,9 +100,12 @@ class RouteViewModel(
         val routesSearched = if (search.isNotBlank()) {
             _state.value.allRoutes?.filter {
                 val route = it
-                route.personaCliente.direccion.descripcion?.lowercase()?.contains(search.lowercase()) == true ||
-                        route.personaCliente.primerNombre.lowercase().contains(search.lowercase()) ||
-                        route.personaCliente.primerApellido.lowercase().contains(search.lowercase()) ||
+                route.personaCliente.direccion.descripcion?.lowercase()
+                    ?.contains(search.lowercase()) == true ||
+                        route.personaCliente.primerNombre.lowercase()
+                            .contains(search.lowercase()) ||
+                        route.personaCliente.primerApellido.lowercase()
+                            .contains(search.lowercase()) ||
                         route.personaCliente.numeroCedula.contains(search) ||
                         route.contador.serial.lowercase().contains(search.lowercase())
             }
@@ -120,7 +124,7 @@ class RouteViewModel(
     private fun loadAllEmployeeRoutes() {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
-            
+
             try {
                 getAllEmployeeRouteUseCase().collect { result ->
                     when (result) {
@@ -130,9 +134,9 @@ class RouteViewModel(
                                     allRoutes = result.data,
                                     routes = result.data,
                                     search = "",
+                                    isLoading = false,
                                 )
                             }
-                            loadAllReadingFormDataRoutes()
                         }
 
                         is Result.Error -> _state.update {
@@ -166,8 +170,10 @@ class RouteViewModel(
             try {
                 getAllReadingFormDataUseCase().collect { result ->
                     when (result) {
-                        is Result.Success -> _state.update {
-                            it.copy(isLoading = false, allData = result.data)
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(isLoading = false, allData = result.data)
+                            }
                         }
 
                         else -> _state.update {
@@ -182,7 +188,7 @@ class RouteViewModel(
             }
         }
     }
-    
+
     override fun onCleared() {
         super.onCleared()
         searchJob?.cancel()

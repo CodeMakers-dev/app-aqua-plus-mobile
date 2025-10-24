@@ -2,6 +2,7 @@ package com.codemakers.aquaplus.ui.modules.home.features.route
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,9 +17,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Cookie
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Receipt
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -251,6 +254,8 @@ fun RouteContent(
                 RouteListContent(
                     routes = if (selectedItem == 0) state.pendingRoutes else state.completedRoutes,
                     isInvoiceAvailable = state::isInvoiceAvailable,
+                    isSynced = state::isSynced,
+                    showSyncStatus = selectedItem == 1, // Show sync status only in completed routes
                     onNavigateToForm = onNavigateToForm,
                     onNavigateToInvoice = onNavigateToInvoice
                 )
@@ -263,6 +268,8 @@ fun RouteContent(
 fun RouteListContent(
     routes: List<EmployeeRoute>,
     isInvoiceAvailable: (employeeRouteId: Int) -> Boolean,
+    isSynced: (employeeRouteId: Int) -> Boolean = { false },
+    showSyncStatus: Boolean = false,
     onNavigateToForm: (employeeRouteId: Int) -> Unit,
     onNavigateToInvoice: (employeeRouteId: Int) -> Unit,
 ) {
@@ -290,6 +297,30 @@ fun RouteListContent(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+
+                    // Sync status indicator (only for completed routes)
+                    if (showSyncStatus) {
+                        val synced = isSynced(item.id)
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    color = if (synced) Color(0xFF4CAF50) else Color(0xFFFF9800),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .size(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (synced) Icons.Outlined.CheckCircle else Icons.Outlined.Schedule,
+                                contentDescription = if (synced) "Sincronizado" else "Pendiente de sincronizar",
+                                modifier = Modifier.size(20.dp),
+                                tint = Color.White
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
                     Column(
                         modifier = Modifier
                             .weight(1f),
@@ -339,7 +370,7 @@ fun RouteListContent(
                                 imageVector = Icons.Outlined.Receipt,
                                 contentDescription = null,
                                 modifier = Modifier.size(32.dp),
-                                tint = Color(0xFF66BB6A)
+                                tint = Color.White
                             )
                         }
                     }

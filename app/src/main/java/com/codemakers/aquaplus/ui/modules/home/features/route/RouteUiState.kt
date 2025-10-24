@@ -18,6 +18,9 @@ data class RouteUiState(
     fun isInvoiceAvailable(employeeRouteId: Int): Boolean =
         allData.any { it.employeeRouteId == employeeRouteId }
 
+    fun isSynced(employeeRouteId: Int): Boolean =
+        allData.find { it.employeeRouteId == employeeRouteId }?.isSynced ?: false
+
     val pendingRoutes: List<EmployeeRoute>
         get() = routes.filter { !isInvoiceAvailable(it.id) }
 

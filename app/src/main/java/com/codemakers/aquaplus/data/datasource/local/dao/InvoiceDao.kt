@@ -48,7 +48,6 @@ class InvoiceDao(private val realm: Realm) {
             try {
                 gson.fromJson(it.invoiceJson, Invoice::class.java)
             } catch (e: Exception) {
-                println("Error deserializing invoice: ${e.message}")
                 null
             }
         }

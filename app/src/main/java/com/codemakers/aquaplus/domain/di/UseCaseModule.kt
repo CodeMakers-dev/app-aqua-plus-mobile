@@ -12,6 +12,7 @@ import com.codemakers.aquaplus.domain.usecases.GetInvoiceDataUseCase
 import com.codemakers.aquaplus.domain.usecases.LoadAllEmployeeRouteUseCase
 import com.codemakers.aquaplus.domain.usecases.GetProfileUseCase
 import com.codemakers.aquaplus.domain.usecases.GetReadingFormDataByEmployeeRouteId
+import com.codemakers.aquaplus.domain.usecases.HasUnsyncedReadingFormDataUseCase
 import com.codemakers.aquaplus.domain.usecases.LoginUseCase
 import com.codemakers.aquaplus.domain.usecases.RecoveryPasswordUseCase
 import com.codemakers.aquaplus.domain.usecases.SaveInvoiceUseCase
@@ -38,5 +39,6 @@ val useCaseModule = module {
     singleOf(::UpdateReadingFormDataIsSyncedUseCase)
     singleOf(::GetInvoiceDataUseCase)
     singleOf(::SaveInvoiceUseCase)
+    singleOf(::HasUnsyncedReadingFormDataUseCase)
 }
 

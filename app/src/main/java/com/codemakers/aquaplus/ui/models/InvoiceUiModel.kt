@@ -5,6 +5,7 @@ import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.ReadingFormData
 import com.codemakers.aquaplus.ui.extensions.toCapitalCase
+import com.codemakers.aquaplus.ui.extensions.toLocalDate
 import java.time.LocalDate
 
 
@@ -221,13 +222,4 @@ data class Invoice(
         observations = data.observations,
         deudaAbonoSaldo = route.contador.deudaAbonoSaldo,
     )
-}
-
-fun String.toLocalDate(): LocalDate? = try {
-    val localDate = LocalDate.parse(this)
-    println("Parsed LocalDate 1: $localDate")
-    localDate
-} catch (e: Exception) {
-    println("Error parsing date string 1: ${e.message}")
-    null
 }
