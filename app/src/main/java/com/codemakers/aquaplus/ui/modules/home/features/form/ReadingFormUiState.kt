@@ -22,11 +22,14 @@ data class ReadingFormUiState(
     val readingFormDataId: Long?
         get() = readingFormData?.id
 
+    val hasExistingReading: Boolean
+        get() = readingFormData?.meterReading?.isNotBlank() == true
+
     val enableSave: Boolean
         get() = serial.isNotBlank() &&
                 meterReading.isNotBlank() &&
                 (readingFormData?.abnormalConsumption != abnormalConsumption ||
                         readingFormData?.meterReading != meterReading ||
-                        readingFormData?.observations != observations)
+                        readingFormData.observations != observations)
 
 }

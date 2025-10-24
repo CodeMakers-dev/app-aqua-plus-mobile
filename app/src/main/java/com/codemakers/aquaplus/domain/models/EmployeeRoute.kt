@@ -9,7 +9,14 @@ data class EmployeeRoute(
     val contador: Contador,
     val codFactura: String,
     val diasFactura: DiasFactura?,
+    val ultimaFactura: UltimaFactura?,
     val personaCliente: PersonaCliente
+)
+
+@Serializable
+data class UltimaFactura(
+    val fecha: String?,
+    val precio: Double?,
 )
 
 @Serializable
@@ -41,6 +48,7 @@ data class Contador(
     val serial: String,
     val idTipoContador: Int,
     val deudaAbonoSaldo: DeudaAbonoSaldo,
+    val fechaInstalacion: String?,
     val historicoConsumo: List<HistoricoConsumo>?,
     val nombreTipoContador: String,
     val ultimaLecturaHistorica: UltimaLecturaHistorica?

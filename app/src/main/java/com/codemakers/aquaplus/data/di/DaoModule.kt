@@ -21,6 +21,7 @@ import com.codemakers.aquaplus.data.datasource.local.tables.RealmReadingFormData
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoConcepto
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoTarifa
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmUltimaFactura
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmUltimaLecturaHistorica
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmValorEstrato
 import io.realm.kotlin.Realm
@@ -41,6 +42,7 @@ val daoModule = module {
             schema = setOf(
                 RealmEmployeeRoute::class,
                 RealmDiasFactura::class,
+                RealmUltimaFactura::class,
                 RealmEmpresa::class,
                 RealmContador::class,
                 RealmDeuda::class,

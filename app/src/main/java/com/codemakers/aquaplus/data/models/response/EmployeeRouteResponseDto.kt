@@ -9,6 +9,7 @@ import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.Empresa
 import com.codemakers.aquaplus.domain.models.HistoricoConsumo
 import com.codemakers.aquaplus.domain.models.PersonaCliente
+import com.codemakers.aquaplus.domain.models.UltimaFactura
 import com.codemakers.aquaplus.domain.models.UltimaLecturaHistorica
 import kotlinx.serialization.Serializable
 
@@ -29,7 +30,14 @@ data class EmpresaClienteContadorDto(
     val contador: ContadorDto,
     val codFactura: String,
     val diasFactura: DiasFacturaDto?,
+    val ultimaFactura: UltimaFacturaDto?,
     val personaCliente: PersonaClienteDto,
+)
+
+@Serializable
+data class UltimaFacturaDto(
+    val fecha: String?,
+    val precio: Double?,
 )
 
 @Serializable
@@ -61,6 +69,7 @@ data class ContadorDto(
     val serial: String,
     val idTipoContador: Int,
     val deudaAbonoSaldo: DeudaAbonoSaldoDto,
+    val fechaInstalacion: String?,
     val historicoConsumo: List<HistoricoConsumoDto>?,
     val nombreTipoContador: String,
     val ultimaLecturaHistorica: UltimaLecturaHistoricaDto?
@@ -137,8 +146,14 @@ fun EmpresaClienteContadorDto.toDomain(): EmployeeRoute =
         contador = contador.toDomain(),
         codFactura = codFactura,
         diasFactura = diasFactura?.toDomain(),
+        ultimaFactura = ultimaFactura?.toDomain(),
         personaCliente = personaCliente.toDomain(),
     )
+
+fun UltimaFacturaDto.toDomain(): UltimaFactura = UltimaFactura(
+    fecha = fecha,
+    precio = precio,
+)
 
 fun DiasFacturaDto.toDomain(): DiasFactura = DiasFactura(
     diasVencida = diasVencida,
@@ -166,6 +181,7 @@ fun ContadorDto.toDomain(): Contador = Contador(
     serial = serial,
     idTipoContador = idTipoContador,
     deudaAbonoSaldo = deudaAbonoSaldo.toDomain(),
+    fechaInstalacion = fechaInstalacion,
     historicoConsumo = historicoConsumo?.map { it.toDomain() },
     nombreTipoContador = nombreTipoContador,
     ultimaLecturaHistorica = ultimaLecturaHistorica?.toDomain(),

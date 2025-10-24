@@ -57,11 +57,11 @@ import com.codemakers.aquaplus.ui.composables.ConfirmationDialog
 import com.codemakers.aquaplus.ui.composables.DialogType
 import com.codemakers.aquaplus.ui.composables.LoadingWidget
 import com.codemakers.aquaplus.ui.composables.SnackBarWidget
+import com.codemakers.aquaplus.ui.extensions.toCapitalCase
 import com.codemakers.aquaplus.ui.theme.primaryDarkColor
 import com.codemakers.aquaplus.ui.theme.secondaryDarkColor
 import com.codemakers.aquaplus.ui.theme.tertiaryDarkColor
 import org.koin.androidx.compose.koinViewModel
-import java.util.Locale
 
 @Composable
 fun RouteScreen(
@@ -308,11 +308,7 @@ fun RouteListContent(
 
                         )
                         Text(
-                            text = "${item.personaCliente.primerNombre.capitalize(Locale.getDefault())} ${
-                                item.personaCliente.primerApellido.capitalize(
-                                    Locale.getDefault()
-                                )
-                            } - ${item.personaCliente.numeroCedula}",
+                            text = "${item.personaCliente.primerNombre} ${item.personaCliente.primerApellido}".toCapitalCase() + " - ${item.personaCliente.numeroCedula}",
                             color = Color.White,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                         )

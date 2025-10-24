@@ -56,6 +56,7 @@ import com.codemakers.aquaplus.ui.composables.LoadingWidget
 import com.codemakers.aquaplus.ui.composables.PaymentSummaryCard
 import com.codemakers.aquaplus.ui.composables.SectionHeader
 import com.codemakers.aquaplus.ui.composables.TwoPane
+import com.codemakers.aquaplus.ui.extensions.cop
 import com.codemakers.aquaplus.ui.extensions.doPrint
 import com.codemakers.aquaplus.ui.extensions.getBitmap
 import com.codemakers.aquaplus.ui.extensions.unescapeNewlines
@@ -193,17 +194,13 @@ fun InvoiceContent(invoice: Invoice) {
             left = {
                 InfoCard(title = "") {
                     KeyValueRow("Nombre", invoice.client.name)
-                    KeyValueRow(invoice.client.idLabel, invoice.client.id)
-                    KeyValueRow("Dirección", invoice.client.address)
-                    KeyValueRow("Ciudad", invoice.client.city)
+                    KeyValueRow("Identificación", invoice.client.id)
                 }
             },
             right = {
                 InfoCard(title = "") {
-                    KeyValueRow("Fecha Emisión", invoice.meta.issueDate.format(dateFmt))
-                    KeyValueRow("Fecha Vencimiento", invoice.meta.dueDate.format(dateFmt))
-                    KeyValueRow("Tipo Pago", invoice.meta.payType)
-                    KeyValueRow("Estado", invoice.meta.state)
+                    KeyValueRow("Dirección", invoice.client.address)
+                    KeyValueRow("Ciudad", invoice.client.city)
                 }
             }
         )
@@ -216,23 +213,41 @@ fun InvoiceContent(invoice: Invoice) {
             left = {
                 InfoCard(title = "") {
                     KeyValueRow("N° Medidor", invoice.meter.number)
-                    KeyValueRow(
-                        "Fecha de Instalación",
-                        invoice.meter.installDate.format(dateFmt)
-                    )
-                    KeyValueRow("Tipo", invoice.meter.type)
+                    if (invoice.meter.installDate != null) {
+                        KeyValueRow(
+                            "Fecha de Instalación",
+                            invoice.meter.installDate.format(dateFmt) ?: "---"
+                        )
+                    }
                 }
             },
             right = {
                 InfoCard(title = "") {
+                    KeyValueRow("Tipo", invoice.meter.type)
+                }
+            }
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        SectionHeader("INFORMACIÓN FACTURA")
+
+        TwoPane(
+            left = {
+                InfoCard(title = "") {
                     KeyValueRow(
                         "Lectura Anterior",
                         "${invoice.reading.prevReading} m³ (${
-                            invoice.reading.prevDate.format(
-                                dateFmt
-                            )
+                            invoice.reading.prevDate?.format(dateFmt) ?: "---"
                         })"
                     )
+                    KeyValueRow("Fecha Ultimo pago", "${invoice.reading.lastPaymentDate}")
+                    KeyValueRow("Valor Ultimo pago", "${invoice.reading.lastPaymentValue?.cop()}")
+                    KeyValueRow("Consumo", "${invoice.reading.consumptionM3} m³")
+                }
+            },
+            right = {
+                InfoCard(title = "") {
                     KeyValueRow(
                         "Lectura Actual",
                         "${invoice.reading.currentReading} m³ (${
@@ -241,8 +256,12 @@ fun InvoiceContent(invoice: Invoice) {
                             )
                         })"
                     )
-                    KeyValueRow("Consumo", "${invoice.reading.consumptionM3} m³")
+                    KeyValueRow("Fecha Emisión", invoice.meta.issueDate.format(dateFmt))
+                    KeyValueRow("Pago oportuno", invoice.meta.dueDate.format(dateFmt))
+
+                    KeyValueRow("Estado", invoice.meta.state)
                 }
+
             }
         )
 
@@ -401,11 +420,11 @@ private fun AquaPlusInvoicePreview() {
         companyCode = "AP001",
         codInvoice = "123456789",
         client = Client(
-            name = "Juan Carlos Rodriguez Rodriguez",
+            name = "Juan carlos rodriguez Rodriguez",
             idLabel = "CC",
-            id = "1.234.567.890",
+            id = "2834276634",
             address = "Calle 123#45-67",
-            city = "Bogotá"
+            city = "Suba, Bogotá, Cundinamarca"
         ),
         meta = InvoiceMeta(
             issueDate = LocalDate.of(2025, 5, 15),
@@ -423,7 +442,9 @@ private fun AquaPlusInvoicePreview() {
             prevDate = LocalDate.of(2025, 4, 15),
             currentReading = 1251,
             currentDate = LocalDate.of(2025, 5, 15),
-            consumptionM3 = 16
+            consumptionM3 = 16,
+            lastPaymentDate = LocalDate.of(2025, 4, 15),
+            lastPaymentValue = 1000.0
         ),
         history = listOf(
             HistoryEntry("2025-05", 1400.0, 15),

@@ -4,6 +4,7 @@ import com.codemakers.aquaplus.domain.models.DeudaAbonoSaldo
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.ReadingFormData
+import com.codemakers.aquaplus.ui.extensions.toCapitalCase
 import java.time.LocalDate
 
 
@@ -24,16 +25,18 @@ data class InvoiceMeta(
 
 data class MeterInfo(
     val number: String,
-    val installDate: LocalDate,
+    val installDate: LocalDate?,
     val type: String,
 )
 
 data class ReadingInfo(
     val prevReading: Int,
-    val prevDate: LocalDate,
+    val prevDate: LocalDate?,
     val currentReading: Int,
     val currentDate: LocalDate,
     val consumptionM3: Int,
+    val lastPaymentValue: Double?,
+    val lastPaymentDate: LocalDate?,
 )
 
 data class FeeSection(
@@ -131,11 +134,15 @@ data class Invoice(
         companyFooter = config.config?.empresa?.piePagina,
         companyFooterNote = config.config?.empresa?.avisoFactura,
         client = Client(
-            name = "${route.personaCliente.primerNombre} ${route.personaCliente.primerApellido}",
+            name = "${route.personaCliente.primerNombre} ${route.personaCliente.primerApellido}".toCapitalCase(),
             idLabel = route.personaCliente.codigo.orEmpty(),
             id = route.personaCliente.numeroCedula,
-            address = route.personaCliente.direccion.descripcion ?: "",
-            city = route.personaCliente.direccion.ciudad ?: "",
+            address = route.personaCliente.direccion.descripcion ?: "---",
+            city = listOfNotNull(
+                route.personaCliente.direccion.corregimiento?.takeIf { it.isNotBlank() },
+                route.personaCliente.direccion.ciudad,
+                route.personaCliente.direccion.departamento
+            ).joinToString(", "),
         ),
         meta = InvoiceMeta(
             issueDate = LocalDate.now(),
@@ -146,17 +153,18 @@ data class Invoice(
         ),
         meter = MeterInfo(
             number = route.contador.serial,
-            installDate = LocalDate.now(),
+            installDate = route.contador.fechaInstalacion?.toLocalDate(),
             type = route.contador.nombreTipoContador,
         ),
         reading = ReadingInfo(
             prevReading = route.contador.ultimaLecturaHistorica?.lectura ?: 0,
-            prevDate = route.contador.ultimaLecturaHistorica?.fechaLectura?.toLocalDate()
-                ?: LocalDate.now(),
+            prevDate = route.contador.ultimaLecturaHistorica?.fechaLectura?.toLocalDate(),
             currentReading = data.meterReading.toInt(),
             currentDate = data.date,
             consumptionM3 = data.meterReading.toInt() - (route.contador.ultimaLecturaHistorica?.lectura
                 ?: 0),
+            lastPaymentValue = route.ultimaFactura?.precio,
+            lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
         fees = config.config?.tarifasEmpresa?.map {
             if (it.tipoTarifa?.codigo == "OTR") {

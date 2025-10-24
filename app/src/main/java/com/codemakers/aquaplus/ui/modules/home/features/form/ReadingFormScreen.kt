@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.QrCodeScanner
@@ -46,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -127,6 +131,7 @@ fun ReadingFormContent(
     onObservationsChange: (String) -> Unit = {},
 ) {
     val focusRequest = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     Scaffold(
         topBar = {
@@ -157,6 +162,7 @@ fun ReadingFormContent(
                 .padding(paddingValues)
                 .fillMaxSize()
                 .background(primaryDarkColor)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -177,7 +183,7 @@ fun ReadingFormContent(
                         value = state.serial,
                         onValueChange = onSerialChange,
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = state.route?.contador?.serial.isNullOrBlank(),
+                        enabled = !state.hasExistingReading,
                         label = {
                             Text(
                                 text = stringResource(R.string.meter_reading_hint),
@@ -249,6 +255,7 @@ fun ReadingFormContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .focusRequester(focusRequest),
+                        enabled = !state.hasExistingReading,
                         label = {
                             Text(
                                 text = stringResource(R.string.reading_input_label),
@@ -268,13 +275,15 @@ fun ReadingFormContent(
                             focusedContainerColor = Color(0xFF3A3A4C),
                             unfocusedContainerColor = Color(0xFF3A3A4C),
                             focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            unfocusedTextColor = Color.White,
+                            disabledTextColor = Color.White
                         )
                     )
 
                     AbnormalConsumptionDropdown(
                         abnormalConsumption = state.abnormalConsumption,
-                        onAbnormalConsumptionChange = onAbnormalConsumptionChange
+                        onAbnormalConsumptionChange = onAbnormalConsumptionChange,
+                        enabled = !state.hasExistingReading,
                     )
 
                     OutlinedTextField(
@@ -283,6 +292,7 @@ fun ReadingFormContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 100.dp),
+                        enabled = !state.hasExistingReading,
                         label = {
                             Text(
                                 text = stringResource(R.string.observations_optional),
@@ -301,13 +311,14 @@ fun ReadingFormContent(
                             focusedContainerColor = Color(0xFF3A3A4C),
                             unfocusedContainerColor = Color(0xFF3A3A4C),
                             focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            unfocusedTextColor = Color.White,
+                            disabledTextColor = Color.White
                         )
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 enabled = state.enableSave,
@@ -333,9 +344,15 @@ fun ReadingFormContent(
         }
     }
 
-    LaunchedEffect(Unit) {
-        delay(200)// <-- This is crucial.
-        focusRequest.requestFocus()
+    LaunchedEffect(state.route) {
+        if (state.route != null) {
+            if (state.hasExistingReading) {
+                focusManager.clearFocus()
+            } else {
+                delay(200)
+                focusRequest.requestFocus()
+            }
+        }
     }
 }
 
@@ -343,6 +360,7 @@ fun ReadingFormContent(
 @Composable
 fun AbnormalConsumptionDropdown(
     abnormalConsumption: Boolean?,
+    enabled: Boolean,
     onAbnormalConsumptionChange: (Boolean) -> Unit = {},
 ) {
     val yesText = stringResource(R.string.abnormal_consumption_high)
@@ -356,8 +374,8 @@ fun AbnormalConsumptionDropdown(
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+        expanded = expanded && enabled,
+        onExpandedChange = { if (enabled) expanded = !expanded }
     ) {
         OutlinedTextField(
             modifier = Modifier
@@ -366,6 +384,7 @@ fun AbnormalConsumptionDropdown(
             value = text,
             onValueChange = {},
             readOnly = true,
+            enabled = enabled,
             label = {
                 Text(
                     text = stringResource(R.string.abnormal_consumption_optional),
@@ -386,12 +405,13 @@ fun AbnormalConsumptionDropdown(
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White,
                 focusedTrailingIconColor = Color.White,
-                unfocusedTrailingIconColor = Color.White
+                unfocusedTrailingIconColor = Color.White,
+                disabledTextColor = Color.White
             )
         )
 
         ExposedDropdownMenu(
-            expanded = expanded,
+            expanded = expanded && enabled,
             onDismissRequest = { expanded = false },
             modifier = Modifier.background(Color(0xFF3A3A4C))
         ) {

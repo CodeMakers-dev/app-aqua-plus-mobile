@@ -10,6 +10,7 @@ import com.codemakers.aquaplus.domain.models.Empresa
 import com.codemakers.aquaplus.domain.models.GenericEmpresa
 import com.codemakers.aquaplus.domain.models.HistoricoConsumo
 import com.codemakers.aquaplus.domain.models.PersonaCliente
+import com.codemakers.aquaplus.domain.models.UltimaFactura
 import com.codemakers.aquaplus.domain.models.UltimaLecturaHistorica
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.EmbeddedRealmObject
@@ -24,7 +25,13 @@ open class RealmEmployeeRoute : RealmObject {
     var contador: RealmContador? = null
     var codFactura: String = ""
     var diasFactura: RealmDiasFactura? = null
+    var ultimaFactura: RealmUltimaFactura? = null
     var personaCliente: RealmPersonaCliente? = null
+}
+
+open class RealmUltimaFactura : EmbeddedRealmObject {
+    var fecha: String? = null
+    var precio: Double? = null
 }
 
 open class RealmDiasFactura : EmbeddedRealmObject {
@@ -53,6 +60,7 @@ open class RealmContador : EmbeddedRealmObject {
     var serial: String = ""
     var idTipoContador: Int = 0
     var deudaAbonoSaldo: RealmDeudaAbonoSaldo? = null
+    var fechaInstalacion: String? = null
     var historicoConsumo: RealmList<RealmHistoricoConsumo> = realmListOf()
     var nombreTipoContador: String = ""
     var ultimaLecturaHistorica: RealmUltimaLecturaHistorica? = null
@@ -129,13 +137,18 @@ fun RealmEmployeeRoute.toDomain(): EmployeeRoute =
         contador = contador!!.toDomain(),
         codFactura = codFactura,
         diasFactura = diasFactura?.toDomain(),
+        ultimaFactura = ultimaFactura?.toDomain(),
         personaCliente = personaCliente!!.toDomain(),
     )
+
+fun RealmUltimaFactura.toDomain(): UltimaFactura = UltimaFactura(
+    fecha = fecha,
+    precio = precio,
+)
 
 fun RealmDiasFactura.toDomain(): DiasFactura = DiasFactura(
     diasVencida = diasVencida,
 )
-
 
 fun RealmEmpresa.toDomain(): Empresa = Empresa(
     id = id,
@@ -159,6 +172,7 @@ fun RealmContador.toDomain(): Contador = Contador(
     serial = serial,
     idTipoContador = idTipoContador,
     deudaAbonoSaldo = deudaAbonoSaldo!!.toDomain(),
+    fechaInstalacion = fechaInstalacion,
     historicoConsumo = historicoConsumo.map { it.toDomain() },
     nombreTipoContador = nombreTipoContador,
     ultimaLecturaHistorica = ultimaLecturaHistorica?.toDomain(),

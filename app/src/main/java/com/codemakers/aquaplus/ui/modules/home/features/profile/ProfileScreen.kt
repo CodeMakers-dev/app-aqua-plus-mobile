@@ -146,7 +146,6 @@ fun ProfileContent(
         horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
             if (state.profile == null) return@Column
 
             if (!state.profile.imageBase64.isNullOrBlank()) {

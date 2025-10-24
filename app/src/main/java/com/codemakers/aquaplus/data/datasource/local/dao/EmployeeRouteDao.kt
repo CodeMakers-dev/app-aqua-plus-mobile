@@ -16,6 +16,7 @@ import com.codemakers.aquaplus.data.datasource.local.tables.RealmPersonaCliente
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoConcepto
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoTarifa
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmUltimaFactura
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmUltimaLecturaHistorica
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmValorEstrato
 import com.codemakers.aquaplus.data.models.response.EmployeeRouteConfigDto
@@ -118,6 +119,7 @@ class EmployeeRouteDao(
                     moraActual = data.empresaClienteContador.contador.deudaAbonoSaldo.moraActual
                     abonosTotal = data.empresaClienteContador.contador.deudaAbonoSaldo.abonosTotal
                 }
+                fechaInstalacion = data.empresaClienteContador.contador.fechaInstalacion
                 historicoConsumo =
                     realmListOf<RealmHistoricoConsumo>().apply { addAll(consumo.orEmpty()) }
                 idTipoContador = data.empresaClienteContador.contador.idTipoContador
@@ -166,6 +168,11 @@ class EmployeeRouteDao(
                 diasVencida = data.empresaClienteContador.diasFactura?.diasVencida
             }
 
+            val ultimaFacturaData = RealmUltimaFactura().apply {
+                fecha = data.empresaClienteContador.ultimaFactura?.fecha
+                precio = data.empresaClienteContador.ultimaFactura?.precio
+            }
+
             val employeeRoute = RealmEmployeeRoute().apply {
                 id = data.empresaClienteContador.id
                 codFactura = data.empresaClienteContador.codFactura
@@ -173,6 +180,7 @@ class EmployeeRouteDao(
                 empresa = empresaData
                 contador = contadorData
                 personaCliente = personaClienteData
+                ultimaFactura = ultimaFacturaData
             }
 
             copyToRealm(employeeRoute, updatePolicy = UpdatePolicy.ALL)
