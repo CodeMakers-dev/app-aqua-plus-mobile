@@ -15,9 +15,7 @@ class GetReadingFormDataByEmployeeRouteId(
     ): Flow<Result<ReadingFormData?>> = flow {
         try {
             val result = employeeRouteRepository.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId)
-            result.collect {
-                emit(Result.Success(it))
-            }
+            emit(Result.Success(result))
         } catch (e: Exception) {
             emit(Result.Exception(e))
         }

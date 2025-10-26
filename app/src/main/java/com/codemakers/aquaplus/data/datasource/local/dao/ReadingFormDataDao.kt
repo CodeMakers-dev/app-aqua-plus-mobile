@@ -5,7 +5,6 @@ import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.ResultsChange
-import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.query.max
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -18,11 +17,11 @@ class ReadingFormDataDao(
 
     suspend fun getReadingFormDataByEmployeeRouteIdFlow(
         employeeRouteId: Int,
-    ): Flow<SingleQueryChange<RealmReadingFormData>> {
+    ): RealmReadingFormData? {
         return withContext(Dispatchers.IO) {
             realm.query<RealmReadingFormData>("employeeRouteId = $0", employeeRouteId)
                 .first()
-                .asFlow()
+                .find()
         }
     }
 

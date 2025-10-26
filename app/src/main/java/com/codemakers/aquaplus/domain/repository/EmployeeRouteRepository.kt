@@ -23,7 +23,7 @@ interface EmployeeRouteRepository {
 
     suspend fun getEmployeeRouteByIdFlow(
         employeeRouteId: Int,
-    ): Flow<EmployeeRoute?>
+    ): EmployeeRoute?
 
     suspend fun getEmployeeRouteById(
         employeeRouteId: Int,
@@ -31,7 +31,7 @@ interface EmployeeRouteRepository {
 
     suspend fun getEmployeeRouteConfigByIdFlow(
         empresaId: Int
-    ): Flow<EmployeeRouteConfig?>
+    ): EmployeeRouteConfig?
 
     suspend fun getEmployeeRouteConfigById(
         empresaId: Int
@@ -39,7 +39,7 @@ interface EmployeeRouteRepository {
 
     suspend fun getReadingFormDataByEmployeeRouteIdFlow(
         employeeRouteId: Int,
-    ): Flow<ReadingFormData?>
+    ): ReadingFormData?
 
     suspend fun getReadingFormDataByEmployeeRouteId(
         employeeRouteId: Int,

@@ -73,12 +73,8 @@ class EmployeeRouteRepositoryImpl(
 
     override suspend fun getEmployeeRouteByIdFlow(
         employeeRouteId: Int,
-    ): Flow<EmployeeRoute?> = flow {
-        employeeRouteDao.getEmployeeRouteByIdFlow(id = employeeRouteId).collect { result ->
-            val data = result.obj
-            emit(data?.toDomain())
-        }
-    }
+    ): EmployeeRoute? =
+        employeeRouteDao.getEmployeeRouteByIdFlow(id = employeeRouteId)?.toDomain()
 
     override suspend fun getEmployeeRouteById(
         employeeRouteId: Int,
@@ -86,12 +82,8 @@ class EmployeeRouteRepositoryImpl(
 
     override suspend fun getEmployeeRouteConfigByIdFlow(
         empresaId: Int
-    ): Flow<EmployeeRouteConfig?> = flow {
-        employeeRouteDao.getEmployeeRouteConfigByIdFlow(empresaId = empresaId).collect { result ->
-            val data = result.obj
-            emit(data?.toDomain())
-        }
-    }
+    ): EmployeeRouteConfig? =
+        employeeRouteDao.getEmployeeRouteConfigByIdFlow(empresaId = empresaId)?.toDomain()
 
     override suspend fun getEmployeeRouteConfigById(
         empresaId: Int
@@ -100,12 +92,8 @@ class EmployeeRouteRepositoryImpl(
 
     override suspend fun getReadingFormDataByEmployeeRouteIdFlow(
         employeeRouteId: Int,
-    ): Flow<ReadingFormData?> = flow {
-        readingFormDataDao.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId).collect { result ->
-            val data = result.obj
-            emit(data?.toDomain())
-        }
-    }
+    ): ReadingFormData? =
+        readingFormDataDao.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId)?.toDomain()
 
     override suspend fun getReadingFormDataByEmployeeRouteId(
         employeeRouteId: Int,
@@ -119,19 +107,17 @@ class EmployeeRouteRepositoryImpl(
         observations: String,
         readingFormDataId: Long?,
         date: LocalDate,
-    ): Result<Unit> = handlerErrorMapper(
-        action = {
-            readingFormDataDao.saveNewReadingFormData(
-                employeeRouteId = employeeRouteId,
-                meterReading = meterReading,
-                abnormalConsumption = abnormalConsumption,
-                observations = observations,
-                readingFormDataId = readingFormDataId,
-                date = date,
-            )
-            Result.Success(Unit)
-        }
-    )
+    ): Result<Unit> {
+        readingFormDataDao.saveNewReadingFormData(
+            employeeRouteId = employeeRouteId,
+            meterReading = meterReading,
+            abnormalConsumption = abnormalConsumption,
+            observations = observations,
+            readingFormDataId = readingFormDataId,
+            date = date,
+        )
+        return Result.Success(Unit)
+    }
 
     override suspend fun updateReadingFormDataIsSynced(
         employeeRouteId: Int,

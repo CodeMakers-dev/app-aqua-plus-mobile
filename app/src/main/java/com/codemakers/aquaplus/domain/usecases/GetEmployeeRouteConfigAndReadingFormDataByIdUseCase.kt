@@ -17,12 +17,8 @@ class GetEmployeeRouteConfigAndReadingFormDataByIdUseCase(
         empresaId: Int
     ): Flow<Result<Pair<EmployeeRouteConfig?, ReadingFormData?>>> = flow {
         try {
-            val employeeRouteConfig =
-                employeeRouteRepository.getEmployeeRouteConfigByIdFlow(empresaId = empresaId)
-                    .first()
-            val readingFormData =
-                employeeRouteRepository.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId = employeeRouteId)
-                    .first()
+            val employeeRouteConfig = employeeRouteRepository.getEmployeeRouteConfigByIdFlow(empresaId = empresaId)
+            val readingFormData = employeeRouteRepository.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId = employeeRouteId)
             emit(Result.Success(employeeRouteConfig to readingFormData))
         } catch (e: Exception) {
             emit(Result.Exception(e))

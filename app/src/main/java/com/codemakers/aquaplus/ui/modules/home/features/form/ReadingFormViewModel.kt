@@ -8,7 +8,6 @@ import com.codemakers.aquaplus.domain.usecases.GetEmployeeRouteByIdUseCase
 import com.codemakers.aquaplus.domain.usecases.GetReadingFormDataByEmployeeRouteId
 import com.codemakers.aquaplus.domain.usecases.SaveInvoiceUseCase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -29,14 +28,9 @@ class ReadingFormViewModel(
     )
 
     private val _state = MutableStateFlow(initialState)
-    private var loadDataJob: Job? = null
-    private var saveDataJob: Job? = null
-    
     val state = _state.stateIn(
         viewModelScope, SharingStarted.Lazily, initialState
     )
-
-    private var isInitialized = false
 
     init {
         loadDataFromId(state.value.employeeRouteId)
@@ -69,9 +63,7 @@ class ReadingFormViewModel(
     }
 
     fun onSave() {
-        saveDataJob?.cancel()
-        
-        saveDataJob = viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             
             try {
@@ -147,12 +139,7 @@ class ReadingFormViewModel(
     //Validations
 
     private fun loadDataFromId(employeeRouteId: Int) {
-        if (isInitialized) return
-        isInitialized = true
-        
-        loadDataJob?.cancel()
-        
-        loadDataJob = viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             
             try {
@@ -234,11 +221,5 @@ class ReadingFormViewModel(
                 }
             }
         }
-    }
-    
-    override fun onCleared() {
-        super.onCleared()
-        loadDataJob?.cancel()
-        saveDataJob?.cancel()
     }
 }

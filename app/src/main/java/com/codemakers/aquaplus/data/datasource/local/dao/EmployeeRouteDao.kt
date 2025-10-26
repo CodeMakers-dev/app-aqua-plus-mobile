@@ -45,11 +45,11 @@ class EmployeeRouteDao(
         }
     }
 
-    suspend fun getEmployeeRouteByIdFlow(id: Int): Flow<SingleQueryChange<RealmEmployeeRoute>> {
+    suspend fun getEmployeeRouteByIdFlow(id: Int): RealmEmployeeRoute? {
         return withContext(Dispatchers.IO) {
             realm.query<RealmEmployeeRoute>("id == $0", id)
                 .first()
-                .asFlow()
+                .find()
         }
     }
 
@@ -61,11 +61,11 @@ class EmployeeRouteDao(
         }
     }
 
-    suspend fun getEmployeeRouteConfigByIdFlow(empresaId: Int): Flow<SingleQueryChange<RealmEmployeeRouteConfig>> {
+    suspend fun getEmployeeRouteConfigByIdFlow(empresaId: Int):RealmEmployeeRouteConfig? {
         return withContext(Dispatchers.IO) {
             realm.query<RealmEmployeeRouteConfig>("id == $0", empresaId)
                 .first()
-                .asFlow()
+                .find()
         }
     }
 

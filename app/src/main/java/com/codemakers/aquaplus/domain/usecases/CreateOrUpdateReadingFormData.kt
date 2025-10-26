@@ -28,8 +28,6 @@ class CreateOrUpdateReadingFormData(
             date = date,
         )
         val result = employeeRouteRepository.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId)
-        result.collect {
-            emit(Result.Success(it))
-        }
+        emit(Result.Success(result))
     }
 }

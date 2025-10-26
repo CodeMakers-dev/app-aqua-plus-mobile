@@ -8,7 +8,6 @@ import com.codemakers.aquaplus.domain.usecases.GetAllReadingFormDataUseCase
 import com.codemakers.aquaplus.domain.usecases.LoadAllEmployeeRouteUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
@@ -27,8 +26,6 @@ class RouteViewModel(
 
     private val _state = MutableStateFlow(initialState)
     private val _searchQuery = MutableStateFlow("")
-    private var searchJob: Job? = null
-    private var loadRoutesJob: Job? = null
 
     val state = _state.stateIn(
         viewModelScope, SharingStarted.Lazily, initialState
@@ -55,10 +52,7 @@ class RouteViewModel(
     //Actions
 
     fun loadAllRoutes() {
-        // Cancel previous job if still running
-        loadRoutesJob?.cancel()
-
-        loadRoutesJob = viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             loadAllEmployeeRouteUseCase().collect { result ->
                 when (result) {
@@ -187,11 +181,5 @@ class RouteViewModel(
                 }
             }
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        searchJob?.cancel()
-        loadRoutesJob?.cancel()
     }
 }
