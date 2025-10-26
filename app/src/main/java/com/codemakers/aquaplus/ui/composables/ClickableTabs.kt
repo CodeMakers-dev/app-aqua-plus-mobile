@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,7 +40,7 @@ fun ClickableTabs(
     tabsList: List<String>,
     onClick: (Int) -> Unit
 ) {
-    val selectedItemIndex = remember { mutableStateOf(selectedItem) }
+    val selectedItemIndex = remember { mutableIntStateOf(selectedItem) }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -61,7 +62,7 @@ fun ClickableTabs(
                 TabItem(
                     isSelected = index == selectedItemIndex.value,
                     text = s,
-                    Modifier.weight(0.5f)
+                    modifier = Modifier.weight(0.5f)
                 ) {
                     selectedItemIndex.value = index
                     onClick.invoke(selectedItemIndex.value)

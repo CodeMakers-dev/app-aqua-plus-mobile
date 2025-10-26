@@ -191,90 +191,86 @@ class EmployeeRouteDao(
         data: EmployeeRouteConfigDto,
     ) {
         realm.write {
+            val empresaData = RealmEmpresa().apply {
+                id = data.config?.empresa?.id
+                nit = data.config?.empresa?.nit
+                codigo = data.config?.empresa?.codigo
+                nombre = data.config?.empresa?.nombre
+                activo = data.config?.empresa?.activo
+                direccion = RealmDireccion().apply {
+                    ciudad = data.config?.empresa?.direccion?.ciudad
+                    descripcion = data.config?.empresa?.direccion?.descripcion
+                    departamento = data.config?.empresa?.direccion?.departamento
+                    corregimiento = data.config?.empresa?.direccion?.corregimiento
+                }
+                logoEmpresa = RealmGenericEmpresa().apply {
+                    nombre = data.config?.empresa?.logoEmpresa?.nombre
+                    imagen = data.config?.empresa?.logoEmpresa?.imagen
+                }
+                puntosPago = realmListOf<RealmGenericEmpresa>().apply {
+                    val data = data.config?.empresa?.puntosPago?.map {
+                        RealmGenericEmpresa().apply {
+                            nombre = it.nombre
+                            imagen = it.imagen
+                        }
+                    }
+                    addAll(data.orEmpty())
+                }
+                codigoQr = RealmGenericEmpresa().apply {
+                    nombre = data.config?.empresa?.codigoQr?.nombre
+                    imagen = data.config?.empresa?.codigoQr?.imagen
+                }
+                correoEmpresa = data.config?.empresa?.correoEmpresa
+                telefonoEmpresa = data.config?.empresa?.telefonoEmpresa
+                piePagina = data.config?.empresa?.piePagina
+                avisoFactura = data.config?.empresa?.avisoFactura
+            }
+            val tarifasEmpresaData = realmListOf<RealmTarifaEmpresa>().apply {
+                val data = data.config?.tarifasEmpresa?.map { tarifasEmpresa ->
+                        RealmTarifaEmpresa().apply {
+                            id = tarifasEmpresa.id
+                            empresa = tarifasEmpresa.empresa
+                            tipoTarifa = RealmTipoTarifa().apply {
+                                id = tarifasEmpresa.tipoTarifa?.id
+                                codigo = tarifasEmpresa.tipoTarifa?.codigo
+                                nombre = tarifasEmpresa.tipoTarifa?.nombre
+                                descripcion = tarifasEmpresa.tipoTarifa?.descripcion
+                            }
+                            conceptos = realmListOf<RealmConcepto>().apply {
+                                val data = tarifasEmpresa.conceptos?.map { concepto ->
+                                    RealmConcepto().apply {
+                                        id = concepto.id
+                                        valor = concepto.valor
+                                        indCalcularMc = concepto.indCalcularMc
+                                        tipoConcepto = RealmTipoConcepto().apply {
+                                            id = concepto.tipoConcepto?.id
+                                            codigo = concepto.tipoConcepto?.codigo
+                                            descripcion = concepto.tipoConcepto?.descripcion
+                                        }
+                                        valoresEstrato = realmListOf<RealmValorEstrato>().apply {
+                                                val data =
+                                                    concepto.valoresEstrato?.map { valorEstrato ->
+                                                        RealmValorEstrato().apply {
+                                                            id = valorEstrato.id
+                                                            valor = valorEstrato.valor
+                                                            estrato = valorEstrato.estrato
+                                                        }
+                                                    }
+                                                addAll(data.orEmpty())
+                                            }
+                                    }
+                                }
+                                addAll(data.orEmpty())
+                            }
+                        }
+                }
+                addAll(data.orEmpty())
+            }
             val employeeRouteConfig = RealmEmployeeRouteConfig().apply {
                 id = data.config?.empresa?.id ?: 0
                 config = RealmConfig().apply {
-                    empresa = RealmEmpresa().apply {
-                        id = data.config?.empresa?.id
-                        nit = data.config?.empresa?.nit
-                        codigo = data.config?.empresa?.codigo
-                        nombre = data.config?.empresa?.nombre
-                        activo = data.config?.empresa?.activo
-                        direccion = RealmDireccion().apply {
-                            ciudad = data.config?.empresa?.direccion?.ciudad
-                            descripcion = data.config?.empresa?.direccion?.descripcion
-                            departamento = data.config?.empresa?.direccion?.departamento
-                            corregimiento = data.config?.empresa?.direccion?.corregimiento
-                        }
-                        logoEmpresa = RealmGenericEmpresa().apply {
-                            nombre = data.config?.empresa?.logoEmpresa?.nombre
-                            imagen = data.config?.empresa?.logoEmpresa?.imagen
-                        }
-                        puntosPago = realmListOf<RealmGenericEmpresa>().apply {
-                            data.config?.empresa?.puntosPago?.forEach {
-                                add(
-                                    RealmGenericEmpresa().apply {
-                                        nombre = it.nombre
-                                        imagen = it.imagen
-                                    }
-                                )
-                            }
-                        }
-                        codigoQr = RealmGenericEmpresa().apply {
-                            nombre = data.config?.empresa?.codigoQr?.nombre
-                            imagen = data.config?.empresa?.codigoQr?.imagen
-                        }
-                        correoEmpresa = data.config?.empresa?.correoEmpresa
-                        telefonoEmpresa = data.config?.empresa?.telefonoEmpresa
-                        piePagina = data.config?.empresa?.piePagina
-                        avisoFactura = data.config?.empresa?.avisoFactura
-                    }
-                    tarifasEmpresa = realmListOf<RealmTarifaEmpresa>().apply {
-                        data.config?.tarifasEmpresa?.forEach {
-                            add(
-                                RealmTarifaEmpresa().apply {
-                                    id = it.id
-                                    empresa = it.empresa
-                                    tipoTarifa = RealmTipoTarifa().apply {
-                                        id = it.tipoTarifa?.id
-                                        codigo = it.tipoTarifa?.codigo
-                                        nombre = it.tipoTarifa?.nombre
-                                        descripcion = it.tipoTarifa?.descripcion
-                                    }
-                                    conceptos = realmListOf<RealmConcepto>().apply {
-                                        it.conceptos?.forEach { concepto ->
-                                            add(
-                                                RealmConcepto().apply {
-                                                    id = concepto.id
-                                                    valor = concepto.valor
-                                                    indCalcularMc = concepto.indCalcularMc
-                                                    tipoConcepto = RealmTipoConcepto().apply {
-                                                        id = concepto.tipoConcepto?.id
-                                                        codigo = concepto.tipoConcepto?.codigo
-                                                        descripcion =
-                                                            concepto.tipoConcepto?.descripcion
-                                                    }
-                                                    valoresEstrato =
-                                                        realmListOf<RealmValorEstrato>().apply {
-                                                            concepto.valoresEstrato?.forEach { valorEstrato ->
-                                                                add(
-                                                                    RealmValorEstrato().apply {
-                                                                        id = valorEstrato.id
-                                                                        valor = valorEstrato.valor
-                                                                        estrato =
-                                                                            valorEstrato.estrato
-                                                                    }
-                                                                )
-                                                            }
-                                                        }
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    }
+                    empresa = empresaData
+                    tarifasEmpresa = tarifasEmpresaData
                 }
             }
             copyToRealm(employeeRouteConfig, updatePolicy = UpdatePolicy.ALL)
