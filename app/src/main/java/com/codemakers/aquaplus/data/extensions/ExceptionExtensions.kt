@@ -18,6 +18,6 @@ fun Exception.handleExceptionMapper(mapper: ExceptionMapper): ErrorDomain =
     ?: mapper.getGenericError(this)
 
 fun Exception.toCommonError(): ErrorDomain? = when (this) {
-    is IOException -> ConnectError
+    is IOException -> ConnectError(message = this.message ?: this.cause?.message)
     else -> null
 }

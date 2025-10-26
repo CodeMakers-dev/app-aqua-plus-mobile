@@ -25,9 +25,9 @@ abstract class BaseRepository : KoinComponent {
         if (networkProvider.isAvailable()) {
             action()
         } else {
-            val error = ConnectError
+            val error = ConnectError()
             errorHandler(ConnectException(), error)
-            Result.Error(ConnectError)
+            Result.Error(error)
         }
     } catch (e: Exception) {
         e.printStackTrace()
