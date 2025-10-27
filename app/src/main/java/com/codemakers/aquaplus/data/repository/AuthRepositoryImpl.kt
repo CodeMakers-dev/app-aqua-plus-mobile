@@ -20,12 +20,14 @@ class AuthRepositoryImpl(
         password: String
     ): Result<LoginSession> = handlerErrorMapper(
         errorHandler = { _, _ ->
+            preferencesRepository.remove(REFRESH_TOKEN)
             preferencesRepository.remove(TOKEN)
             preferencesRepository.remove(USER)
         },
         action = {
             val response = authApi.login(LoginRequestDto(username, password))
             preferencesRepository.setString(TOKEN, response.response.token)
+            preferencesRepository.setString(REFRESH_TOKEN, response.response.refreshToken)
             Result.Success(response.response.toDomain())
         }
     )

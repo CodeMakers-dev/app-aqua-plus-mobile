@@ -9,6 +9,7 @@ data class LoginSessionDto(
     @SerializedName("id") val id: Int,
     @SerializedName("nombre") val username: String,
     @SerializedName("token") val token: String,
+    @SerializedName("refreshToken") val refreshToken: String,
     @SerializedName("rolId") val roleId: Int,
     @SerializedName("personaId") val personId: Int
 )
