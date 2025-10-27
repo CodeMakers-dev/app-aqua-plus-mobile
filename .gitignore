@@ -67,3 +67,5 @@ DataAccessLayer/
 /.idea/libraries
 /.gradle
 /.idea
+/.gradle/
+local.properties
