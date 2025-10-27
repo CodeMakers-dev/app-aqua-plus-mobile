@@ -10,10 +10,10 @@ val LocalDate.isAfterToday: Boolean
                 (this.year == today.year && this.monthValue == today.monthValue && this.dayOfMonth != today.dayOfMonth)
     }
 
-val LocalDate.isAfterToday2: Boolean
+val LocalDate.isToday: Boolean
     get() {
         val today = LocalDate.now()
-        return this.year != today.year ||
-                (this.year == today.year && this.monthValue != today.monthValue) ||
-                (this.year == today.year && this.monthValue == today.monthValue && this.dayOfMonth != today.dayOfMonth)
+        return this.year == today.year
+                && this.monthValue == today.monthValue
+                && this.dayOfMonth == today.dayOfMonth
     }

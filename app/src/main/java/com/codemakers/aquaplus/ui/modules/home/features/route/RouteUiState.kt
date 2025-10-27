@@ -3,6 +3,7 @@ package com.codemakers.aquaplus.ui.modules.home.features.route
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.ReadingFormData
 import com.codemakers.aquaplus.ui.extensions.isAfterToday
+import com.codemakers.aquaplus.ui.extensions.isToday
 
 data class RouteUiState(
     val isLoading: Boolean = true,
@@ -19,8 +20,8 @@ data class RouteUiState(
     fun isInvoiceAvailable(employeeRouteId: Int): Boolean =
         allData.any { it.employeeRouteId == employeeRouteId }
 
-    private fun isAfterToday(employeeRouteId: Int): Boolean =
-        allData.find { it.employeeRouteId == employeeRouteId }?.date?.isAfterToday == true
+    private fun isToday(employeeRouteId: Int): Boolean =
+        allData.find { it.employeeRouteId == employeeRouteId }?.date?.isToday == true
 
     fun isSynced(employeeRouteId: Int): Boolean =
         allData.find { it.employeeRouteId == employeeRouteId }?.isSynced ?: false
@@ -29,6 +30,9 @@ data class RouteUiState(
         get() = routes.filter { !isInvoiceAvailable(it.id) }
 
     val completedRoutes: List<EmployeeRoute>
-        get() = routes.filter { isInvoiceAvailable(it.id) && isSynced(it.id) && !isAfterToday(it.id) }
+        get() = routes.filter {
+            isInvoiceAvailable(it.id) &&
+                    (!isSynced(it.id) || !isToday(it.id))
+        }
 
 }
