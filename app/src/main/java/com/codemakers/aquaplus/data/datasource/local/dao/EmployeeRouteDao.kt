@@ -10,15 +10,20 @@ import com.codemakers.aquaplus.data.datasource.local.tables.RealmDireccion
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmployeeRoute
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmployeeRouteConfig
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmpresa
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmEstadoMedidor
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmGenericEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmHistoricoConsumo
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmParametrosEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmPersonaCliente
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoConcepto
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoTarifa
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoUso
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoUsoWrapper
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmUltimaFactura
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmUltimaLecturaHistorica
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmValorEstrato
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmValorMc
 import com.codemakers.aquaplus.data.models.response.EmployeeRouteConfigDto
 import com.codemakers.aquaplus.data.models.response.EmployeeRouteResponseDto
 import io.realm.kotlin.Realm
@@ -26,7 +31,6 @@ import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.notifications.ResultsChange
-import io.realm.kotlin.notifications.SingleQueryChange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -208,13 +212,13 @@ class EmployeeRouteDao(
                     imagen = data.config?.empresa?.logoEmpresa?.imagen
                 }
                 puntosPago = realmListOf<RealmGenericEmpresa>().apply {
-                    val data = data.config?.empresa?.puntosPago?.map {
+                    val puntosPagoList = data.config?.empresa?.puntosPago?.map {
                         RealmGenericEmpresa().apply {
                             nombre = it.nombre
                             imagen = it.imagen
                         }
                     }
-                    addAll(data.orEmpty())
+                    addAll(puntosPagoList.orEmpty())
                 }
                 codigoQr = RealmGenericEmpresa().apply {
                     nombre = data.config?.empresa?.codigoQr?.nombre
@@ -225,11 +229,59 @@ class EmployeeRouteDao(
                 piePagina = data.config?.empresa?.piePagina
                 avisoFactura = data.config?.empresa?.avisoFactura
             }
+            val tipoUsoData = data.config?.tipoUso?.let {
+                RealmTipoUsoWrapper().apply {
+                    this.data = realmListOf<RealmTipoUso>().apply {
+                        val tipoUsoList = it.data?.map { tipoUso ->
+                            RealmTipoUso().apply {
+                                id = tipoUso.id
+                                activo = tipoUso.activo
+                                codigo = tipoUso.codigo
+                                nombre = tipoUso.nombre
+                                descripcion = tipoUso.descripcion
+                            }
+                        }
+                        addAll(tipoUsoList.orEmpty())
+                    }
+                }
+            }
+            val estadosMedidorData = realmListOf<RealmEstadoMedidor>().apply {
+                val estadosData = data.config?.estadosMedidor?.map { estado ->
+                    RealmEstadoMedidor().apply {
+                        id = estado.id
+                        codigo = estado.codigo
+                        descripcion = estado.descripcion
+                    }
+                }
+                addAll(estadosData.orEmpty())
+            }
             val tarifasEmpresaData = realmListOf<RealmTarifaEmpresa>().apply {
-                val data = data.config?.tarifasEmpresa?.map { tarifasEmpresa ->
+                val tarifasList = data.config?.tarifasEmpresa?.map { tarifasEmpresa ->
                         RealmTarifaEmpresa().apply {
                             id = tarifasEmpresa.id
                             empresa = tarifasEmpresa.empresa
+                            valorMc = realmListOf<RealmValorMc>().apply {
+                                val valorMcData = tarifasEmpresa.valorMc?.map { valorMc ->
+                                    RealmValorMc().apply {
+                                        id = valorMc.id
+                                        rango = valorMc.rango
+                                        valor = valorMc.valor
+                                        codigo = valorMc.codigo
+                                        nombre = valorMc.nombre
+                                        estrato = valorMc.estrato
+                                        tipoUso = valorMc.tipoUso?.let { tipoUso ->
+                                            RealmTipoUso().apply {
+                                                id = tipoUso.id
+                                                activo = tipoUso.activo
+                                                codigo = tipoUso.codigo
+                                                nombre = tipoUso.nombre
+                                                descripcion = tipoUso.descripcion
+                                            }
+                                        }
+                                    }
+                                }
+                                addAll(valorMcData.orEmpty())
+                            }
                             tipoTarifa = RealmTipoTarifa().apply {
                                 id = tarifasEmpresa.tipoTarifa?.id
                                 codigo = tarifasEmpresa.tipoTarifa?.codigo
@@ -237,7 +289,7 @@ class EmployeeRouteDao(
                                 descripcion = tarifasEmpresa.tipoTarifa?.descripcion
                             }
                             conceptos = realmListOf<RealmConcepto>().apply {
-                                val data = tarifasEmpresa.conceptos?.map { concepto ->
+                                val conceptosList = tarifasEmpresa.conceptos?.map { concepto ->
                                     RealmConcepto().apply {
                                         id = concepto.id
                                         valor = concepto.valor
@@ -248,7 +300,7 @@ class EmployeeRouteDao(
                                             descripcion = concepto.tipoConcepto?.descripcion
                                         }
                                         valoresEstrato = realmListOf<RealmValorEstrato>().apply {
-                                                val data =
+                                            val valoresEstratoList =
                                                     concepto.valoresEstrato?.map { valorEstrato ->
                                                         RealmValorEstrato().apply {
                                                             id = valorEstrato.id
@@ -256,21 +308,35 @@ class EmployeeRouteDao(
                                                             estrato = valorEstrato.estrato
                                                         }
                                                     }
-                                                addAll(data.orEmpty())
+                                            addAll(valoresEstratoList.orEmpty())
                                             }
                                     }
                                 }
-                                addAll(data.orEmpty())
+                                addAll(conceptosList.orEmpty())
                             }
                         }
                 }
-                addAll(data.orEmpty())
+                addAll(tarifasList.orEmpty())
+            }
+            val parametrosEmpresaData = data.config?.parametrosEmpresa?.let {
+                RealmParametrosEmpresa().apply {
+                    consuBasico = it.consuBasico
+                    diasVencida = it.diasVencida
+                    periodosInm = it.periodosInm
+                    periodosVig = it.periodosVig
+                    periodosFact = it.periodosFact
+                    consuSuntuario = it.consuSuntuario
+                    consuComplementario = it.consuComplementario
+                }
             }
             val employeeRouteConfig = RealmEmployeeRouteConfig().apply {
                 id = data.config?.empresa?.id ?: 0
                 config = RealmConfig().apply {
                     empresa = empresaData
+                    tipoUso = tipoUsoData
+                    estadosMedidor = estadosMedidorData
                     tarifasEmpresa = tarifasEmpresaData
+                    parametrosEmpresa = parametrosEmpresaData
                 }
             }
             copyToRealm(employeeRouteConfig, updatePolicy = UpdatePolicy.ALL)
