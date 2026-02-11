@@ -250,7 +250,7 @@ fun ReadingFormContent(
                     )
 
                     OutlinedTextField(
-                        value = "${(state.route?.contador?.ultimaLecturaHistorica?.lectura ?: 0)} m³",
+                        value = "${(state.route?.contador?.ultimaLectura ?: 0)} m³",
                         onValueChange = onSerialChange,
                         modifier = Modifier.fillMaxWidth(),
                         enabled = false,

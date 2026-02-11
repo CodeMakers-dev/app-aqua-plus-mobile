@@ -33,7 +33,7 @@ fun BarsHistory(
     barSpacing: Dp = 24.dp
 
 ) {
-    val maxValue = max(1, data.maxOfOrNull { it.consumo } ?: 1)
+    val maxValue = max(1, data.maxOfOrNull { it.consumo ?: 0 } ?: 1)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -49,7 +49,7 @@ fun BarsHistory(
                 // Barra
                 Canvas(
                     modifier = Modifier
-                        .height((item.consumo.toFloat() / maxValue) * maxBarHeight)
+                        .height(((item.consumo ?: 0).toFloat() / maxValue) * maxBarHeight)
                         .width(barWidth)
                 ) {
                     drawLine(
@@ -62,7 +62,7 @@ fun BarsHistory(
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = item.mes.substringBefore(" "),
+                    text = item.mes?.substringBefore(" ").orEmpty(),
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center
                 )
@@ -72,7 +72,7 @@ fun BarsHistory(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = item.precio.cop(),
+                    text = item.precio?.cop().orEmpty(),
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center
                 )

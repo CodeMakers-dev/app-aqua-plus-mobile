@@ -77,9 +77,9 @@ data class StratumValueDetail(
 )
 
 data class HistoryEntry(
-    val mes: String,
-    val precio: Double,
-    val consumo: Int
+    val mes: String?,
+    val precio: Double?,
+    val consumo: Int?
 )
 
 data class Totals(
@@ -147,7 +147,7 @@ data class Invoice(
         ),
         meta = InvoiceMeta(
             issueDate = LocalDate.now(),
-            dueDate = route.diasFactura?.diasVencida?.let { LocalDate.now().plusDays(it.toLong()) }
+            dueDate = config.config?.parametrosEmpresa?.diasVencida?.toIntOrNull()?.let { LocalDate.now().plusDays(it.toLong()) }
                 ?: LocalDate.now(),
             payType = "Pendiente",
             state = "Pendiente",
@@ -158,12 +158,11 @@ data class Invoice(
             type = route.contador.nombreTipoContador,
         ),
         reading = ReadingInfo(
-            prevReading = route.contador.ultimaLecturaHistorica?.lectura ?: 0,
-            prevDate = route.contador.ultimaLecturaHistorica?.fechaLectura?.toLocalDate(),
+            prevReading = route.contador.ultimaLectura ?: 0,
+            prevDate = route.contador.historicoConsumo?.lastOrNull()?.fechaLectura?.toLocalDate(),
             currentReading = data.meterReading.toInt(),
             currentDate = data.date,
-            consumptionM3 = data.meterReading.toInt() - (route.contador.ultimaLecturaHistorica?.lectura
-                ?: 0),
+            consumptionM3 = data.meterReading.toInt() - (route.contador.ultimaLectura ?: 0),
             lastPaymentValue = route.ultimaFactura?.precio,
             lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
@@ -173,14 +172,14 @@ data class Invoice(
                     id = it.id,
                     title = it.tipoTarifa.descripcion.orEmpty(),
                     code = it.tipoTarifa.codigo,
-                    conceptos = route.contador.deudas?.map { deuda ->
+                    conceptos = route.personaCliente.deudaCliente?.map { deuda ->
                         ConceptDetail(
-                            id = deuda.id,
-                            title = deuda.descripcion,
-                            code = "",
+                            id = null,
+                            title = deuda.nombreTipoDeuda.orEmpty(),
+                            code = deuda.codigoTipoDeuda.orEmpty(),
                             indCalcularMc = false,
                             stratumValue = null,
-                            value = deuda.valor,
+                            value = deuda.nuevoSaldo,
                             consumption = null,
                         )
                     }
@@ -196,7 +195,7 @@ data class Invoice(
                             title = concept.tipoConcepto?.descripcion.orEmpty(),
                             code = concept.tipoConcepto?.codigo.orEmpty(),
                             indCalcularMc = concept.indCalcularMc,
-                            stratumValue = concept.valoresEstrato?.find { valueStratum -> valueStratum.estrato == route.personaCliente.estrato }
+                            stratumValue = concept.valoresEstrato?.find { valueStratum -> valueStratum.estrato == route.contador.estrato }
                                 ?.let { stratum ->
                                     StratumValueDetail(
                                         value = stratum.valor ?: 0.0,
@@ -204,19 +203,20 @@ data class Invoice(
                                     )
                                 },
                             value = concept.valor,
-                            consumption = data.meterReading.toInt() - (route.contador.ultimaLecturaHistorica?.lectura
-                                ?: 0),
+                            consumption = data.meterReading.toInt() - (route.contador.ultimaLectura ?: 0),
                         )
                     }
                 )
             }
         }.orEmpty(),
-        history = route.contador.historicoConsumo?.map {
-            HistoryEntry(
-                mes = it.mes,
-                precio = it.precio,
-                consumo = it.consumo,
-            )
+        history = route.contador.historicoConsumo?.mapNotNull {
+            if (it.mes != null && it.precio != null && it.consumo != null) {
+                HistoryEntry(
+                    mes = it.mes,
+                    precio = it.precio,
+                    consumo = it.consumo,
+                )
+            } else null
         }.orEmpty(),
         verificationCode = "Pendiente",
         observations = data.observations,
