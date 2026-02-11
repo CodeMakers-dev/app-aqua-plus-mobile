@@ -3,9 +3,8 @@ package com.codemakers.aquaplus.data.datasource.local.dao
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmConcepto
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmConfig
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmContador
-import com.codemakers.aquaplus.data.datasource.local.tables.RealmDeuda
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmDeudaAbonoSaldo
-import com.codemakers.aquaplus.data.datasource.local.tables.RealmDiasFactura
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmDeudaCliente
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmDireccion
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmployeeRoute
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmployeeRouteConfig
@@ -15,13 +14,13 @@ import com.codemakers.aquaplus.data.datasource.local.tables.RealmGenericEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmHistoricoConsumo
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmParametrosEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmPersonaCliente
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaContador
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoConcepto
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoTarifa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoUso
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTipoUsoWrapper
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmUltimaFactura
-import com.codemakers.aquaplus.data.datasource.local.tables.RealmUltimaLecturaHistorica
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmValorEstrato
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmValorMc
 import com.codemakers.aquaplus.data.models.response.EmployeeRouteConfigDto
@@ -98,11 +97,10 @@ class EmployeeRouteDao(
                 }
             }
 
-            val deuda = data.empresaClienteContador.contador.deudas?.map {
-                RealmDeuda().apply {
-                    id = it.id
-                    valor = it.valor
-                    descripcion = it.descripcion
+            val tarifaContadorList = data.empresaClienteContador.contador.tarifaContador?.map {
+                RealmTarifaContador().apply {
+                    aplica = it.aplica
+                    idTipoTarifa = it.idTipoTarifa
                 }
             }
 
@@ -111,43 +109,34 @@ class EmployeeRouteDao(
                     mes = it.mes
                     consumo = it.consumo
                     precio = it.precio
+                    fechaLectura = it.fechaLectura
                 }
             }
 
             val contadorData = RealmContador().apply {
                 id = data.empresaClienteContador.contador.id
+                nuid = data.empresaClienteContador.contador.nuid
                 serial = data.empresaClienteContador.contador.serial
-                deudas = realmListOf<RealmDeuda>().apply { addAll(deuda.orEmpty()) }
+                digitos = data.empresaClienteContador.contador.digitos
+                estrato = data.empresaClienteContador.contador.estrato
+                idTipoUso = data.empresaClienteContador.contador.idTipoUso
+                matricula = data.empresaClienteContador.contador.matricula
+                nombreTipoUso = data.empresaClienteContador.contador.nombreTipoUso
+                ultimaLectura = data.empresaClienteContador.contador.ultimaLectura
+                idTipoContador = data.empresaClienteContador.contador.idTipoContador
+                tarifaContador = realmListOf<RealmTarifaContador>().apply { addAll(tarifaContadorList.orEmpty()) }
                 deudaAbonoSaldo = RealmDeudaAbonoSaldo().apply {
                     deudaTotal = data.empresaClienteContador.contador.deudaAbonoSaldo.deudaTotal
                     moraActual = data.empresaClienteContador.contador.deudaAbonoSaldo.moraActual
                     abonosTotal = data.empresaClienteContador.contador.deudaAbonoSaldo.abonosTotal
                 }
+                promedioConsumo = data.empresaClienteContador.contador.promedioConsumo
                 fechaInstalacion = data.empresaClienteContador.contador.fechaInstalacion
-                historicoConsumo =
-                    realmListOf<RealmHistoricoConsumo>().apply { addAll(consumo.orEmpty()) }
-                idTipoContador = data.empresaClienteContador.contador.idTipoContador
+                historicoConsumo = realmListOf<RealmHistoricoConsumo>().apply { addAll(consumo.orEmpty()) }
+                idEstadoContador = data.empresaClienteContador.contador.idEstadoContador
+                lecturaProyectada = data.empresaClienteContador.contador.lecturaProyectada
                 nombreTipoContador = data.empresaClienteContador.contador.nombreTipoContador
-                ultimaLecturaHistorica = RealmUltimaLecturaHistorica().apply {
-                    id = data.empresaClienteContador.contador.ultimaLecturaHistorica?.id ?: 0
-                    lectura =
-                        data.empresaClienteContador.contador.ultimaLecturaHistorica?.lectura ?: 0
-                    fechaLectura =
-                        data.empresaClienteContador.contador.ultimaLecturaHistorica?.fechaLectura
-                            ?: ""
-                    idEccAsociado =
-                        data.empresaClienteContador.contador.ultimaLecturaHistorica?.idEccAsociado
-                            ?: 0
-                    usuarioCreacion =
-                        data.empresaClienteContador.contador.ultimaLecturaHistorica?.usuarioCreacion
-                            ?: ""
-                    personaCreacionNombre =
-                        data.empresaClienteContador.contador.ultimaLecturaHistorica?.personaCreacionNombre
-                            ?: ""
-                    idPersonaClienteAsociada =
-                        data.empresaClienteContador.contador.ultimaLecturaHistorica?.idPersonaClienteAsociada
-                            ?: 0
-                }
+                nombreEstadoContador = data.empresaClienteContador.contador.nombreEstadoContador
             }
 
             val direccionData = RealmDireccion().apply {
@@ -157,10 +146,26 @@ class EmployeeRouteDao(
                 corregimiento = data.empresaClienteContador.personaCliente.direccion.corregimiento
             }
 
+            val deudaClienteList = data.empresaClienteContador.personaCliente.deudaCliente?.map {
+                RealmDeudaCliente().apply {
+                    nuevoSaldo = it.nuevoSaldo
+                    valorCuota = it.valorCuota
+                    idTipoDeuda = it.idTipoDeuda
+                    numeroCuotas = it.numeroCuotas
+                    codigoTipoDeuda = it.codigoTipoDeuda
+                    nombreTipoDeuda = it.nombreTipoDeuda
+                    abonosRealizados = it.abonosRealizados
+                    cuotasCanceladas = it.cuotasCanceladas
+                    cuotasPendientes = it.cuotasPendientes
+                }
+            }
+
             val personaClienteData = RealmPersonaCliente().apply {
                 id = data.empresaClienteContador.personaCliente.id
                 codigo = data.empresaClienteContador.personaCliente.codigo
                 direccion = direccionData
+                deudaCliente = realmListOf<RealmDeudaCliente>().apply { addAll(deudaClienteList.orEmpty()) }
+                discapacidad = data.empresaClienteContador.personaCliente.discapacidad
                 numeroCedula = data.empresaClienteContador.personaCliente.numeroCedula
                 primerNombre = data.empresaClienteContador.personaCliente.primerNombre
                 segundoNombre = data.empresaClienteContador.personaCliente.segundoNombre
@@ -168,19 +173,16 @@ class EmployeeRouteDao(
                 segundoApellido = data.empresaClienteContador.personaCliente.segundoApellido
             }
 
-            val diasFacturaData = RealmDiasFactura().apply {
-                diasVencida = data.empresaClienteContador.diasFactura?.diasVencida
-            }
-
             val ultimaFacturaData = RealmUltimaFactura().apply {
                 fecha = data.empresaClienteContador.ultimaFactura?.fecha
+                codigo = data.empresaClienteContador.ultimaFactura?.codigo
                 precio = data.empresaClienteContador.ultimaFactura?.precio
+                lectura = data.empresaClienteContador.ultimaFactura?.lectura
             }
 
             val employeeRoute = RealmEmployeeRoute().apply {
                 id = data.empresaClienteContador.id
                 codFactura = data.empresaClienteContador.codFactura
-                diasFactura = diasFacturaData
                 empresa = empresaData
                 contador = contadorData
                 personaCliente = personaClienteData

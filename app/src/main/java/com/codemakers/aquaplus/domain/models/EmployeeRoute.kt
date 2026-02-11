@@ -8,7 +8,6 @@ data class EmployeeRoute(
     val empresa: Empresa,
     val contador: Contador,
     val codFactura: String,
-    val diasFactura: DiasFactura?,
     val ultimaFactura: UltimaFactura?,
     val personaCliente: PersonaCliente
 )
@@ -16,13 +15,11 @@ data class EmployeeRoute(
 @Serializable
 data class UltimaFactura(
     val fecha: String?,
+    val codigo: String?,
     val precio: Double?,
+    val lectura: Int?
 )
 
-@Serializable
-data class DiasFactura(
-    val diasVencida: Int?,
-)
 
 @Serializable
 data class Empresa(
@@ -44,25 +41,43 @@ data class Empresa(
 @Serializable
 data class Contador(
     val id: Int,
-    val deudas: List<Deuda>?,
+    val nuid: Long?,
     val serial: String,
+    val digitos: Int?,
+    val estrato: Int?,
+    val idTipoUso: Int?,
+    val matricula: String?,
+    val nombreTipoUso: String?,
+    val ultimaLectura: Int?,
     val idTipoContador: Int,
+    val tarifaContador: List<TarifaContador>?,
     val deudaAbonoSaldo: DeudaAbonoSaldo,
+    val promedioConsumo: Double?,
     val fechaInstalacion: String?,
     val historicoConsumo: List<HistoricoConsumo>?,
+    val idEstadoContador: Int?,
+    val lecturaProyectada: Double?,
     val nombreTipoContador: String,
-    val ultimaLecturaHistorica: UltimaLecturaHistorica?
+    val nombreEstadoContador: String?
 )
 
 @Serializable
-data class Deuda(
-    val id: Int,
-    val valor: Double,
-    val idFactura: Int,
-    val descripcion: String,
-    val fechaDeuda: String,
-    val idPlazoPago: Int?,
-    val idTipoDeuda: Int
+data class TarifaContador(
+    val aplica: Boolean?,
+    val idTipoTarifa: Int?
+)
+
+@Serializable
+data class DeudaCliente(
+    val nuevoSaldo: Double?,
+    val valorCuota: Double?,
+    val idTipoDeuda: Int?,
+    val numeroCuotas: Int?,
+    val codigoTipoDeuda: String?,
+    val nombreTipoDeuda: String?,
+    val abonosRealizados: Int?,
+    val cuotasCanceladas: Int?,
+    val cuotasPendientes: Int?
 )
 
 @Serializable
@@ -74,28 +89,20 @@ data class DeudaAbonoSaldo(
 
 @Serializable
 data class HistoricoConsumo(
-    val mes: String,
-    val consumo: Int,
-    val precio: Double,
+    val mes: String?,
+    val consumo: Int?,
+    val precio: Double?,
+    val fechaLectura: String?
 )
 
-@Serializable
-data class UltimaLecturaHistorica(
-    val id: Int,
-    val lectura: Int,
-    val fechaLectura: String,
-    val idEccAsociado: Int,
-    val usuarioCreacion: String,
-    val personaCreacionNombre: String,
-    val idPersonaClienteAsociada: Int
-)
 
 @Serializable
 data class PersonaCliente(
     val id: Int,
     val codigo: String?,
-    val estrato: Int?,
     val direccion: Direccion,
+    val deudaCliente: List<DeudaCliente>?,
+    val discapacidad: Boolean?,
     val numeroCedula: String,
     val primerNombre: String,
     val segundoNombre: String?,

@@ -1,16 +1,15 @@
 package com.codemakers.aquaplus.data.models.response
 
 import com.codemakers.aquaplus.domain.models.Contador
-import com.codemakers.aquaplus.domain.models.Deuda
 import com.codemakers.aquaplus.domain.models.DeudaAbonoSaldo
-import com.codemakers.aquaplus.domain.models.DiasFactura
+import com.codemakers.aquaplus.domain.models.DeudaCliente
 import com.codemakers.aquaplus.domain.models.Direccion
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.Empresa
 import com.codemakers.aquaplus.domain.models.HistoricoConsumo
 import com.codemakers.aquaplus.domain.models.PersonaCliente
+import com.codemakers.aquaplus.domain.models.TarifaContador
 import com.codemakers.aquaplus.domain.models.UltimaFactura
-import com.codemakers.aquaplus.domain.models.UltimaLecturaHistorica
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -29,7 +28,6 @@ data class EmpresaClienteContadorDto(
     val empresa: EmpresaDto,
     val contador: ContadorDto,
     val codFactura: String,
-    val diasFactura: DiasFacturaDto?,
     val ultimaFactura: UltimaFacturaDto?,
     val personaCliente: PersonaClienteDto,
 )
@@ -37,13 +35,11 @@ data class EmpresaClienteContadorDto(
 @Serializable
 data class UltimaFacturaDto(
     val fecha: String?,
+    val codigo: String?,
     val precio: Double?,
+    val lectura: Int?
 )
 
-@Serializable
-data class DiasFacturaDto(
-    val diasVencida: Int?,
-)
 
 @Serializable
 data class EmpresaDto(
@@ -65,25 +61,43 @@ data class EmpresaDto(
 @Serializable
 data class ContadorDto(
     val id: Int,
-    val deudas: List<DeudaDto>?,
+    val nuid: Long?,
     val serial: String,
+    val digitos: Int?,
+    val estrato: Int?,
+    val idTipoUso: Int?,
+    val matricula: String?,
+    val nombreTipoUso: String?,
+    val ultimaLectura: Int?,
     val idTipoContador: Int,
+    val tarifaContador: List<TarifaContadorDto>?,
     val deudaAbonoSaldo: DeudaAbonoSaldoDto,
+    val promedioConsumo: Double?,
     val fechaInstalacion: String?,
     val historicoConsumo: List<HistoricoConsumoDto>?,
+    val idEstadoContador: Int?,
+    val lecturaProyectada: Double?,
     val nombreTipoContador: String,
-    val ultimaLecturaHistorica: UltimaLecturaHistoricaDto?
+    val nombreEstadoContador: String?
 )
 
 @Serializable
-data class DeudaDto(
-    val id: Int,
-    val valor: Double,
-    val idFactura: Int,
-    val descripcion: String,
-    val fechaDeuda: String,
-    val idPlazoPago: Int?,
-    val idTipoDeuda: Int
+data class TarifaContadorDto(
+    val aplica: Boolean?,
+    val idTipoTarifa: Int?
+)
+
+@Serializable
+data class DeudaClienteDto(
+    val nuevoSaldo: Double?,
+    val valorCuota: Double?,
+    val idTipoDeuda: Int?,
+    val numeroCuotas: Int?,
+    val codigoTipoDeuda: String?,
+    val nombreTipoDeuda: String?,
+    val abonosRealizados: Int?,
+    val cuotasCanceladas: Int?,
+    val cuotasPendientes: Int?
 )
 
 @Serializable
@@ -95,28 +109,20 @@ data class DeudaAbonoSaldoDto(
 
 @Serializable
 data class HistoricoConsumoDto(
-    val mes: String,
-    val consumo: Int,
-    val precio: Double
+    val mes: String?,
+    val consumo: Int?,
+    val precio: Double?,
+    val fechaLectura: String?
 )
 
-@Serializable
-data class UltimaLecturaHistoricaDto(
-    val id: Int,
-    val lectura: Int,
-    val fechaLectura: String,
-    val idEccAsociado: Int,
-    val usuarioCreacion: String,
-    val personaCreacionNombre: String,
-    val idPersonaClienteAsociada: Int
-)
 
 @Serializable
 data class PersonaClienteDto(
     val id: Int,
     val codigo: String?,
-    val estrato: Int,
     val direccion: DireccionDto,
+    val deudaCliente: List<DeudaClienteDto>?,
+    val discapacidad: Boolean?,
     val numeroCedula: String,
     val primerNombre: String,
     val segundoNombre: String?,
@@ -145,19 +151,17 @@ fun EmpresaClienteContadorDto.toDomain(): EmployeeRoute =
         empresa = empresa.toDomain(),
         contador = contador.toDomain(),
         codFactura = codFactura,
-        diasFactura = diasFactura?.toDomain(),
         ultimaFactura = ultimaFactura?.toDomain(),
         personaCliente = personaCliente.toDomain(),
     )
 
 fun UltimaFacturaDto.toDomain(): UltimaFactura = UltimaFactura(
     fecha = fecha,
+    codigo = codigo,
     precio = precio,
+    lectura = lectura
 )
 
-fun DiasFacturaDto.toDomain(): DiasFactura = DiasFactura(
-    diasVencida = diasVencida,
-)
 
 fun EmpresaDto.toDomain(): Empresa = Empresa(
     id = id,
@@ -177,24 +181,41 @@ fun EmpresaDto.toDomain(): Empresa = Empresa(
 
 fun ContadorDto.toDomain(): Contador = Contador(
     id = id,
-    deudas = deudas?.map { it.toDomain() },
+    nuid = nuid,
     serial = serial,
+    digitos = digitos,
+    estrato = estrato,
+    idTipoUso = idTipoUso,
+    matricula = matricula,
+    nombreTipoUso = nombreTipoUso,
+    ultimaLectura = ultimaLectura,
     idTipoContador = idTipoContador,
+    tarifaContador = tarifaContador?.map { it.toDomain() },
     deudaAbonoSaldo = deudaAbonoSaldo.toDomain(),
+    promedioConsumo = promedioConsumo,
     fechaInstalacion = fechaInstalacion,
     historicoConsumo = historicoConsumo?.map { it.toDomain() },
+    idEstadoContador = idEstadoContador,
+    lecturaProyectada = lecturaProyectada,
     nombreTipoContador = nombreTipoContador,
-    ultimaLecturaHistorica = ultimaLecturaHistorica?.toDomain(),
+    nombreEstadoContador = nombreEstadoContador
 )
 
-fun DeudaDto.toDomain(): Deuda = Deuda(
-    id = id,
-    valor = valor,
-    idFactura = idFactura,
-    descripcion = descripcion,
-    fechaDeuda = fechaDeuda,
-    idPlazoPago = idPlazoPago,
+fun TarifaContadorDto.toDomain(): TarifaContador = TarifaContador(
+    aplica = aplica,
+    idTipoTarifa = idTipoTarifa
+)
+
+fun DeudaClienteDto.toDomain(): DeudaCliente = DeudaCliente(
+    nuevoSaldo = nuevoSaldo,
+    valorCuota = valorCuota,
     idTipoDeuda = idTipoDeuda,
+    numeroCuotas = numeroCuotas,
+    codigoTipoDeuda = codigoTipoDeuda,
+    nombreTipoDeuda = nombreTipoDeuda,
+    abonosRealizados = abonosRealizados,
+    cuotasCanceladas = cuotasCanceladas,
+    cuotasPendientes = cuotasPendientes
 )
 
 fun DeudaAbonoSaldoDto.toDomain(): DeudaAbonoSaldo = DeudaAbonoSaldo(
@@ -206,24 +227,17 @@ fun DeudaAbonoSaldoDto.toDomain(): DeudaAbonoSaldo = DeudaAbonoSaldo(
 fun HistoricoConsumoDto.toDomain(): HistoricoConsumo = HistoricoConsumo(
     mes = mes,
     consumo = consumo,
-    precio = precio
+    precio = precio,
+    fechaLectura = fechaLectura
 )
 
-fun UltimaLecturaHistoricaDto.toDomain(): UltimaLecturaHistorica = UltimaLecturaHistorica(
-    id = id,
-    lectura = lectura,
-    fechaLectura = fechaLectura,
-    idEccAsociado = idEccAsociado,
-    usuarioCreacion = usuarioCreacion,
-    personaCreacionNombre = personaCreacionNombre,
-    idPersonaClienteAsociada = idPersonaClienteAsociada,
-)
 
 fun PersonaClienteDto.toDomain(): PersonaCliente = PersonaCliente(
     id = id,
     codigo = codigo,
-    estrato = estrato,
     direccion = direccion.toDomain(),
+    deudaCliente = deudaCliente?.map { it.toDomain() },
+    discapacidad = discapacidad,
     numeroCedula = numeroCedula,
     primerNombre = primerNombre,
     segundoNombre = segundoNombre,
