@@ -31,8 +31,9 @@ data class RouteUiState(
 
     val completedRoutes: List<EmployeeRoute>
         get() = routes.filter {
-            isInvoiceAvailable(it.id) &&
-                    (!isSynced(it.id) || !isToday(it.id))
+            isInvoiceAvailable(it.id)
+                    && isSynced(it.id)
+                    && isToday(it.id)
         }
 
 }

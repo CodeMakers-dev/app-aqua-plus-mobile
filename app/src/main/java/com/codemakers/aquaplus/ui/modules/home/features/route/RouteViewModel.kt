@@ -101,7 +101,7 @@ class RouteViewModel(
                         route.personaCliente.primerApellido.lowercase()
                             .contains(search.lowercase()) ||
                         route.personaCliente.numeroCedula.contains(search) ||
-                        route.contador.serial.lowercase().contains(search.lowercase())
+                        route.contador.serial.orEmpty().lowercase().contains(search.lowercase())
             }
         } else {
             _state.value.allRoutes

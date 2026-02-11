@@ -54,14 +54,14 @@ open class RealmEmpresa : EmbeddedRealmObject {
 open class RealmContador : EmbeddedRealmObject {
     var id: Int = 0
     var nuid: Long? = null
-    var serial: String = ""
+    var serial: String? = null
     var digitos: Int? = null
     var estrato: Int? = null
     var idTipoUso: Int? = null
     var matricula: String? = null
     var nombreTipoUso: String? = null
     var ultimaLectura: Int? = null
-    var idTipoContador: Int = 0
+    var idTipoContador: Int? = null
     var tarifaContador: RealmList<RealmTarifaContador> = realmListOf()
     var deudaAbonoSaldo: RealmDeudaAbonoSaldo? = null
     var promedioConsumo: Double? = null

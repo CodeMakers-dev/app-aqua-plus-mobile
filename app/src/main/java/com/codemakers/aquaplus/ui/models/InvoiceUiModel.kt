@@ -153,7 +153,7 @@ data class Invoice(
             state = "Pendiente",
         ),
         meter = MeterInfo(
-            number = route.contador.serial,
+            number = route.contador.serial.orEmpty(),
             installDate = route.contador.fechaInstalacion?.toLocalDate(),
             type = route.contador.nombreTipoContador,
         ),
