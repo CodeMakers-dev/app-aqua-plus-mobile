@@ -27,10 +27,11 @@ class SyncDataManager(
 
     fun start() = launch {
         val hasUnsyncedData = hasUnsyncedReadingFormDataUseCase()
-        val isUserLogged = userRepository.isUserLogged()
+        // TODO: Check if user is logged
+        //val isUserLogged = userRepository.isUserLogged()
         val isWorkFinished = workState.value?.firstOrNull()?.state?.isFinished != false
 
-        if (isWorkFinished && isUserLogged && hasUnsyncedData) {
+        if (isWorkFinished /*&& isUserLogged*/ && hasUnsyncedData) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED).build()
             val syncDataWorker: OneTimeWorkRequest =

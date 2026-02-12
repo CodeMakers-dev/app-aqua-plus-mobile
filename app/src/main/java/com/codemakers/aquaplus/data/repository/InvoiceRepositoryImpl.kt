@@ -14,10 +14,12 @@ class InvoiceRepositoryImpl(
 ) : InvoiceRepository, BaseRepository() {
 
     override suspend fun sendInvoice(
-        request: List<InvoiceRequest>
+        request: List<InvoiceRequest>,
+        token: String,
     ): Result<InvoiceResponse> = handlerErrorMapper(
         action = {
             val result = invoiceApi.sendInvoice(
+                token = token,
                 body = request.map { it.toData() },
             )
             Result.Success(result.response.toDomain())

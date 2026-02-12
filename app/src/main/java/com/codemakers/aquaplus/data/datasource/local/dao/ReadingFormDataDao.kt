@@ -17,9 +17,10 @@ class ReadingFormDataDao(
 
     suspend fun getReadingFormDataByEmployeeRouteIdFlow(
         employeeRouteId: Int,
+        personId: Int,
     ): RealmReadingFormData? {
         return withContext(Dispatchers.IO) {
-            realm.query<RealmReadingFormData>("employeeRouteId = $0", employeeRouteId)
+            realm.query<RealmReadingFormData>("employeeRouteId = $0 AND personId == $1", employeeRouteId, personId)
                 .first()
                 .find()
         }
@@ -27,16 +28,17 @@ class ReadingFormDataDao(
 
     suspend fun getReadingFormDataByEmployeeRouteId(
         employeeRouteId: Int,
+        personId: Int,
     ): RealmReadingFormData? {
         return withContext(Dispatchers.IO) {
-            realm.query<RealmReadingFormData>("employeeRouteId = $0", employeeRouteId)
+            realm.query<RealmReadingFormData>("employeeRouteId = $0 AND personId == $1", employeeRouteId, personId)
                 .first().find()
         }
     }
 
-    suspend fun getAllReadingFormDataFlow(): Flow<ResultsChange<RealmReadingFormData>> {
+    suspend fun getAllReadingFormDataFlow(personId: Int): Flow<ResultsChange<RealmReadingFormData>> {
         return withContext(Dispatchers.IO) {
-            realm.query<RealmReadingFormData>().find().asFlow()
+            realm.query<RealmReadingFormData>("personId == $0", personId).find().asFlow()
         }
     }
 
@@ -48,10 +50,11 @@ class ReadingFormDataDao(
 
     suspend fun updateReadingFormDataIsSynced(
         employeeRouteId: Int,
+        personId: Int,
     ) {
         realm.write {
             val dataToUpDate =
-                query<RealmReadingFormData>("employeeRouteId = $0", employeeRouteId)
+                query<RealmReadingFormData>("employeeRouteId = $0 AND personId == $1", employeeRouteId, personId)
                     .first()
                     .find()
             if (dataToUpDate != null) {
@@ -67,11 +70,13 @@ class ReadingFormDataDao(
         observations: String,
         readingFormDataId: Long?,
         date: LocalDate,
+        personId: Int,
     ) {
         val nextId = readingFormDataId ?: getNextReadingFormDataId()
         realm.write {
             val readingFormData = RealmReadingFormData().apply {
                 this.id = nextId
+                this.personId = personId
                 this.employeeRouteId = employeeRouteId
                 this.meterReading = meterReading
                 this.abnormalConsumption = abnormalConsumption

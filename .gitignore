@@ -19,6 +19,7 @@ dist/
 
 # Package files
 *.jar
+*.properties
 
 # Maven
 target/
@@ -68,4 +69,4 @@ DataAccessLayer/
 /.gradle
 /.idea
 /.gradle/
-local.properties
+/local.properties

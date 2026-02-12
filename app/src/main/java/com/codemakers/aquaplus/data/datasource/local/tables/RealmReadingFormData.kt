@@ -11,6 +11,9 @@ open class RealmReadingFormData : RealmObject {
     var id: Long = 0
     
     @Index
+    var personId: Int = 0
+
+    @Index
     var employeeRouteId: Int = 0
     
     var meterReading: String = ""
@@ -24,6 +27,7 @@ open class RealmReadingFormData : RealmObject {
 
 fun RealmReadingFormData.toDomain(): ReadingFormData = ReadingFormData(
     id = id,
+    personId = personId,
     employeeRouteId = employeeRouteId,
     meterReading = meterReading,
     abnormalConsumption = abnormalConsumption,

@@ -7,6 +7,7 @@ import java.time.LocalDate
 @Serializable
 data class ReadingFormData(
     val id: Long,
+    val personId: Int,
     val employeeRouteId: Int,
     val meterReading: String,
     val abnormalConsumption: Boolean?,

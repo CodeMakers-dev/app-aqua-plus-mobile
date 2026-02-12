@@ -15,11 +15,14 @@ import com.codemakers.aquaplus.domain.models.ValorMc
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
+import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
 
 open class RealmEmployeeRouteConfig : RealmObject {
     @PrimaryKey
     var id: Int = 0
+    @Index
+    var personId: Int = 0
     var config: RealmConfig? = null
 }
 

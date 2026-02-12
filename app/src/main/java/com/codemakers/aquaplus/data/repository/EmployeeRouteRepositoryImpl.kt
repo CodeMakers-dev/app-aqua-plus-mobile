@@ -23,16 +23,19 @@ class EmployeeRouteRepositoryImpl(
     private val readingFormDataDao: ReadingFormDataDao,
 ) : EmployeeRouteRepository, BaseRepository() {
 
+    private suspend fun getPersonId(): Int = userRepository.getProfile()?.person?.id ?: 0
+
     override suspend fun loadAllEmployeeRouteFlow(): Result<List<EmployeeRoute>> =
         handlerErrorMapper(
             action = {
-                val userId = userRepository.getProfile()?.person?.id ?: 0
-                val employeeRouteResult = employeeRouteApi.getEmployeeRoute(userId = userId)
-                employeeRouteResult.response.data.onEach { employeeRouteDao.saveNewEmployeeRoute(it) }
+                val personId = getPersonId()
+                val apiPersonId = userRepository.getProfile()?.person?.id ?: 0
+                val employeeRouteResult = employeeRouteApi.getEmployeeRoute(userId = apiPersonId)
+                employeeRouteResult.response.data.onEach { employeeRouteDao.saveNewEmployeeRoute(it, personId = personId) }
 
                 val employeeRouteConfigResult =
-                    employeeRouteApi.getEmployeeRouteConfig(userId = userId)
-                employeeRouteDao.saveNewEmployeeRouteConfig(employeeRouteConfigResult.response)
+                    employeeRouteApi.getEmployeeRouteConfig(userId = apiPersonId)
+                employeeRouteDao.saveNewEmployeeRouteConfig(employeeRouteConfigResult.response, personId = personId)
                 Result.Success(employeeRouteResult.response.data.map { it.empresaClienteContador.toDomain() })
             }
         )
@@ -40,65 +43,85 @@ class EmployeeRouteRepositoryImpl(
     override suspend fun loadAllEmployeeRouteConfigFlow(): Result<EmployeeRouteConfig> =
         handlerErrorMapper(
             action = {
-                val userId = userRepository.getProfile()?.person?.id ?: 0
-                val result = employeeRouteApi.getEmployeeRouteConfig(userId = userId)
-                employeeRouteDao.saveNewEmployeeRouteConfig(result.response)
+                val personId = getPersonId()
+                val apiPersonId = userRepository.getProfile()?.person?.id ?: 0
+                val result = employeeRouteApi.getEmployeeRouteConfig(userId = apiPersonId)
+                employeeRouteDao.saveNewEmployeeRouteConfig(result.response, personId = personId)
                 Result.Success(result.response.toDomain())
             }
         )
 
     override suspend fun getAllEmployeeRouteFlow(): Flow<List<EmployeeRoute>> = flow {
-        employeeRouteDao.getAllEmployeeRouteFlow().collect { result ->
+        val personId = getPersonId()
+        employeeRouteDao.getAllEmployeeRouteFlow(personId = personId).collect { result ->
             val data = result.list
             emit(data.map { it.toDomain() })
         }
     }
 
     override suspend fun getAllEmployeeRouteConfigFlow(): Flow<List<EmployeeRouteConfig>> = flow {
-        employeeRouteDao.getAllEmployeeRouteConfigFlow().collect { result ->
+        val personId = getPersonId()
+        employeeRouteDao.getAllEmployeeRouteConfigFlow(personId = personId).collect { result ->
             val data = result.list
             emit(data.map { it.toDomain() })
         }
     }
 
     override suspend fun getAllReadingFormDataFlow(): Flow<List<ReadingFormData>> = flow {
-        readingFormDataDao.getAllReadingFormDataFlow().collect { result ->
+        val personId = getPersonId()
+        readingFormDataDao.getAllReadingFormDataFlow(personId = personId).collect { result ->
             val data = result.list
             emit(data.map { it.toDomain() })
         }
     }
 
-    override suspend fun getAllReadingFormDataForSync(): List<ReadingFormData> =
-        readingFormDataDao.getAllReadingFormDataForSync().map { it.toDomain() }
+    override suspend fun getAllReadingFormDataForSync(): List<ReadingFormData> {
+        return readingFormDataDao.getAllReadingFormDataForSync().map { it.toDomain() }
+    }
 
     override suspend fun getEmployeeRouteByIdFlow(
         employeeRouteId: Int,
-    ): EmployeeRoute? =
-        employeeRouteDao.getEmployeeRouteByIdFlow(id = employeeRouteId)?.toDomain()
+    ): EmployeeRoute? {
+        val personId = getPersonId()
+        return employeeRouteDao.getEmployeeRouteByIdFlow(id = employeeRouteId, personId = personId)?.toDomain()
+    }
 
     override suspend fun getEmployeeRouteById(
         employeeRouteId: Int,
-    ): EmployeeRoute? = employeeRouteDao.getEmployeeRouteById(id = employeeRouteId)?.toDomain()
+        personId: Int?,
+    ): EmployeeRoute? {
+        val resolvedPersonId = personId ?: getPersonId()
+        return employeeRouteDao.getEmployeeRouteById(id = employeeRouteId, personId = resolvedPersonId)?.toDomain()
+    }
 
     override suspend fun getEmployeeRouteConfigByIdFlow(
         empresaId: Int
-    ): EmployeeRouteConfig? =
-        employeeRouteDao.getEmployeeRouteConfigByIdFlow(empresaId = empresaId)?.toDomain()
+    ): EmployeeRouteConfig? {
+        val personId = getPersonId()
+        return employeeRouteDao.getEmployeeRouteConfigByIdFlow(empresaId = empresaId, personId = personId)?.toDomain()
+    }
 
     override suspend fun getEmployeeRouteConfigById(
-        empresaId: Int
-    ): EmployeeRouteConfig? =
-        employeeRouteDao.getEmployeeRouteConfigById(empresaId = empresaId)?.toDomain()
+        empresaId: Int,
+        personId: Int?,
+    ): EmployeeRouteConfig? {
+        val resolvedPersonId = personId ?: getPersonId()
+        return employeeRouteDao.getEmployeeRouteConfigById(empresaId = empresaId, personId = resolvedPersonId)?.toDomain()
+    }
 
     override suspend fun getReadingFormDataByEmployeeRouteIdFlow(
         employeeRouteId: Int,
-    ): ReadingFormData? =
-        readingFormDataDao.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId)?.toDomain()
+    ): ReadingFormData? {
+        val personId = getPersonId()
+        return readingFormDataDao.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId, personId = personId)?.toDomain()
+    }
 
     override suspend fun getReadingFormDataByEmployeeRouteId(
         employeeRouteId: Int,
-    ): ReadingFormData? =
-        readingFormDataDao.getReadingFormDataByEmployeeRouteId(employeeRouteId)?.toDomain()
+    ): ReadingFormData? {
+        val personId = getPersonId()
+        return readingFormDataDao.getReadingFormDataByEmployeeRouteId(employeeRouteId, personId = personId)?.toDomain()
+    }
 
     override suspend fun saveNewReadingFormData(
         employeeRouteId: Int,
@@ -108,6 +131,7 @@ class EmployeeRouteRepositoryImpl(
         readingFormDataId: Long?,
         date: LocalDate,
     ): Result<Unit> {
+        val personId = getPersonId()
         readingFormDataDao.saveNewReadingFormData(
             employeeRouteId = employeeRouteId,
             meterReading = meterReading,
@@ -115,6 +139,7 @@ class EmployeeRouteRepositoryImpl(
             observations = observations,
             readingFormDataId = readingFormDataId,
             date = date,
+            personId = personId,
         )
         return Result.Success(Unit)
     }
@@ -122,6 +147,7 @@ class EmployeeRouteRepositoryImpl(
     override suspend fun updateReadingFormDataIsSynced(
         employeeRouteId: Int,
     ) {
-        readingFormDataDao.updateReadingFormDataIsSynced(employeeRouteId = employeeRouteId)
+        val personId = getPersonId()
+        readingFormDataDao.updateReadingFormDataIsSynced(employeeRouteId = employeeRouteId, personId = personId)
     }
 }

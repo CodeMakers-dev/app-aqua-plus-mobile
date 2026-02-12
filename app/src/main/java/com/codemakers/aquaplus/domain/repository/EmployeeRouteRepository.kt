@@ -27,6 +27,7 @@ interface EmployeeRouteRepository {
 
     suspend fun getEmployeeRouteById(
         employeeRouteId: Int,
+        personId: Int? = null,
     ): EmployeeRoute?
 
     suspend fun getEmployeeRouteConfigByIdFlow(
@@ -34,7 +35,8 @@ interface EmployeeRouteRepository {
     ): EmployeeRouteConfig?
 
     suspend fun getEmployeeRouteConfigById(
-        empresaId: Int
+        empresaId: Int,
+        personId: Int? = null,
     ): EmployeeRouteConfig?
 
     suspend fun getReadingFormDataByEmployeeRouteIdFlow(

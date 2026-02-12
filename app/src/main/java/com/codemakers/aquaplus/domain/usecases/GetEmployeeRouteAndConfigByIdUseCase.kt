@@ -11,9 +11,10 @@ class GetEmployeeRouteAndConfigByIdUseCase(
 
     suspend operator fun invoke(
         employeeRouteId: Int,
+        personId: Int? = null,
     ): Result<Pair<EmployeeRoute?, EmployeeRouteConfig?>> = try {
-        val employeeRoute = employeeRouteRepository.getEmployeeRouteById(employeeRouteId = employeeRouteId)
-        val employeeRouteConfig = employeeRouteRepository.getEmployeeRouteConfigById(empresaId = employeeRoute?.empresa?.id ?: 0)
+        val employeeRoute = employeeRouteRepository.getEmployeeRouteById(employeeRouteId = employeeRouteId, personId = personId)
+        val employeeRouteConfig = employeeRouteRepository.getEmployeeRouteConfigById(empresaId = employeeRoute?.empresa?.id ?: 0, personId = personId)
         Result.Success(employeeRoute to employeeRouteConfig)
     } catch (e: Exception) {
         Result.Exception(e)

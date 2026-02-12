@@ -2,6 +2,7 @@ package com.codemakers.aquaplus.domain.usecases
 
 import com.codemakers.aquaplus.data.datasource.local.dao.InvoiceDao
 import com.codemakers.aquaplus.domain.repository.EmployeeRouteRepository
+import com.codemakers.aquaplus.domain.repository.UserRepository
 import com.codemakers.aquaplus.ui.models.Invoice
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -10,13 +11,15 @@ import kotlinx.coroutines.withContext
 class GetInvoiceDataUseCase(
     private val employeeRouteRepository: EmployeeRouteRepository,
     private val invoiceDao: InvoiceDao,
+    private val userRepository: UserRepository,
 ) {
 
     suspend operator fun invoke(
         employeeRouteId: Int,
     ): Invoice? = withContext(Dispatchers.IO) {
         // Try to get cached invoice first
-        val cachedInvoice = invoiceDao.getInvoiceByEmployeeRouteId(employeeRouteId)
+        val personId = userRepository.getProfile()?.person?.id ?: 0
+        val cachedInvoice = invoiceDao.getInvoiceByEmployeeRouteId(employeeRouteId, personId = personId)
         if (cachedInvoice != null) {
             return@withContext cachedInvoice
         }

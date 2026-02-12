@@ -38,43 +38,43 @@ class EmployeeRouteDao(
     private val realm: Realm,
 ) {
 
-    suspend fun getAllEmployeeRouteFlow(): Flow<ResultsChange<RealmEmployeeRoute>> {
-        return withContext(Dispatchers.IO) { realm.query<RealmEmployeeRoute>().find().asFlow() }
+    suspend fun getAllEmployeeRouteFlow(personId: Int): Flow<ResultsChange<RealmEmployeeRoute>> {
+        return withContext(Dispatchers.IO) { realm.query<RealmEmployeeRoute>("personId == $0", personId).find().asFlow() }
     }
 
-    suspend fun getAllEmployeeRouteConfigFlow(): Flow<ResultsChange<RealmEmployeeRouteConfig>> {
+    suspend fun getAllEmployeeRouteConfigFlow(personId: Int): Flow<ResultsChange<RealmEmployeeRouteConfig>> {
         return withContext(Dispatchers.IO) {
-            realm.query<RealmEmployeeRouteConfig>().find().asFlow()
+            realm.query<RealmEmployeeRouteConfig>("personId == $0", personId).find().asFlow()
         }
     }
 
-    suspend fun getEmployeeRouteByIdFlow(id: Int): RealmEmployeeRoute? {
+    suspend fun getEmployeeRouteByIdFlow(id: Int, personId: Int): RealmEmployeeRoute? {
         return withContext(Dispatchers.IO) {
-            realm.query<RealmEmployeeRoute>("id == $0", id)
+            realm.query<RealmEmployeeRoute>("id == $0 AND personId == $1", id, personId)
                 .first()
                 .find()
         }
     }
 
-    suspend fun getEmployeeRouteById(id: Int): RealmEmployeeRoute? {
+    suspend fun getEmployeeRouteById(id: Int, personId: Int): RealmEmployeeRoute? {
         return withContext(Dispatchers.IO) {
-            realm.query<RealmEmployeeRoute>("id == $0", id)
+            realm.query<RealmEmployeeRoute>("id == $0 AND personId == $1", id, personId)
                 .first()
                 .find()
         }
     }
 
-    suspend fun getEmployeeRouteConfigByIdFlow(empresaId: Int):RealmEmployeeRouteConfig? {
+    suspend fun getEmployeeRouteConfigByIdFlow(empresaId: Int, personId: Int):RealmEmployeeRouteConfig? {
         return withContext(Dispatchers.IO) {
-            realm.query<RealmEmployeeRouteConfig>("id == $0", empresaId)
+            realm.query<RealmEmployeeRouteConfig>("id == $0 AND personId == $1", empresaId, personId)
                 .first()
                 .find()
         }
     }
 
-    suspend fun getEmployeeRouteConfigById(empresaId: Int): RealmEmployeeRouteConfig? {
+    suspend fun getEmployeeRouteConfigById(empresaId: Int, personId: Int): RealmEmployeeRouteConfig? {
         return withContext(Dispatchers.IO) {
-            realm.query<RealmEmployeeRouteConfig>("id == $0", empresaId)
+            realm.query<RealmEmployeeRouteConfig>("id == $0 AND personId == $1", empresaId, personId)
                 .first()
                 .find()
         }
@@ -82,6 +82,7 @@ class EmployeeRouteDao(
 
     suspend fun saveNewEmployeeRoute(
         data: EmployeeRouteResponseDto,
+        personId: Int,
     ) {
         realm.write {
             val empresaData = RealmEmpresa().apply {
@@ -182,6 +183,7 @@ class EmployeeRouteDao(
 
             val employeeRoute = RealmEmployeeRoute().apply {
                 id = data.empresaClienteContador.id
+                this.personId = personId
                 codFactura = data.empresaClienteContador.codFactura
                 empresa = empresaData
                 contador = contadorData
@@ -195,6 +197,7 @@ class EmployeeRouteDao(
 
     suspend fun saveNewEmployeeRouteConfig(
         data: EmployeeRouteConfigDto,
+        personId: Int,
     ) {
         realm.write {
             val empresaData = RealmEmpresa().apply {
@@ -333,6 +336,7 @@ class EmployeeRouteDao(
             }
             val employeeRouteConfig = RealmEmployeeRouteConfig().apply {
                 id = data.config?.empresa?.id ?: 0
+                this.personId = personId
                 config = RealmConfig().apply {
                     empresa = empresaData
                     tipoUso = tipoUsoData

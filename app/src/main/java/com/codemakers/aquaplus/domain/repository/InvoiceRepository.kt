@@ -6,5 +6,5 @@ import com.codemakers.aquaplus.domain.models.InvoiceRequest
 
 interface InvoiceRepository {
 
-    suspend fun sendInvoice(request: List<InvoiceRequest>): Result<InvoiceResponse>
+    suspend fun sendInvoice(request: List<InvoiceRequest>, token: String): Result<InvoiceResponse>
 }

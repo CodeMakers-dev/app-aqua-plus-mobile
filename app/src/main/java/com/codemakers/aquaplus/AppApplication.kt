@@ -48,7 +48,7 @@ class AppApplication : Application(), CoroutineScope by MainScope() {
     private fun startSync() = launch {
         do {
             if (isConnected) syncDataManager.start()
-            delay(20000)
+            delay(60000)
         } while (true)
     }
 

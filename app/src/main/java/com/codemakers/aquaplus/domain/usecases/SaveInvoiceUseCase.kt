@@ -2,6 +2,7 @@ package com.codemakers.aquaplus.domain.usecases
 
 import com.codemakers.aquaplus.data.datasource.local.dao.InvoiceDao
 import com.codemakers.aquaplus.domain.repository.EmployeeRouteRepository
+import com.codemakers.aquaplus.domain.repository.UserRepository
 import com.codemakers.aquaplus.ui.models.Invoice
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -10,6 +11,7 @@ import kotlinx.coroutines.withContext
 class SaveInvoiceUseCase(
     private val employeeRouteRepository: EmployeeRouteRepository,
     private val invoiceDao: InvoiceDao,
+    private val userRepository: UserRepository,
 ) {
 
     suspend operator fun invoke(employeeRouteId: Int): Invoice? = withContext(Dispatchers.IO) {
@@ -41,7 +43,8 @@ class SaveInvoiceUseCase(
         )
         
         // Save invoice to cache
-        invoiceDao.saveInvoice(employeeRouteId, invoice)
+        val personId = userRepository.getProfile()?.person?.id ?: 0
+        invoiceDao.saveInvoice(employeeRouteId, invoice, personId = personId)
         
         invoice
     }

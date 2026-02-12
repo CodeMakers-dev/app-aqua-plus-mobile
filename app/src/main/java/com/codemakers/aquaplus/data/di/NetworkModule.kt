@@ -27,7 +27,15 @@ val networkModule = module {
             get(qualifier = qualifier("chuckerInterceptor")),
         )
     }
+    single(qualifier = qualifier("syncHttpClient")) {
+        provideHttpClient(
+            null,
+            get(qualifier = qualifier("errorInterceptor")),
+            get(qualifier = qualifier("chuckerInterceptor")),
+        )
+    }
     single { provideRetrofit(get(), get()) }
+    single(qualifier = qualifier("syncRetrofit")) { provideRetrofit(get(qualifier = qualifier("syncHttpClient")), get()) }
 }
 
 fun provideConverterFactory(): GsonConverterFactory = GsonConverterFactory.create()
@@ -63,17 +71,23 @@ private fun getChuckerInterceptor(
     .build()
 
 fun provideHttpClient(
-    headerInterceptor: Interceptor,
+    headerInterceptor: Interceptor?,
     errorInterceptor: Interceptor,
     chuckerInterceptor: Interceptor,
-): OkHttpClient = OkHttpClient
-    .Builder()
-    .readTimeout(60, TimeUnit.SECONDS)
-    .connectTimeout(60, TimeUnit.SECONDS)
-    .addInterceptor(headerInterceptor)
-    .addInterceptor(errorInterceptor)
-    .addInterceptor(chuckerInterceptor)
-    .build()
+): OkHttpClient {
+    val client = OkHttpClient
+        .Builder()
+        .readTimeout(60, TimeUnit.SECONDS)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .addInterceptor(errorInterceptor)
+        .addInterceptor(chuckerInterceptor)
+
+    if (headerInterceptor != null) {
+        client.addInterceptor(headerInterceptor)
+    }
+
+    return client.build()
+}
 
 fun provideRetrofit(
     okHttpClient: OkHttpClient,

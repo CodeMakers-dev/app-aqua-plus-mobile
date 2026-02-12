@@ -2,9 +2,11 @@ package com.codemakers.aquaplus.data.di
 
 import androidx.room.Room
 import com.codemakers.aquaplus.data.datasource.local.AppDatabase
+import com.codemakers.aquaplus.data.datasource.local.dao.AuthSessionDao
 import com.codemakers.aquaplus.data.datasource.local.dao.EmployeeRouteDao
 import com.codemakers.aquaplus.data.datasource.local.dao.InvoiceDao
 import com.codemakers.aquaplus.data.datasource.local.dao.ReadingFormDataDao
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmAuthSession
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmConcepto
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmConfig
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmContador
@@ -71,10 +73,11 @@ val daoModule = module {
                 RealmReadingFormData::class,
                 RealmGenericEmpresa::class,
                 RealmInvoice::class,
+                RealmAuthSession::class,
             )
         )
             .name("acueducto-app.realm")
-            .schemaVersion(8)
+            .schemaVersion(10)
             // .migration(MyMigration())
             .build()
         Realm.open(config)
@@ -82,5 +85,6 @@ val daoModule = module {
     single { EmployeeRouteDao(get()) }
     single { ReadingFormDataDao(get()) }
     single { InvoiceDao(get()) }
+    single { AuthSessionDao(get()) }
 }
 

@@ -16,9 +16,9 @@ class InvoiceDao(private val realm: Realm) {
         .registerTypeAdapter(LocalDate::class.java, LocalDateAdapter())
         .create()
 
-    suspend fun saveInvoice(employeeRouteId: Int, invoice: Invoice) = withContext(Dispatchers.IO) {
+    suspend fun saveInvoice(employeeRouteId: Int, invoice: Invoice, personId: Int) = withContext(Dispatchers.IO) {
         realm.write {
-            val realmInvoice = query<RealmInvoice>("employeeRouteId == $0", employeeRouteId)
+            val realmInvoice = query<RealmInvoice>("employeeRouteId == $0 AND personId == $1", employeeRouteId, personId)
                 .first()
                 .find()
 
@@ -32,6 +32,7 @@ class InvoiceDao(private val realm: Realm) {
                 // Create new
                 copyToRealm(RealmInvoice().apply {
                     this.employeeRouteId = employeeRouteId
+                    this.personId = personId
                     this.invoiceJson = jsonString
                     this.createdAt = System.currentTimeMillis()
                 })
@@ -39,8 +40,8 @@ class InvoiceDao(private val realm: Realm) {
         }
     }
 
-    suspend fun getInvoiceByEmployeeRouteId(employeeRouteId: Int): Invoice? = withContext(Dispatchers.IO) {
-        val realmInvoice = realm.query<RealmInvoice>("employeeRouteId == $0", employeeRouteId)
+    suspend fun getInvoiceByEmployeeRouteId(employeeRouteId: Int, personId: Int): Invoice? = withContext(Dispatchers.IO) {
+        val realmInvoice = realm.query<RealmInvoice>("employeeRouteId == $0 AND personId == $1", employeeRouteId, personId)
             .first()
             .find()
 
@@ -53,9 +54,9 @@ class InvoiceDao(private val realm: Realm) {
         }
     }
 
-    suspend fun deleteInvoice(employeeRouteId: Int) = withContext(Dispatchers.IO) {
+    suspend fun deleteInvoice(employeeRouteId: Int, personId: Int) = withContext(Dispatchers.IO) {
         realm.write {
-            val invoice = query<RealmInvoice>("employeeRouteId == $0", employeeRouteId)
+            val invoice = query<RealmInvoice>("employeeRouteId == $0 AND personId == $1", employeeRouteId, personId)
                 .first()
                 .find()
             invoice?.let { delete(it) }
