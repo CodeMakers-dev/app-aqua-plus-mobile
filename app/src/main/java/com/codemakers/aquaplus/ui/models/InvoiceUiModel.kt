@@ -15,6 +15,7 @@ data class Client(
     val id: String,
     val address: String,
     val city: String,
+    val code: String
 )
 
 data class InvoiceMeta(
@@ -28,6 +29,11 @@ data class MeterInfo(
     val number: String,
     val installDate: LocalDate?,
     val type: String,
+    val stratum: Int,
+    val nameTypeUse: String,
+    val state: String,
+    val registration: String,
+    val average: Double
 )
 
 data class ReadingInfo(
@@ -144,10 +150,12 @@ data class Invoice(
                 route.personaCliente.direccion.ciudad,
                 route.personaCliente.direccion.departamento
             ).joinToString(", "),
+            code = route.personaCliente.codigo.orEmpty()
         ),
         meta = InvoiceMeta(
             issueDate = LocalDate.now(),
-            dueDate = config.config?.parametrosEmpresa?.diasVencida?.toIntOrNull()?.let { LocalDate.now().plusDays(it.toLong()) }
+            dueDate = config.config?.parametrosEmpresa?.diasVencida?.toIntOrNull()
+                ?.let { LocalDate.now().plusDays(it.toLong()) }
                 ?: LocalDate.now(),
             payType = "Pendiente",
             state = "Pendiente",
@@ -156,6 +164,11 @@ data class Invoice(
             number = route.contador.serial.orEmpty(),
             installDate = route.contador.fechaInstalacion?.toLocalDate(),
             type = route.contador.nombreTipoContador,
+            stratum = route.contador.estrato ?: 0,
+            nameTypeUse = route.contador.nombreTipoUso.orEmpty(),
+            state = route.contador.nombreEstadoContador.orEmpty(),
+            registration = route.contador.matricula.orEmpty(),
+            average = route.contador.promedioConsumo ?: 0.0
         ),
         reading = ReadingInfo(
             prevReading = route.contador.ultimaLectura ?: 0,
@@ -203,7 +216,8 @@ data class Invoice(
                                     )
                                 },
                             value = concept.valor,
-                            consumption = data.meterReading.toInt() - (route.contador.ultimaLectura ?: 0),
+                            consumption = data.meterReading.toInt() - (route.contador.ultimaLectura
+                                ?: 0),
                         )
                     }
                 )
