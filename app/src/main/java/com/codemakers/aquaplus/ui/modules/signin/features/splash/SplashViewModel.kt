@@ -31,7 +31,7 @@ class SplashViewModel(
 
     fun init() {
         viewModelScope.launch {
-            delay(1500)
+            delay(1000)
             getProfileUseCase().collect {
                 val isLogged = (it as? Result.Success)?.data != null
                 _state.update { state ->

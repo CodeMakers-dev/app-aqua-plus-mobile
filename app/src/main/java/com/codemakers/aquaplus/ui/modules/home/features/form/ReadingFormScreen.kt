@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,13 +25,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -59,6 +56,7 @@ import com.codemakers.aquaplus.R
 import com.codemakers.aquaplus.ui.composables.BarcodeScannerScreen
 import com.codemakers.aquaplus.ui.composables.ConfirmationDialog
 import com.codemakers.aquaplus.ui.composables.DialogType
+import com.codemakers.aquaplus.ui.composables.GenericDropdown
 import com.codemakers.aquaplus.ui.composables.LoadingWidget
 import com.codemakers.aquaplus.ui.composables.SnackBarWidget
 import com.codemakers.aquaplus.ui.theme.AquaPlusTheme
@@ -89,6 +87,7 @@ fun ReadingFormScreen(
         onMeterReadingChange = viewModel::onMeterReadingChange,
         onAbnormalConsumptionChange = viewModel::onAbnormalConsumptionChange,
         onObservationsChange = viewModel::onObservationsChange,
+        onMeterStateChange = viewModel::onMeterStateChange,
     )
 
     // Show loading only when dialog is active and saving
@@ -143,8 +142,11 @@ fun ReadingFormContent(
     onMeterReadingChange: (String) -> Unit = {},
     onAbnormalConsumptionChange: (Boolean) -> Unit = {},
     onObservationsChange: (String) -> Unit = {},
+    onMeterStateChange: (Int?) -> Unit = {},
 ) {
-    val focusRequest = remember { FocusRequester() }
+    val focusRequestSerial = remember { FocusRequester() }
+    val focusRequestMeterReading = remember { FocusRequester() }
+    val focusRequestObservations = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     var showBarcodeScanner by remember { mutableStateOf(false) }
     var showScannerDisabledMessage by remember { mutableStateOf(false) }
@@ -198,7 +200,9 @@ fun ReadingFormContent(
                     OutlinedTextField(
                         value = state.serial,
                         onValueChange = onSerialChange,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .let { if (state.serial.isEmpty()) it.focusRequester(focusRequestSerial) else it },
                         enabled = !state.hasExistingReading,
                         label = {
                             Text(
@@ -206,6 +210,14 @@ fun ReadingFormContent(
                                 color = Color.LightGray
                             )
                         },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = {
+                                focusRequestMeterReading.requestFocus()
+                            }
+                        ),
                         trailingIcon = {
                             val isScannerEnabled = state.serial.isEmpty()
                             Card(
@@ -280,8 +292,8 @@ fun ReadingFormContent(
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .focusRequester(focusRequest),
-                        enabled = !state.hasExistingReading,
+                            .focusRequester(focusRequestMeterReading),
+                        enabled = !state.isMeterReadingDisabled,
                         label = {
                             Text(
                                 text = stringResource(R.string.reading_input_label),
@@ -291,6 +303,11 @@ fun ReadingFormContent(
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = {
+                                focusRequestObservations.requestFocus()
+                            }
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.LightGray,
@@ -306,10 +323,39 @@ fun ReadingFormContent(
                         )
                     )
 
-                    AbnormalConsumptionDropdown(
-                        abnormalConsumption = state.abnormalConsumption,
-                        onAbnormalConsumptionChange = onAbnormalConsumptionChange,
+                    // Opciones para estado del medidor desde la configuración
+                    GenericDropdown(
+                        items = state.config?.config?.estadosMedidor.orEmpty(),
+                        selectedItem = state.meterStateId?.let { id ->
+                            state.config?.config?.estadosMedidor?.find { it.id == id }
+                        },
+                        onItemSelected = { selected ->
+                            onMeterStateChange(selected.id)
+                        },
                         enabled = !state.hasExistingReading,
+                        label = "Estado del medidor",
+                        placeholder = "Seleccionar...",
+                        itemToString = { it.descripcion.orEmpty() }
+                    )
+
+                    // Opciones para consumo anormal
+                    val abnormalConsumptionOptions = listOf(
+                        stringResource(R.string.abnormal_consumption_high) to true,
+                        stringResource(R.string.abnormal_consumption_low) to false
+                    )
+
+                    GenericDropdown(
+                        items = abnormalConsumptionOptions,
+                        selectedItem = state.abnormalConsumption?.let { abnormal ->
+                            abnormalConsumptionOptions.find { it.second == abnormal }
+                        },
+                        onItemSelected = { selected ->
+                            onAbnormalConsumptionChange(selected.second)
+                        },
+                        enabled = !state.hasExistingReading,
+                        label = stringResource(R.string.abnormal_consumption_optional),
+                        placeholder = "Seleccionar...",
+                        itemToString = { it.first }
                     )
 
                     OutlinedTextField(
@@ -317,7 +363,8 @@ fun ReadingFormContent(
                         onValueChange = onObservationsChange,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 100.dp),
+                            .heightIn(min = 100.dp)
+                            .focusRequester(focusRequestObservations),
                         enabled = !state.hasExistingReading,
                         label = {
                             Text(
@@ -326,7 +373,12 @@ fun ReadingFormContent(
                             )
                         },
                         keyboardOptions = KeyboardOptions(
-                            imeAction = ImeAction.Done,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                            }
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.LightGray,
@@ -376,7 +428,11 @@ fun ReadingFormContent(
                 focusManager.clearFocus()
             } else {
                 delay(200)
-                focusRequest.requestFocus()
+                if (state.serial.isEmpty()) {
+                    focusRequestSerial.requestFocus()
+                } else {
+                    focusRequestMeterReading.requestFocus()
+                }
             }
         }
     }
@@ -404,93 +460,6 @@ fun ReadingFormContent(
             message = "El escáner solo está disponible cuando no hay un serial registrado",
             onDismissListener = { showScannerDisabledMessage = false }
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AbnormalConsumptionDropdown(
-    abnormalConsumption: Boolean?,
-    enabled: Boolean,
-    onAbnormalConsumptionChange: (Boolean) -> Unit = {},
-) {
-    val yesText = stringResource(R.string.abnormal_consumption_high)
-    val noText = stringResource(R.string.abnormal_consumption_low)
-    val text = when (abnormalConsumption) {
-        true -> yesText
-        false -> noText
-        else -> ""
-    }
-
-    var expanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded && enabled,
-        onExpandedChange = { if (enabled) expanded = !expanded }
-    ) {
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
-            value = text,
-            onValueChange = {},
-            readOnly = true,
-            enabled = enabled,
-            label = {
-                Text(
-                    text = stringResource(R.string.abnormal_consumption_optional),
-                    color = Color.LightGray
-                )
-            },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.LightGray,
-                unfocusedBorderColor = Color.DarkGray,
-                cursorColor = Color.White,
-                focusedLabelColor = Color.LightGray,
-                unfocusedLabelColor = Color.DarkGray,
-                focusedContainerColor = Color(0xFF3A3A4C),
-                unfocusedContainerColor = Color(0xFF3A3A4C),
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedTrailingIconColor = Color.White,
-                unfocusedTrailingIconColor = Color.White,
-                disabledTextColor = Color.White
-            )
-        )
-
-        ExposedDropdownMenu(
-            expanded = expanded && enabled,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(Color(0xFF3A3A4C))
-        ) {
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        text = yesText,
-                        color = Color.White
-                    )
-                },
-                onClick = {
-                    expanded = false
-                    onAbnormalConsumptionChange(true)
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        text = noText,
-                        color = Color.White
-                    )
-                },
-                onClick = {
-                    expanded = false
-                    onAbnormalConsumptionChange(false)
-                }
-            )
-        }
     }
 }
 

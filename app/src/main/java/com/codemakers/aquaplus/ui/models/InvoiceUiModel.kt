@@ -112,13 +112,13 @@ data class Invoice(
     val history: List<HistoryEntry>,
     val verificationCode: String,
     val observations: String,
-    val deudaAbonoSaldo: DeudaAbonoSaldo,
+    val deudaAbonoSaldo: DeudaAbonoSaldo?,
 ) {
 
     val totals: Totals
         get() {
             val subtotal = fees.sumOf { it.conceptos?.sumOf { it.total } ?: 0.0 }
-            val previousBalance = deudaAbonoSaldo.moraActual
+            val previousBalance = deudaAbonoSaldo?.moraActual ?: 0.0
             return Totals(
                 subtotal = subtotal,
                 previousBalance = previousBalance,
@@ -132,25 +132,25 @@ data class Invoice(
         data: ReadingFormData,
     ) : this(
         companyImage = config.config?.empresa?.logoEmpresa?.imagen,
-        companyName = route.empresa.nombre ?: "",
-        companyNit = route.empresa.nit ?: "",
-        companyCode = route.empresa.codigo ?: "",
+        companyName = route.empresa?.nombre.orEmpty(),
+        companyNit = route.empresa?.nit.orEmpty(),
+        companyCode = route.empresa?.codigo.orEmpty(),
         companyQrCode = config.config?.empresa?.codigoQr?.imagen,
         methodsPayment = config.config?.empresa?.puntosPago?.map { it.imagen },
-        codInvoice = route.codFactura,
+        codInvoice = route.codFactura.orEmpty(),
         companyFooter = config.config?.empresa?.piePagina,
         companyFooterNote = config.config?.empresa?.avisoFactura,
         client = Client(
-            name = "${route.personaCliente.primerNombre} ${route.personaCliente.primerApellido}".toCapitalCase(),
-            idLabel = route.personaCliente.codigo.orEmpty(),
-            id = route.personaCliente.numeroCedula,
-            address = route.personaCliente.direccion.descripcion ?: "---",
+            name = "${route.personaCliente?.primerNombre} ${route.personaCliente?.primerApellido}".toCapitalCase(),
+            idLabel = route.personaCliente?.codigo.orEmpty(),
+            id = route.personaCliente?.numeroCedula.orEmpty(),
+            address = route.personaCliente?.direccion?.descripcion ?: "---",
             city = listOfNotNull(
-                route.personaCliente.direccion.corregimiento?.takeIf { it.isNotBlank() },
-                route.personaCliente.direccion.ciudad,
-                route.personaCliente.direccion.departamento
+                route.personaCliente?.direccion?.corregimiento?.takeIf { it.isNotBlank() },
+                route.personaCliente?.direccion?.ciudad,
+                route.personaCliente?.direccion?.departamento
             ).joinToString(", "),
-            code = route.personaCliente.codigo.orEmpty()
+            code = route.personaCliente?.codigo.orEmpty()
         ),
         meta = InvoiceMeta(
             issueDate = LocalDate.now(),
@@ -161,21 +161,21 @@ data class Invoice(
             state = "Pendiente",
         ),
         meter = MeterInfo(
-            number = route.contador.serial.orEmpty(),
-            installDate = route.contador.fechaInstalacion?.toLocalDate(),
-            type = route.contador.nombreTipoContador,
-            stratum = route.contador.estrato ?: 0,
-            nameTypeUse = route.contador.nombreTipoUso.orEmpty(),
-            state = route.contador.nombreEstadoContador.orEmpty(),
-            registration = route.contador.matricula.orEmpty(),
-            average = route.contador.promedioConsumo ?: 0.0
+            number = route.contador?.serial.orEmpty(),
+            installDate = route.contador?.fechaInstalacion?.toLocalDate(),
+            type = route.contador?.nombreTipoContador.orEmpty(),
+            stratum = route.contador?.estrato ?: 0,
+            nameTypeUse = route.contador?.nombreTipoUso.orEmpty(),
+            state = route.contador?.nombreEstadoContador.orEmpty(),
+            registration = route.contador?.matricula.orEmpty(),
+            average = route.contador?.promedioConsumo ?: 0.0
         ),
         reading = ReadingInfo(
-            prevReading = route.contador.ultimaLectura ?: 0,
-            prevDate = route.contador.historicoConsumo?.lastOrNull()?.fechaLectura?.toLocalDate(),
+            prevReading = route.contador?.ultimaLectura ?: 0,
+            prevDate = route.contador?.historicoConsumo?.lastOrNull()?.fechaLectura?.toLocalDate(),
             currentReading = data.meterReading.toInt(),
             currentDate = data.date,
-            consumptionM3 = data.meterReading.toInt() - (route.contador.ultimaLectura ?: 0),
+            consumptionM3 = data.meterReading.toInt() - (route.contador?.ultimaLectura ?: 0),
             lastPaymentValue = route.ultimaFactura?.precio,
             lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
@@ -185,7 +185,7 @@ data class Invoice(
                     id = it.id,
                     title = it.tipoTarifa.descripcion.orEmpty(),
                     code = it.tipoTarifa.codigo,
-                    conceptos = route.personaCliente.deudaCliente?.map { deuda ->
+                    conceptos = route.personaCliente?.deudaCliente?.map { deuda ->
                         ConceptDetail(
                             id = null,
                             title = deuda.nombreTipoDeuda.orEmpty(),
@@ -208,7 +208,7 @@ data class Invoice(
                             title = concept.tipoConcepto?.descripcion.orEmpty(),
                             code = concept.tipoConcepto?.codigo.orEmpty(),
                             indCalcularMc = concept.indCalcularMc,
-                            stratumValue = concept.valoresEstrato?.find { valueStratum -> valueStratum.estrato == route.contador.estrato }
+                            stratumValue = concept.valoresEstrato?.find { valueStratum -> valueStratum.estrato == route.contador?.estrato }
                                 ?.let { stratum ->
                                     StratumValueDetail(
                                         value = stratum.valor ?: 0.0,
@@ -216,14 +216,14 @@ data class Invoice(
                                     )
                                 },
                             value = concept.valor,
-                            consumption = data.meterReading.toInt() - (route.contador.ultimaLectura
+                            consumption = data.meterReading.toInt() - (route.contador?.ultimaLectura
                                 ?: 0),
                         )
                     }
                 )
             }
         }.orEmpty(),
-        history = route.contador.historicoConsumo?.mapNotNull {
+        history = route.contador?.historicoConsumo?.mapNotNull {
             if (it.mes != null && it.precio != null && it.consumo != null) {
                 HistoryEntry(
                     mes = it.mes,
@@ -234,6 +234,6 @@ data class Invoice(
         }.orEmpty(),
         verificationCode = "Pendiente",
         observations = data.observations,
-        deudaAbonoSaldo = route.contador.deudaAbonoSaldo,
+        deudaAbonoSaldo = route.contador?.deudaAbonoSaldo,
     )
 }

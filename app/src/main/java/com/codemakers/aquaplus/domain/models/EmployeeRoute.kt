@@ -5,11 +5,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class EmployeeRoute(
     val id: Int,
-    val empresa: Empresa,
-    val contador: Contador,
-    val codFactura: String,
+    val empresa: Empresa?,
+    val contador: Contador?,
+    val codFactura: String?,
     val ultimaFactura: UltimaFactura?,
-    val personaCliente: PersonaCliente
+    val personaCliente: PersonaCliente?
 )
 
 @Serializable
@@ -51,13 +51,13 @@ data class Contador(
     val ultimaLectura: Int?,
     val idTipoContador: Int?,
     val tarifaContador: List<TarifaContador>?,
-    val deudaAbonoSaldo: DeudaAbonoSaldo,
+    val deudaAbonoSaldo: DeudaAbonoSaldo?,
     val promedioConsumo: Double?,
     val fechaInstalacion: String?,
     val historicoConsumo: List<HistoricoConsumo>?,
     val idEstadoContador: Int?,
     val lecturaProyectada: Double?,
-    val nombreTipoContador: String,
+    val nombreTipoContador: String?,
     val nombreEstadoContador: String?
 )
 
@@ -82,9 +82,9 @@ data class DeudaCliente(
 
 @Serializable
 data class DeudaAbonoSaldo(
-    val deudaTotal: Double,
-    val moraActual: Double,
-    val abonosTotal: Double
+    val deudaTotal: Double?,
+    val moraActual: Double?,
+    val abonosTotal: Double?
 )
 
 @Serializable
@@ -100,13 +100,13 @@ data class HistoricoConsumo(
 data class PersonaCliente(
     val id: Int,
     val codigo: String?,
-    val direccion: Direccion,
+    val direccion: Direccion?,
     val deudaCliente: List<DeudaCliente>?,
     val discapacidad: Boolean?,
-    val numeroCedula: String,
-    val primerNombre: String,
+    val numeroCedula: String?,
+    val primerNombre: String?,
     val segundoNombre: String?,
-    val primerApellido: String,
+    val primerApellido: String?,
     val segundoApellido: String?
 )
 

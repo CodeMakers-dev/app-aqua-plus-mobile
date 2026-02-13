@@ -13,6 +13,7 @@ data class ReadingFormUiState(
     val meterReading: String = "",
     val abnormalConsumption: Boolean? = null,
     val observations: String = "",
+    val meterStateId: Int? = null,
 
     val employeeRouteId: Int = -1,
     val route: EmployeeRoute? = null,
@@ -31,5 +32,8 @@ data class ReadingFormUiState(
                 (readingFormData?.abnormalConsumption != abnormalConsumption ||
                         readingFormData?.meterReading != meterReading ||
                         readingFormData.observations != observations)
+
+    val isMeterReadingDisabled: Boolean
+        get() = hasExistingReading || (meterStateId == 25 || meterStateId == 26)
 
 }
