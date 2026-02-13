@@ -300,20 +300,22 @@ fun InvoiceContent(invoice: Invoice) {
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        if (invoice.history.isNotEmpty()) {
+            Spacer(Modifier.height(8.dp))
 
-        SectionHeader("HISTÓRICO DE CONSUMO (m³)")
+            SectionHeader("HISTÓRICO DE CONSUMO (m³)")
 
-        Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            border = CardDefaults.outlinedCardBorder(),
-            shape = RoundedCornerShape(10.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            BarsHistory(invoice.history.sortedBy { it.mes })
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = CardDefaults.outlinedCardBorder(),
+                shape = RoundedCornerShape(10.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                BarsHistory(invoice.history.sortedBy { it.mes })
+            }
         }
 
         Spacer(Modifier.height(8.dp))
