@@ -1,33 +1,27 @@
 package com.codemakers.aquaplus.ui.work
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.codemakers.aquaplus.data.datasource.local.dao.AuthSessionDao
 import com.codemakers.aquaplus.domain.models.InvoiceRequest
 import com.codemakers.aquaplus.domain.models.ReadRequest
-import com.codemakers.aquaplus.domain.repository.InvoiceRepository
-import com.codemakers.aquaplus.domain.repository.UserRepository
 import com.codemakers.aquaplus.domain.usecases.GetAllReadingFormDataForSyncUseCase
 import com.codemakers.aquaplus.domain.usecases.GetEmployeeRouteAndConfigByIdUseCase
+import com.codemakers.aquaplus.domain.usecases.SendInvoiceUseCase
 import com.codemakers.aquaplus.domain.usecases.UpdateReadingFormDataIsSyncedUseCase
 import com.codemakers.aquaplus.ui.models.Invoice
 
 class SyncDataWorker(
     context: Context,
     params: WorkerParameters,
-    private val userRepository: UserRepository,
-    private val invoiceRepository: InvoiceRepository,
+    private val sendInvoiceUseCase: SendInvoiceUseCase,
     private val getAllReadingFormDataForSyncUseCase: GetAllReadingFormDataForSyncUseCase,
     private val getEmployeeRouteAndConfigByIdUseCase: GetEmployeeRouteAndConfigByIdUseCase,
     private val updateReadingFormDataIsSyncedUseCase: UpdateReadingFormDataIsSyncedUseCase,
-    private val authSessionDao: AuthSessionDao,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-
-        val userName = userRepository.getProfile()?.username
-
         val syncResult = getAllReadingFormDataForSyncUseCase()
         val data = syncResult.getOrNull
         if (data.isNullOrEmpty()) return Result.failure()
@@ -37,9 +31,6 @@ class SyncDataWorker(
         var hasAnySuccess = false
 
         groupedByPerson.forEach { (personId, readingFormDataList) ->
-            val authSession = authSessionDao.getAuthSession(personId)
-            val token = authSession?.token ?: return@forEach
-
             val request = mutableListOf<InvoiceRequest>()
             val employeeRouteIds = mutableListOf<Int>()
 
@@ -69,7 +60,7 @@ class SyncDataWorker(
                         idContador = employeeRoute.id,
                         precio = invoice.totals.totalToPay,
                         fechaEmision = readingFormData.date.toString(),
-                        usuarioCreacion = userName.orEmpty(),
+                        usuarioCreacion = "",
                         codEstado = "PEN",
                         lectura = ReadRequest(
                             meterReading = readingFormData.meterReading,
@@ -82,7 +73,8 @@ class SyncDataWorker(
 
             if (request.isEmpty()) return@forEach
 
-            val requestResult = invoiceRepository.sendInvoice(request = request, token = token)
+            val requestResult = sendInvoiceUseCase(personId = personId, request = request)
+            Log.d("SyncDataWorker", "requestResult: $requestResult")
             if (requestResult.isSuccess) {
                 updateReadingFormDataIsSyncedUseCase(employeeRouteIds)
                 hasAnySuccess = true

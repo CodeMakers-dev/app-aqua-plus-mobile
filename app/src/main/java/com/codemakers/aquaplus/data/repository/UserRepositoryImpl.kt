@@ -1,6 +1,7 @@
 package com.codemakers.aquaplus.data.repository
 
 import com.codemakers.aquaplus.data.common.BaseRepository
+import com.codemakers.aquaplus.data.datasource.local.dao.AuthSessionDao
 import com.codemakers.aquaplus.data.datasource.remote.UserApi
 import com.codemakers.aquaplus.data.models.request.NewPasswordRequestDto
 import com.codemakers.aquaplus.data.models.response.ProfileDto
@@ -13,6 +14,7 @@ import com.codemakers.aquaplus.domain.repository.UserRepository
 class UserRepositoryImpl(
     private val userApi: UserApi,
     private val preferencesRepository: PreferencesRepository,
+    private val authSessionDao: AuthSessionDao,
 ) : UserRepository, BaseRepository() {
 
     override suspend fun loadProfile(
@@ -21,6 +23,7 @@ class UserRepositoryImpl(
         action = {
             val result = userApi.getProfile(userId)
             preferencesRepository.setObject(USER, result.response)
+            authSessionDao.updateUsername(result.response.person.id, result.response.username)
             Result.Success(result.response.toDomain())
         }
     )

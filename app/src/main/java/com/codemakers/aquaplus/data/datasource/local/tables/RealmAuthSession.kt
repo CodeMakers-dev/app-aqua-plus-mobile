@@ -8,4 +8,5 @@ class RealmAuthSession : RealmObject {
     var personId: Int = 0
     var token: String = ""
     var refreshToken: String = ""
+    var username: String = ""
 }

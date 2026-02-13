@@ -123,4 +123,7 @@ dependencies {
 
     //ML Kit Barcode Scanning
     implementation(libs.barcode.scanning)
+
+    //JWT
+    implementation(libs.auth0.jwtdecode)
 }

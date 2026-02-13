@@ -31,6 +31,15 @@ class AuthSessionDao(
         }
     }
 
+    suspend fun updateUsername(personId: Int, username: String) {
+        realm.write {
+            val authSession = query<RealmAuthSession>("personId == $0", personId)
+                .first()
+                .find()
+            authSession?.username = username
+        }
+    }
+
     suspend fun getAuthSession(personId: Int): RealmAuthSession? {
         return withContext(Dispatchers.IO) {
             realm.query<RealmAuthSession>("personId == $0", personId)
