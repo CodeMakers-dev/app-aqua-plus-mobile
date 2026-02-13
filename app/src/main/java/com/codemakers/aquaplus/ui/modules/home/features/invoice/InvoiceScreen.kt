@@ -195,12 +195,14 @@ fun InvoiceContent(invoice: Invoice) {
                 InfoCard(title = "") {
                     KeyValueRow("Nombre", invoice.client.name)
                     KeyValueRow("Identificación", invoice.client.id)
+                    KeyValueRow("Codigo cliente", invoice.client.code)
                 }
             },
             right = {
                 InfoCard(title = "") {
                     KeyValueRow("Dirección", invoice.client.address)
                     KeyValueRow("Ciudad", invoice.client.city)
+                    KeyValueRow("Uso", invoice.meter.nameTypeUse)
                 }
             }
         )
@@ -219,18 +221,21 @@ fun InvoiceContent(invoice: Invoice) {
                             invoice.meter.installDate.format(dateFmt) ?: "---"
                         )
                     }
+                    KeyValueRow("Estado", invoice.meter.state)
                 }
             },
             right = {
                 InfoCard(title = "") {
                     KeyValueRow("Tipo", invoice.meter.type)
+                    KeyValueRow("Estrato", invoice.meter.stratum.toString())
+                    KeyValueRow("Matrícula", invoice.meter.registration)
                 }
             }
         )
 
         Spacer(Modifier.height(8.dp))
 
-        SectionHeader("INFORMACIÓN FACTURA")
+        SectionHeader("DATOS DEL CONSUMO")
 
         TwoPane(
             left = {
@@ -241,9 +246,7 @@ fun InvoiceContent(invoice: Invoice) {
                             invoice.reading.prevDate?.format(dateFmt) ?: "---"
                         })"
                     )
-                    KeyValueRow("Fecha Ultimo pago", "${invoice.reading.lastPaymentDate}")
-                    KeyValueRow("Valor Ultimo pago", "${invoice.reading.lastPaymentValue?.cop()}")
-                    KeyValueRow("Consumo", "${invoice.reading.consumptionM3} m³")
+                    KeyValueRow("Promedio consumo", "${invoice.meter.average} m³")
                 }
             },
             right = {
@@ -256,10 +259,26 @@ fun InvoiceContent(invoice: Invoice) {
                             )
                         })"
                     )
+                    KeyValueRow("Consumo", "${invoice.reading.consumptionM3} m³")
+                }
+            }
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        SectionHeader("INFORMACIÓN FACTURA")
+
+        TwoPane(
+            left = {
+                InfoCard(title = "") {
+                    KeyValueRow("Fecha Ultimo pago", "${invoice.reading.lastPaymentDate}")
+                    KeyValueRow("Valor Ultimo pago", "${invoice.reading.lastPaymentValue?.cop()}")
+                }
+            },
+            right = {
+                InfoCard(title = "") {
                     KeyValueRow("Fecha Emisión", invoice.meta.issueDate.format(dateFmt))
                     KeyValueRow("Pago oportuno", invoice.meta.dueDate.format(dateFmt))
-
-                    KeyValueRow("Estado", invoice.meta.state)
                 }
 
             }
@@ -424,7 +443,8 @@ private fun AquaPlusInvoicePreview() {
             idLabel = "CC",
             id = "2834276634",
             address = "Calle 123#45-67",
-            city = "Suba, Bogotá, Cundinamarca"
+            city = "Suba, Bogotá, Cundinamarca",
+            code = "XYZ123"
         ),
         meta = InvoiceMeta(
             issueDate = LocalDate.of(2025, 5, 15),
@@ -435,7 +455,12 @@ private fun AquaPlusInvoicePreview() {
         meter = MeterInfo(
             number = "123 3452",
             installDate = LocalDate.of(2023, 1, 10),
-            type = "Analógico"
+            type = "Analógico",
+            stratum = 1,
+            nameTypeUse = "Residencial",
+            state = "Medidor en buen estado",
+            registration = "ABC123",
+            average = 1232.0
         ),
         reading = ReadingInfo(
             prevReading = 1235,
