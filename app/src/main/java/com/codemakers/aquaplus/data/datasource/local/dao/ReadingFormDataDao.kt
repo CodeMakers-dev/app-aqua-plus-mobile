@@ -72,6 +72,7 @@ class ReadingFormDataDao(
         date: LocalDate,
         personId: Int,
         serial: String,
+        meterStateId: Int?
     ) {
         val nextId = readingFormDataId ?: getNextReadingFormDataId()
         realm.write {
@@ -83,6 +84,7 @@ class ReadingFormDataDao(
                 this.abnormalConsumption = abnormalConsumption
                 this.observations = observations
                 this.serial = serial
+                this.meterStateId = meterStateId
                 this.dateEpochDay = date.toEpochDay()
                 this.isSynced = false
             }

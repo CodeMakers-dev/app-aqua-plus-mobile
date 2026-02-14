@@ -65,7 +65,9 @@ class SyncDataWorker(
                         lectura = ReadRequest(
                             meterReading = readingFormData.meterReading,
                             description = readingFormData.observations,
-                            abnormalConsumption = readingFormData.abnormalConsumption == true
+                            abnormalConsumption = readingFormData.abnormalConsumption == true,
+                            meterStateId = readingFormData.meterStateId,
+                            serial = readingFormData.serial,
                         ),
                     )
                 )

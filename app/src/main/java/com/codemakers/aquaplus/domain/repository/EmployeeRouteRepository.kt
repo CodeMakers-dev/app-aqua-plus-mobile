@@ -13,7 +13,7 @@ interface EmployeeRouteRepository {
 
     suspend fun loadAllEmployeeRouteConfigFlow(): Result<EmployeeRouteConfig>
 
-    suspend fun getAllEmployeeRouteFlow(): Flow<List<EmployeeRoute>>
+    suspend fun getAllEmployeeRouteFlow(): List<EmployeeRoute>
 
     suspend fun getAllEmployeeRouteConfigFlow(): Flow<List<EmployeeRouteConfig>>
 
@@ -55,6 +55,7 @@ interface EmployeeRouteRepository {
         readingFormDataId: Long?,
         date: LocalDate,
         serial: String,
+        meterStateId: Int?
     ): Result<Unit>
 
     suspend fun updateReadingFormDataIsSynced(

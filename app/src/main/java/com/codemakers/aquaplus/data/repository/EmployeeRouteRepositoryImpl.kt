@@ -5,6 +5,9 @@ import com.codemakers.aquaplus.data.datasource.local.dao.EmployeeRouteDao
 import com.codemakers.aquaplus.data.datasource.local.dao.ReadingFormDataDao
 import com.codemakers.aquaplus.data.datasource.local.tables.toDomain
 import com.codemakers.aquaplus.data.datasource.remote.EmployeeRouteApi
+import com.codemakers.aquaplus.data.models.response.BaseResponse
+import com.codemakers.aquaplus.data.models.response.EmployeeRouteConfigDto
+import com.codemakers.aquaplus.data.models.response.EmployeeRouteDto
 import com.codemakers.aquaplus.data.models.response.toDomain
 import com.codemakers.aquaplus.domain.common.Result
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
@@ -12,8 +15,12 @@ import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.ReadingFormData
 import com.codemakers.aquaplus.domain.repository.EmployeeRouteRepository
 import com.codemakers.aquaplus.domain.repository.UserRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 
 class EmployeeRouteRepositoryImpl(
@@ -29,13 +36,19 @@ class EmployeeRouteRepositoryImpl(
         handlerErrorMapper(
             action = {
                 val personId = getPersonId()
-                val apiPersonId = userRepository.getProfile()?.person?.id ?: 0
-                val employeeRouteResult = employeeRouteApi.getEmployeeRoute(userId = apiPersonId)
-                employeeRouteResult.response.data.onEach { employeeRouteDao.saveNewEmployeeRoute(it, personId = personId) }
+                val result = coroutineScope {
+                    awaitAll(
+                        async { employeeRouteApi.getEmployeeRoute(personId = personId) },
+                        async { employeeRouteApi.getEmployeeRouteConfig(personId = personId) }
+                    )
+                }
 
-                val employeeRouteConfigResult =
-                    employeeRouteApi.getEmployeeRouteConfig(userId = apiPersonId)
+                val employeeRouteResult = result.first() as BaseResponse<EmployeeRouteDto>
+                val employeeRouteConfigResult = result.last() as BaseResponse<EmployeeRouteConfigDto>
+
+                employeeRouteResult.response.data.onEach { employeeRouteDao.saveNewEmployeeRoute(it, personId = personId) }
                 employeeRouteDao.saveNewEmployeeRouteConfig(employeeRouteConfigResult.response, personId = personId)
+
                 Result.Success(employeeRouteResult.response.data.map { it.empresaClienteContador.toDomain() })
             }
         )
@@ -44,19 +57,16 @@ class EmployeeRouteRepositoryImpl(
         handlerErrorMapper(
             action = {
                 val personId = getPersonId()
-                val apiPersonId = userRepository.getProfile()?.person?.id ?: 0
-                val result = employeeRouteApi.getEmployeeRouteConfig(userId = apiPersonId)
+                val result = employeeRouteApi.getEmployeeRouteConfig(personId = personId)
                 employeeRouteDao.saveNewEmployeeRouteConfig(result.response, personId = personId)
                 Result.Success(result.response.toDomain())
             }
         )
 
-    override suspend fun getAllEmployeeRouteFlow(): Flow<List<EmployeeRoute>> = flow {
+    override suspend fun getAllEmployeeRouteFlow(): List<EmployeeRoute> {
         val personId = getPersonId()
-        employeeRouteDao.getAllEmployeeRouteFlow(personId = personId).collect { result ->
-            val data = result.list
-            emit(data.map { it.toDomain() })
-        }
+        val data = employeeRouteDao.getAllEmployeeRouteFlow(personId = personId)
+        return data.map { it.toDomain() }
     }
 
     override suspend fun getAllEmployeeRouteConfigFlow(): Flow<List<EmployeeRouteConfig>> = flow {
@@ -131,6 +141,7 @@ class EmployeeRouteRepositoryImpl(
         readingFormDataId: Long?,
         date: LocalDate,
         serial: String,
+        meterStateId: Int?
     ): Result<Unit> {
         val personId = getPersonId()
         readingFormDataDao.saveNewReadingFormData(
@@ -142,6 +153,7 @@ class EmployeeRouteRepositoryImpl(
             date = date,
             personId = personId,
             serial = serial,
+            meterStateId = meterStateId
         )
         return Result.Success(Unit)
     }

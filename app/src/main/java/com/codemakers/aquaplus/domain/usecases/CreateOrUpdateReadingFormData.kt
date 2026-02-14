@@ -19,6 +19,7 @@ class CreateOrUpdateReadingFormData(
         readingFormDataId: Long?,
         date: LocalDate,
         serial: String,
+        meterStateId: Int?
     ): Flow<Result<ReadingFormData?>> = flow {
         employeeRouteRepository.saveNewReadingFormData(
             employeeRouteId = employeeRouteId,
@@ -28,6 +29,7 @@ class CreateOrUpdateReadingFormData(
             readingFormDataId = readingFormDataId,
             date = date,
             serial = serial,
+            meterStateId = meterStateId
         )
         val result = employeeRouteRepository.getReadingFormDataByEmployeeRouteIdFlow(employeeRouteId)
         emit(Result.Success(result))

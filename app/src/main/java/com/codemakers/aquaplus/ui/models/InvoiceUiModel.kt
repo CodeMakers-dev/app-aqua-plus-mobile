@@ -5,6 +5,7 @@ import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.ReadingFormData
 import com.codemakers.aquaplus.ui.extensions.toCapitalCase
+import com.codemakers.aquaplus.ui.extensions.toDoubleWithReplace
 import com.codemakers.aquaplus.ui.extensions.toLocalDate
 import java.time.LocalDate
 
@@ -37,11 +38,11 @@ data class MeterInfo(
 )
 
 data class ReadingInfo(
-    val prevReading: Int,
+    val prevReading: Double,
     val prevDate: LocalDate?,
-    val currentReading: Int,
+    val currentReading: Double,
     val currentDate: LocalDate,
-    val consumptionM3: Int,
+    val consumptionM3: Double,
     val lastPaymentValue: Double?,
     val lastPaymentDate: LocalDate?,
 )
@@ -60,13 +61,13 @@ data class ConceptDetail(
     val indCalcularMc: Boolean?,
     val stratumValue: StratumValueDetail?,
     val value: Double?,
-    val consumption: Int?,
+    val consumption: Double?,
 ) {
 
     val tarifa: Double?
         get() = value ?: stratumValue?.value
 
-    val consumptionTotal: Int?
+    val consumptionTotal: Double?
         get() = if (indCalcularMc == true) consumption else null
 
     val total: Double
@@ -171,11 +172,11 @@ data class Invoice(
             average = route.contador?.promedioConsumo ?: 0.0
         ),
         reading = ReadingInfo(
-            prevReading = route.contador?.ultimaLectura ?: 0,
+            prevReading = route.contador?.ultimaLectura ?: 0.0,
             prevDate = route.contador?.historicoConsumo?.lastOrNull()?.fechaLectura?.toLocalDate(),
-            currentReading = data.meterReading.toInt(),
+            currentReading = data.meterReading.toDoubleWithReplace() ?: 0.0,
             currentDate = data.date,
-            consumptionM3 = data.meterReading.toInt() - (route.contador?.ultimaLectura ?: 0),
+            consumptionM3 = (data.meterReading.toDoubleWithReplace() ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0),
             lastPaymentValue = route.ultimaFactura?.precio,
             lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
@@ -216,8 +217,7 @@ data class Invoice(
                                     )
                                 },
                             value = concept.valor,
-                            consumption = data.meterReading.toInt() - (route.contador?.ultimaLectura
-                                ?: 0),
+                            consumption = (data.meterReading.toDoubleWithReplace() ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0),
                         )
                     }
                 )

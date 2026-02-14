@@ -361,19 +361,22 @@ fun ReadingFormContent(
                     )
 
                     // Opciones para estado del medidor desde la configuración
-                    GenericDropdown(
-                        items = state.config?.config?.estadosMedidor.orEmpty(),
-                        selectedItem = state.meterStateId?.let { id ->
-                            state.config?.config?.estadosMedidor?.find { it.id == id }
-                        },
-                        onItemSelected = { selected ->
-                            onMeterStateChange(selected.id)
-                        },
-                        enabled = !state.hasExistingReading,
-                        label = "Estado del medidor",
-                        placeholder = "Seleccionar...",
-                        itemToString = { it.descripcion.orEmpty() }
-                    )
+                    val meterStateOptions = state.config?.config?.estadosMedidor.orEmpty()
+                    if (meterStateOptions.isNotEmpty()) {
+                        GenericDropdown(
+                            items = state.config?.config?.estadosMedidor.orEmpty(),
+                            selectedItem = state.meterStateId?.let { id ->
+                                state.config?.config?.estadosMedidor?.find { it.id == id }
+                            },
+                            onItemSelected = { selected ->
+                                onMeterStateChange(selected.id)
+                            },
+                            enabled = !state.hasExistingReading,
+                            label = "Estado del medidor",
+                            placeholder = "Seleccionar...",
+                            itemToString = { it.descripcion.orEmpty() }
+                        )
+                    }
 
                     // Opciones para consumo anormal
                     val abnormalConsumptionOptions = listOf(

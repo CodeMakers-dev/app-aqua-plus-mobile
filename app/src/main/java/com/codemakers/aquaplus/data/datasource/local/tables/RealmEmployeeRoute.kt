@@ -63,7 +63,7 @@ open class RealmContador : EmbeddedRealmObject {
     var idTipoUso: Int? = null
     var matricula: String? = null
     var nombreTipoUso: String? = null
-    var ultimaLectura: Int? = null
+    var ultimaLectura: Double? = null
     var idTipoContador: Int? = null
     var tarifaContador: RealmList<RealmTarifaContador> = realmListOf()
     var deudaAbonoSaldo: RealmDeudaAbonoSaldo? = null

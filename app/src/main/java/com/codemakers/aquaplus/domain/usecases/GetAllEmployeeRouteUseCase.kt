@@ -3,21 +3,17 @@ package com.codemakers.aquaplus.domain.usecases
 import com.codemakers.aquaplus.domain.common.Result
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.repository.EmployeeRouteRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 
 class GetAllEmployeeRouteUseCase(
     private val employeeRouteRepository: EmployeeRouteRepository,
 ) {
 
-    operator fun invoke(): Flow<Result<List<EmployeeRoute>>> = flow {
+    suspend operator fun invoke(): Result<List<EmployeeRoute>> =
         try {
             val result = employeeRouteRepository.getAllEmployeeRouteFlow()
-            result.collect {
-                emit(Result.Success(it))
-            }
+            Result.Success(result)
         } catch (e: Exception) {
-            emit(Result.Exception(e))
+            e.printStackTrace()
+            Result.Exception(e)
         }
     }
-}

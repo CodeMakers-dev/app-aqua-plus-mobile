@@ -68,7 +68,7 @@ data class ContadorDto(
     val idTipoUso: Int?,
     val matricula: String?,
     val nombreTipoUso: String?,
-    val ultimaLectura: Int?,
+    val ultimaLectura: Double?,
     val idTipoContador: Int?,
     val tarifaContador: List<TarifaContadorDto>?,
     val deudaAbonoSaldo: DeudaAbonoSaldoDto,

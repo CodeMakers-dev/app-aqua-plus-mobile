@@ -10,11 +10,11 @@ interface EmployeeRouteApi {
 
     @GET("api/v1/ruta-empleado/sync/{employeeId}")
     suspend fun getEmployeeRoute(
-        @Path("employeeId") userId: Int,
+        @Path("employeeId") personId: Int,
     ): BaseResponse<EmployeeRouteDto>
 
     @GET("api/v1/ruta-empleado/config/{employeeId}")
     suspend fun getEmployeeRouteConfig(
-        @Path("employeeId") userId: Int,
+        @Path("employeeId") personId: Int,
     ): BaseResponse<EmployeeRouteConfigDto>
 }

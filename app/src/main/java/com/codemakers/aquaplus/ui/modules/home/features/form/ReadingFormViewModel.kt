@@ -3,6 +3,7 @@ package com.codemakers.aquaplus.ui.modules.home.features.form
 import androidx.lifecycle.viewModelScope
 import com.codemakers.aquaplus.base.BaseViewModel
 import com.codemakers.aquaplus.domain.common.Result
+import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.usecases.CreateOrUpdateReadingFormData
 import com.codemakers.aquaplus.domain.usecases.GetEmployeeRouteByIdUseCase
 import com.codemakers.aquaplus.domain.usecases.GetReadingFormDataByEmployeeRouteId
@@ -68,10 +69,7 @@ class ReadingFormViewModel(
     }
 
     fun onMeterReadingChange(meterReading: String) {
-        // Only allow changes if meter state is not 25 or 26
-        if (!isProjectedReadingState(state.value.meterStateId)) {
-            _state.update { it.copy(meterReading = meterReading) }
-        }
+        _state.update { it.copy(meterReading = meterReading) }
     }
 
     fun onAbnormalConsumptionChange(abnormalConsumption: Boolean) {
@@ -110,6 +108,7 @@ class ReadingFormViewModel(
                     readingFormDataId = state.value.readingFormDataId,
                     date = LocalDate.now(),
                     serial = state.value.serial,
+                    meterStateId = state.value.meterStateId,
                 ).collect { result ->
                     when (result) {
                         is Result.Success -> {
@@ -137,6 +136,7 @@ class ReadingFormViewModel(
                                     }
                                 }
                             } catch (e: Exception) {
+                                e.printStackTrace()
                                 _state.update {
                                     it.copy(
                                         isLoading = false,
@@ -162,6 +162,7 @@ class ReadingFormViewModel(
                     }
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
                 _state.update {
                     it.copy(
                         isLoading = false,
@@ -184,27 +185,20 @@ class ReadingFormViewModel(
                         is Result.Success -> {
                             val route = result.data.first
                             val config = result.data.second
-                            val initialMeterStateId = route?.contador?.idEstadoContador
-                            val projectedReading = route?.contador?.lecturaProyectada
 
                             _state.update {
                                 var newState = it.copy(
                                     route = route,
                                     serial = route?.contador?.serial ?: "",
                                     config = config,
-                                    meterStateId = initialMeterStateId,
                                 )
-
-                                // Set meter reading based on state
-                                val meterReading = getMeterReadingForState(
-                                    meterStateId = initialMeterStateId,
-                                    projectedReading = projectedReading
-                                )
-                                newState = newState.copy(meterReading = meterReading)
 
                                 newState
                             }
-                            loadReadingFormData(employeeRouteId = employeeRouteId)
+                            loadReadingFormData(
+                                employeeRouteId = employeeRouteId,
+                                route = route,
+                            )
                         }
 
                         is Result.Error -> _state.update {
@@ -233,7 +227,11 @@ class ReadingFormViewModel(
         }
     }
 
-    private fun loadReadingFormData(employeeRouteId: Int) {
+    private fun loadReadingFormData(
+        employeeRouteId: Int,
+        route: EmployeeRoute?,
+    ) {
+        val initialMeterStateId = route?.contador?.idEstadoContador
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 getReadingFormDataByEmployeeRouteId(employeeRouteId = employeeRouteId).collect { result ->
@@ -244,12 +242,14 @@ class ReadingFormViewModel(
 
                             // Use helper method to determine meter reading
                             val meterReading = getMeterReadingForState(
-                                meterStateId = meterStateId,
+                                meterStateId = meterStateId ?: initialMeterStateId,
                                 projectedReading = projectedReading,
                                 fallbackReading = result.data?.meterReading.orEmpty()
                             )
 
                             currentState.copy(
+                                meterStateId = result.data?.meterStateId ?: initialMeterStateId,
+                                serial = result.data?.serial ?: route?.contador?.serial ?: "",
                                 readingFormData = result.data,
                                 meterReading = meterReading,
                                 abnormalConsumption = result.data?.abnormalConsumption,

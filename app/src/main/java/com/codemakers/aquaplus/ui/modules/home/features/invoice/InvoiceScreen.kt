@@ -465,11 +465,11 @@ private fun AquaPlusInvoicePreview() {
             average = 1232.0
         ),
         reading = ReadingInfo(
-            prevReading = 1235,
+            prevReading = 1235.0,
             prevDate = LocalDate.of(2025, 4, 15),
-            currentReading = 1251,
+            currentReading = 1251.0,
             currentDate = LocalDate.of(2025, 5, 15),
-            consumptionM3 = 16,
+            consumptionM3 = 16.0,
             lastPaymentDate = LocalDate.of(2025, 4, 15),
             lastPaymentValue = 1000.0
         ),
@@ -496,7 +496,7 @@ private fun AquaPlusInvoicePreview() {
                         indCalcularMc = true,
                         stratumValue = StratumValueDetail(value = 90.0, stratum = 3),
                         value = null,
-                        consumption = 16
+                        consumption = 16.0
                     )
                 )
             ),
@@ -528,7 +528,7 @@ private fun AquaPlusInvoicePreview() {
                         indCalcularMc = true,
                         stratumValue = StratumValueDetail(value = 153.0, stratum = 3),
                         value = null,
-                        consumption = 16
+                        consumption = 16.0
                     )
                 )
             ),

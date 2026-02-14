@@ -1,5 +1,6 @@
 package com.codemakers.aquaplus.ui.modules.signin.features.splash
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.codemakers.aquaplus.base.BaseViewModel
 import com.codemakers.aquaplus.domain.common.Result
@@ -33,6 +34,7 @@ class SplashViewModel(
         viewModelScope.launch {
             delay(1000)
             getProfileUseCase().collect {
+                Log.d("SplashViewModel", "getProfileUseCase: $it")
                 val isLogged = (it as? Result.Success)?.data != null
                 _state.update { state ->
                     state.copy(

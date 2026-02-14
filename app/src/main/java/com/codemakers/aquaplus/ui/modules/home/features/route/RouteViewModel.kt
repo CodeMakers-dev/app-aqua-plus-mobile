@@ -70,14 +70,14 @@ class RouteViewModel(
                     is Result.Error -> _state.update {
                         it.copy(
                             isLoading = false,
-                            error = result.error.message,
+                            error = "Error3" +result.error.message,
                         )
                     }
 
                     is Result.Exception -> _state.update {
                         it.copy(
                             isLoading = false,
-                            error = result.error.message,
+                            error = "Error4" +result.error.message,
                         )
                     }
                 }
@@ -116,36 +116,35 @@ class RouteViewModel(
     //Validations
 
     private fun loadAllEmployeeRoutes() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
             try {
-                getAllEmployeeRouteUseCase().collect { result ->
-                    when (result) {
-                        is Result.Success -> {
-                            _state.update {
-                                it.copy(
-                                    allRoutes = result.data,
-                                    routes = result.data,
-                                    search = "",
-                                    isLoading = false,
-                                )
-                            }
-                        }
-
-                        is Result.Error -> _state.update {
+                val result = getAllEmployeeRouteUseCase()
+                when (result) {
+                    is Result.Success -> {
+                        _state.update {
                             it.copy(
+                                allRoutes = result.data,
+                                routes = result.data,
+                                search = "",
                                 isLoading = false,
-                                error = result.error.message,
                             )
                         }
+                    }
 
-                        is Result.Exception -> _state.update {
-                            it.copy(
-                                isLoading = false,
-                                error = result.error.message,
-                            )
-                        }
+                    is Result.Error -> _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = "Error1" + result.error.message,
+                        )
+                    }
+
+                    is Result.Exception -> _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = "Error2" + result.error.message,
+                        )
                     }
                 }
             } catch (e: Exception) {

@@ -38,8 +38,10 @@ class EmployeeRouteDao(
     private val realm: Realm,
 ) {
 
-    suspend fun getAllEmployeeRouteFlow(personId: Int): Flow<ResultsChange<RealmEmployeeRoute>> {
-        return withContext(Dispatchers.IO) { realm.query<RealmEmployeeRoute>("personId == $0", personId).find().asFlow() }
+    suspend fun getAllEmployeeRouteFlow(personId: Int): List<RealmEmployeeRoute> {
+        return withContext(Dispatchers.IO) {
+            realm.query<RealmEmployeeRoute>("personId == $0", personId).find()
+        }
     }
 
     suspend fun getAllEmployeeRouteConfigFlow(personId: Int): Flow<ResultsChange<RealmEmployeeRouteConfig>> {

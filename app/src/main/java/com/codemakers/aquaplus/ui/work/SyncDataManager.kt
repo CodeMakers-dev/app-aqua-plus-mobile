@@ -1,5 +1,6 @@
 package com.codemakers.aquaplus.ui.work
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
@@ -27,10 +28,12 @@ class SyncDataManager(
 
     fun start() = launch {
         val hasUnsyncedData = hasUnsyncedReadingFormDataUseCase()
+        Log.d("SyncDataManager", "hasUnsyncedData: $hasUnsyncedData")
         // TODO: Check if user is logged
         //val isUserLogged = userRepository.isUserLogged()
         val isWorkFinished = workState.value?.firstOrNull()?.state?.isFinished != false
-
+        Log.d("SyncDataManager", "workState.value?.firstOrNull()?.state: ${workState.value?.firstOrNull()?.state}")
+        Log.d("SyncDataManager", "isWorkFinished: $isWorkFinished")
         if (isWorkFinished /*&& isUserLogged*/ && hasUnsyncedData) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED).build()

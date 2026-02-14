@@ -17,6 +17,8 @@ data class ReadRequest(
     val meterReading: String,
     val description: String,
     val abnormalConsumption: Boolean,
+    val meterStateId: Int?,
+    val serial: String?,
 )
 
 fun InvoiceRequest.toData() = InvoiceRequestDto(
@@ -32,5 +34,7 @@ fun InvoiceRequest.toData() = InvoiceRequestDto(
 fun ReadRequest.toData() = ReadRequestDto(
     meterReading = meterReading,
     description = description,
-    abnormalConsumption = abnormalConsumption
+    abnormalConsumption = abnormalConsumption,
+    meterStateId = meterStateId,
+    serial = serial,
 )

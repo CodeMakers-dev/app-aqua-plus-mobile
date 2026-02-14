@@ -15,4 +15,5 @@ data class ReadingFormData(
     @Serializable(with = LocalDateSerializer::class) val date: LocalDate,
     val isSynced: Boolean,
     val serial: String?,
+    val meterStateId: Int?,
 )
