@@ -73,9 +73,9 @@ data class ConceptDetail(
         get() {
             val conceptValue = stratumValue?.value ?: value
             return if (indCalcularMc == true && valorMcValue != null) {
-                valorMcValue + (conceptValue ?: 0.0)
+                (valorMcValue + (conceptValue ?: 0.0)).roundTo2Decimals()
             } else {
-                conceptValue
+                conceptValue?.roundTo2Decimals()
             }
         }
 
@@ -233,25 +233,22 @@ data class Invoice(
                         }
                     )
                 } else {
-                    val consumptionConcepts =
-                        tarifa.conceptos?.filter { it.tipoConcepto?.codigo in consumptionCodes }
-                    val otherConcepts =
-                        tarifa.conceptos?.filter { it.tipoConcepto?.codigo !in consumptionCodes }
-
-                    val selectedConsumptionConcept = if (!consumptionConcepts.isNullOrEmpty()) {
-                        consumptionConcepts.find { it.tipoConcepto?.codigo == targetConceptCode }
-                            ?: consumptionConcepts.find { it.tipoConcepto?.codigo == ACUCONBAS }
-                    } else null
-
-                    val selectedConcepts =
-                        listOfNotNull(selectedConsumptionConcept) + otherConcepts.orEmpty()
+                    val activeConceptCode = tarifa.conceptos
+                        ?.filter { it.tipoConcepto?.codigo in consumptionCodes }
+                        ?.let { codes ->
+                            codes.find { it.tipoConcepto?.codigo == targetConceptCode }?.tipoConcepto?.codigo
+                                ?: codes.find { it.tipoConcepto?.codigo == ACUCONBAS }?.tipoConcepto?.codigo
+                        }
 
                     FeeSection(
                         id = tarifa.id,
                         title = tarifa.tipoTarifa?.nombre.orEmpty(),
                         code = tarifa.tipoTarifa?.codigo.orEmpty(),
-                        conceptos = selectedConcepts.map { concept ->
-                            val valorMc = if (concept.indCalcularMc == true) {
+                        conceptos = tarifa.conceptos?.map { concept ->
+                            val isActive = concept.tipoConcepto?.codigo == activeConceptCode
+                                    || concept.tipoConcepto?.codigo !in consumptionCodes
+
+                            val valorMc = if (isActive && concept.indCalcularMc == true) {
                                 tarifa.valorMc?.find { mc ->
                                     mc.tipoUso?.id == route.contador?.idTipoUso && mc.estrato == route.contador?.estrato
                                 }
@@ -261,7 +258,7 @@ data class Invoice(
                                 id = concept.id,
                                 title = concept.tipoConcepto?.descripcion.orEmpty(),
                                 code = concept.tipoConcepto?.codigo.orEmpty(),
-                                indCalcularMc = concept.indCalcularMc,
+                                indCalcularMc = if (isActive) concept.indCalcularMc else false,
                                 stratumValue = concept.valoresEstrato?.find { valueStratum -> valueStratum.estrato == route.contador?.estrato }
                                     ?.let { stratum ->
                                         StratumValueDetail(
@@ -269,8 +266,8 @@ data class Invoice(
                                             stratum = stratum.estrato ?: 0,
                                         )
                                     },
-                                value = concept.valor,
-                                consumption = consumption,
+                                value = if (isActive) concept.valor else 0.0,
+                                consumption = if (isActive) consumption else null,
                                 valorMcValue = valorMc?.valor,
                             )
                         }
