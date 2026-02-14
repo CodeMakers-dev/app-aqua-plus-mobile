@@ -338,7 +338,7 @@ fun ReadingFormContent(
                             )
                         },
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
+                            keyboardType = KeyboardType.Decimal,
                             imeAction = ImeAction.Next
                         ),
                         keyboardActions = KeyboardActions(

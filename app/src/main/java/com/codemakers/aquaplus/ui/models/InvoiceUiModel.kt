@@ -4,11 +4,15 @@ import com.codemakers.aquaplus.domain.models.DeudaAbonoSaldo
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.ReadingFormData
+import com.codemakers.aquaplus.ui.extensions.roundTo2Decimals
 import com.codemakers.aquaplus.ui.extensions.toCapitalCase
 import com.codemakers.aquaplus.ui.extensions.toDoubleWithReplace
 import com.codemakers.aquaplus.ui.extensions.toLocalDate
 import java.time.LocalDate
 
+const val ACUCONBAS = "ACUCONBAS"
+const val ACUCONSUN = "ACUCONSUN"
+const val ACUCONCOM = "ACUCONCOM"
 
 data class Client(
     val name: String,
@@ -107,7 +111,7 @@ data class Invoice(
     val companyImage: String?,
     val companyName: String,
     val companyNit: String,
-    val companyCode: String,
+    val companyAddress: String,
     val companyQrCode: String?,
     val companyFooter: String?,
     val companyFooterNote: String?,
@@ -143,7 +147,11 @@ data class Invoice(
         companyImage = config.config?.empresa?.logoEmpresa?.imagen,
         companyName = route.empresa?.nombre.orEmpty(),
         companyNit = route.empresa?.nit.orEmpty(),
-        companyCode = route.empresa?.codigo.orEmpty(),
+        companyAddress = listOfNotNull(
+            config.config?.empresa?.direccion?.corregimiento,
+            config.config?.empresa?.direccion?.ciudad,
+            config.config?.empresa?.direccion?.departamento
+        ).filter { it.isNotBlank() }.joinToString(", "),
         companyQrCode = config.config?.empresa?.codigoQr?.imagen,
         methodsPayment = config.config?.empresa?.puntosPago?.map { it.imagen },
         codInvoice = route.codFactura.orEmpty(),
@@ -184,8 +192,8 @@ data class Invoice(
             prevDate = route.contador?.historicoConsumo?.lastOrNull()?.fechaLectura?.toLocalDate(),
             currentReading = data.meterReading.toDoubleWithReplace() ?: 0.0,
             currentDate = data.date,
-            consumptionM3 = (data.meterReading.toDoubleWithReplace()
-                ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0),
+            consumptionM3 = ((data.meterReading.toDoubleWithReplace()
+                ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0)).roundTo2Decimals(),
             lastPaymentValue = route.ultimaFactura?.precio,
             lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
@@ -198,19 +206,19 @@ data class Invoice(
             val consuSuntuario = params?.consuSuntuario?.toDoubleOrNull()
             val consuComplementario = params?.consuComplementario?.toDoubleOrNull()
 
-            val consumptionCodes = setOf("BAS", "SUN", "COM")
+            val consumptionCodes = setOf(ACUCONBAS, ACUCONSUN, ACUCONCOM)
             val targetConceptCode = when {
-                consuBasico != null && consumption <= consuBasico -> "BAS"
-                consuBasico != null && consuSuntuario != null && consumption > consuBasico && consumption < consuSuntuario -> "SUN"
-                consuComplementario != null && consumption >= consuComplementario -> "COM"
-                else -> "BAS"
+                consuBasico != null && consumption <= consuBasico -> ACUCONBAS
+                consuBasico != null && consuSuntuario != null && consumption > consuBasico && consumption < consuSuntuario -> ACUCONSUN
+                consuComplementario != null && consumption >= consuComplementario -> ACUCONCOM
+                else -> ACUCONBAS
             }
 
             cfg.tarifasEmpresa?.map { tarifa ->
                 if (tarifa.tipoTarifa?.codigo == "OTR") {
                     FeeSection(
                         id = tarifa.id,
-                        title = tarifa.tipoTarifa.descripcion.orEmpty(),
+                        title = tarifa.tipoTarifa.nombre.orEmpty(),
                         code = tarifa.tipoTarifa.codigo,
                         conceptos = route.personaCliente?.deudaCliente?.map { deuda ->
                             ConceptDetail(
@@ -232,15 +240,15 @@ data class Invoice(
 
                     val selectedConsumptionConcept = if (!consumptionConcepts.isNullOrEmpty()) {
                         consumptionConcepts.find { it.tipoConcepto?.codigo == targetConceptCode }
-                            ?: consumptionConcepts.find { it.tipoConcepto?.codigo == "BAS" }
+                            ?: consumptionConcepts.find { it.tipoConcepto?.codigo == ACUCONBAS }
                     } else null
 
                     val selectedConcepts =
-                        listOfNotNull(selectedConsumptionConcept) //+ otherConcepts.orEmpty()
+                        listOfNotNull(selectedConsumptionConcept) + otherConcepts.orEmpty()
 
                     FeeSection(
                         id = tarifa.id,
-                        title = tarifa.tipoTarifa?.descripcion.orEmpty(),
+                        title = tarifa.tipoTarifa?.nombre.orEmpty(),
                         code = tarifa.tipoTarifa?.codigo.orEmpty(),
                         conceptos = selectedConcepts.map { concept ->
                             val valorMc = if (concept.indCalcularMc == true) {

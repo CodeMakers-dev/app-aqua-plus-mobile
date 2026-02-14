@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -155,7 +156,8 @@ fun InvoiceContent(invoice: Invoice) {
                         contentDescription = "Company Picture",
                         modifier = Modifier
                             .size(60.dp)
-                            .clip(CircleShape)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Fit
                     )
                     Spacer(Modifier.width(8.dp))
                 }
@@ -171,10 +173,12 @@ fun InvoiceContent(invoice: Invoice) {
                         "NIT: ${invoice.companyNit}",
                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
                     )
-                    Text(
-                        "Código empresa: ${invoice.companyCode}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    if (invoice.companyAddress.isNotEmpty()) {
+                        Text(
+                            invoice.companyAddress,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
 
             }
@@ -271,7 +275,10 @@ fun InvoiceContent(invoice: Invoice) {
         TwoPane(
             left = {
                 InfoCard(title = "") {
-                    KeyValueRow("Fecha Ultimo pago", "${invoice.reading.lastPaymentDate}")
+                    KeyValueRow(
+                        "Fecha Ultimo pago",
+                        invoice.reading.lastPaymentDate?.format(dateFmt) ?: "---"
+                    )
                     KeyValueRow("Valor Ultimo pago", "${invoice.reading.lastPaymentValue?.cop()}")
                 }
             },
@@ -438,7 +445,7 @@ private fun AquaPlusInvoicePreview() {
         companyFooter = "tes \\n asas",
         companyName = "Acueducto salto de bordones",
         companyNit = "900.123-456-7",
-        companyCode = "AP001",
+        companyAddress = "Calle 123#45-67",
         codInvoice = "123456789",
         client = Client(
             name = "Juan carlos rodriguez Rodriguez",
