@@ -62,10 +62,18 @@ data class ConceptDetail(
     val stratumValue: StratumValueDetail?,
     val value: Double?,
     val consumption: Double?,
+    val valorMcValue: Double? = null,
 ) {
 
     val tarifa: Double?
-        get() = value ?: stratumValue?.value
+        get() {
+            val conceptValue = stratumValue?.value ?: value
+            return if (indCalcularMc == true && valorMcValue != null) {
+                valorMcValue + (conceptValue ?: 0.0)
+            } else {
+                conceptValue
+            }
+        }
 
     val consumptionTotal: Double?
         get() = if (indCalcularMc == true) consumption else null
@@ -73,7 +81,7 @@ data class ConceptDetail(
     val total: Double
         get() {
             val total = tarifa ?: 0.0
-            val factor = if (indCalcularMc == true) (consumption?.toDouble() ?: 0.0) else 1.0
+            val factor = if (indCalcularMc == true) (consumption ?: 0.0) else 1.0
             return total * factor
         }
 }
@@ -180,48 +188,81 @@ data class Invoice(
             lastPaymentValue = route.ultimaFactura?.precio,
             lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
-        fees = config.config?.tarifasEmpresa?.map {
-            if (it.tipoTarifa?.codigo == "OTR") {
-                FeeSection(
-                    id = it.id,
-                    title = it.tipoTarifa.descripcion.orEmpty(),
-                    code = it.tipoTarifa.codigo,
-                    conceptos = route.personaCliente?.deudaCliente?.map { deuda ->
-                        ConceptDetail(
-                            id = null,
-                            title = deuda.nombreTipoDeuda.orEmpty(),
-                            code = deuda.codigoTipoDeuda.orEmpty(),
-                            indCalcularMc = false,
-                            stratumValue = null,
-                            value = deuda.nuevoSaldo,
-                            consumption = null,
-                        )
-                    }
-                )
-            } else {
-                FeeSection(
-                    id = it.id,
-                    title = it.tipoTarifa?.descripcion.orEmpty(),
-                    code = it.tipoTarifa?.codigo.orEmpty(),
-                    conceptos = it.conceptos?.map { concept ->
-                        ConceptDetail(
-                            id = concept.id,
-                            title = concept.tipoConcepto?.descripcion.orEmpty(),
-                            code = concept.tipoConcepto?.codigo.orEmpty(),
-                            indCalcularMc = concept.indCalcularMc,
-                            stratumValue = concept.valoresEstrato?.find { valueStratum -> valueStratum.estrato == route.contador?.estrato }
-                                ?.let { stratum ->
-                                    StratumValueDetail(
-                                        value = stratum.valor ?: 0.0,
-                                        stratum = stratum.estrato ?: 0,
-                                    )
-                                },
-                            value = concept.valor,
-                            consumption = (data.meterReading.toDoubleWithReplace() ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0),
-                        )
-                    }
-                )
+        fees = config.config?.let { cfg ->
+            val consumption = (data.meterReading.toDoubleWithReplace() ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0)
+            val params = cfg.parametrosEmpresa
+            val consuBasico = params?.consuBasico?.toDoubleOrNull()
+            val consuSuntuario = params?.consuSuntuario?.toDoubleOrNull()
+            val consuComplementario = params?.consuComplementario?.toDoubleOrNull()
+
+            val consumptionCodes = setOf("BAS", "SUN", "COM")
+            val targetConceptCode = when {
+                consuBasico != null && consumption <= consuBasico -> "BAS"
+                consuBasico != null && consuSuntuario != null && consumption > consuBasico && consumption < consuSuntuario -> "SUN"
+                consuComplementario != null && consumption >= consuComplementario -> "COM"
+                else -> "BAS"
             }
+
+            cfg.tarifasEmpresa?.map { tarifa ->
+                if (tarifa.tipoTarifa?.codigo == "OTR") {
+                    FeeSection(
+                        id = tarifa.id,
+                        title = tarifa.tipoTarifa.descripcion.orEmpty(),
+                        code = tarifa.tipoTarifa.codigo,
+                        conceptos = route.personaCliente?.deudaCliente?.map { deuda ->
+                            ConceptDetail(
+                                id = null,
+                                title = deuda.nombreTipoDeuda.orEmpty(),
+                                code = deuda.codigoTipoDeuda.orEmpty(),
+                                indCalcularMc = false,
+                                stratumValue = null,
+                                value = deuda.nuevoSaldo,
+                                consumption = null,
+                            )
+                        }
+                    )
+                } else {
+                    val consumptionConcepts = tarifa.conceptos?.filter { it.tipoConcepto?.codigo in consumptionCodes }
+                    val otherConcepts = tarifa.conceptos?.filter { it.tipoConcepto?.codigo !in consumptionCodes }
+
+                    val selectedConsumptionConcept = if (!consumptionConcepts.isNullOrEmpty()) {
+                        consumptionConcepts.find { it.tipoConcepto?.codigo == targetConceptCode }
+                            ?: consumptionConcepts.find { it.tipoConcepto?.codigo == "BAS" }
+                    } else null
+
+                    val selectedConcepts = listOfNotNull(selectedConsumptionConcept) //+ otherConcepts.orEmpty()
+
+                    FeeSection(
+                        id = tarifa.id,
+                        title = tarifa.tipoTarifa?.descripcion.orEmpty(),
+                        code = tarifa.tipoTarifa?.codigo.orEmpty(),
+                        conceptos = selectedConcepts.map { concept ->
+                            val valorMc = if (concept.indCalcularMc == true) {
+                                tarifa.valorMc?.find { mc ->
+                                    mc.tipoUso?.id == route.contador?.idTipoUso && mc.estrato == route.contador?.estrato
+                                }
+                            } else null
+
+                            ConceptDetail(
+                                id = concept.id,
+                                title = concept.tipoConcepto?.descripcion.orEmpty(),
+                                code = concept.tipoConcepto?.codigo.orEmpty(),
+                                indCalcularMc = concept.indCalcularMc,
+                                stratumValue = concept.valoresEstrato?.find { valueStratum -> valueStratum.estrato == route.contador?.estrato }
+                                    ?.let { stratum ->
+                                        StratumValueDetail(
+                                            value = stratum.valor ?: 0.0,
+                                            stratum = stratum.estrato ?: 0,
+                                        )
+                                    },
+                                value = concept.valor,
+                                consumption = consumption,
+                                valorMcValue = valorMc?.valor,
+                            )
+                        }
+                    )
+                }
+            }.orEmpty()
         }.orEmpty(),
         history = route.contador?.historicoConsumo?.mapNotNull {
             if (it.mes != null && it.precio != null && it.consumo != null) {
