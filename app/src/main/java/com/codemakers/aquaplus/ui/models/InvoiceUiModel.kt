@@ -170,12 +170,12 @@ data class Invoice(
             state = "Pendiente",
         ),
         meter = MeterInfo(
-            number = route.contador?.serial.orEmpty(),
+            number = data.serial ?: route.contador?.serial.orEmpty(),
             installDate = route.contador?.fechaInstalacion?.toLocalDate(),
             type = route.contador?.nombreTipoContador.orEmpty(),
             stratum = route.contador?.estrato ?: 0,
             nameTypeUse = route.contador?.nombreTipoUso.orEmpty(),
-            state = route.contador?.nombreEstadoContador.orEmpty(),
+            state = config.config?.estadosMedidor?.find { it.id == data.meterStateId }?.descripcion.orEmpty(),
             registration = route.contador?.matricula.orEmpty(),
             average = route.contador?.promedioConsumo ?: 0.0
         ),
@@ -184,12 +184,15 @@ data class Invoice(
             prevDate = route.contador?.historicoConsumo?.lastOrNull()?.fechaLectura?.toLocalDate(),
             currentReading = data.meterReading.toDoubleWithReplace() ?: 0.0,
             currentDate = data.date,
-            consumptionM3 = (data.meterReading.toDoubleWithReplace() ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0),
+            consumptionM3 = (data.meterReading.toDoubleWithReplace()
+                ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0),
             lastPaymentValue = route.ultimaFactura?.precio,
             lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
         fees = config.config?.let { cfg ->
-            val consumption = (data.meterReading.toDoubleWithReplace() ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0)
+            val consumption =
+                (data.meterReading.toDoubleWithReplace() ?: 0.0) - (route.contador?.ultimaLectura
+                    ?: 0.0)
             val params = cfg.parametrosEmpresa
             val consuBasico = params?.consuBasico?.toDoubleOrNull()
             val consuSuntuario = params?.consuSuntuario?.toDoubleOrNull()
@@ -222,15 +225,18 @@ data class Invoice(
                         }
                     )
                 } else {
-                    val consumptionConcepts = tarifa.conceptos?.filter { it.tipoConcepto?.codigo in consumptionCodes }
-                    val otherConcepts = tarifa.conceptos?.filter { it.tipoConcepto?.codigo !in consumptionCodes }
+                    val consumptionConcepts =
+                        tarifa.conceptos?.filter { it.tipoConcepto?.codigo in consumptionCodes }
+                    val otherConcepts =
+                        tarifa.conceptos?.filter { it.tipoConcepto?.codigo !in consumptionCodes }
 
                     val selectedConsumptionConcept = if (!consumptionConcepts.isNullOrEmpty()) {
                         consumptionConcepts.find { it.tipoConcepto?.codigo == targetConceptCode }
                             ?: consumptionConcepts.find { it.tipoConcepto?.codigo == "BAS" }
                     } else null
 
-                    val selectedConcepts = listOfNotNull(selectedConsumptionConcept) //+ otherConcepts.orEmpty()
+                    val selectedConcepts =
+                        listOfNotNull(selectedConsumptionConcept) //+ otherConcepts.orEmpty()
 
                     FeeSection(
                         id = tarifa.id,
