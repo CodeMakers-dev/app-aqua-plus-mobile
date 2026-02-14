@@ -54,6 +54,7 @@ interface EmployeeRouteRepository {
         observations: String,
         readingFormDataId: Long?,
         date: LocalDate,
+        serial: String,
     ): Result<Unit>
 
     suspend fun updateReadingFormDataIsSynced(

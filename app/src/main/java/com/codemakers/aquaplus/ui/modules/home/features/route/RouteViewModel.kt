@@ -94,14 +94,14 @@ class RouteViewModel(
         val routesSearched = if (search.isNotBlank()) {
             _state.value.allRoutes?.filter {
                 val route = it
-                route.personaCliente.direccion.descripcion?.lowercase()
+                route.personaCliente?.direccion?.descripcion?.lowercase()
                     ?.contains(search.lowercase()) == true ||
-                        route.personaCliente.primerNombre.lowercase()
+                        route.personaCliente?.primerNombre.orEmpty().lowercase()
                             .contains(search.lowercase()) ||
-                        route.personaCliente.primerApellido.lowercase()
+                        route.personaCliente?.primerApellido.orEmpty().lowercase()
                             .contains(search.lowercase()) ||
-                        route.personaCliente.numeroCedula.contains(search) ||
-                        route.contador.serial.orEmpty().lowercase().contains(search.lowercase())
+                        route.personaCliente?.numeroCedula.orEmpty().contains(search) ||
+                        route.contador?.serial.orEmpty().lowercase().contains(search.lowercase())
             }
         } else {
             _state.value.allRoutes

@@ -109,6 +109,7 @@ class ReadingFormViewModel(
                     observations = state.value.observations,
                     readingFormDataId = state.value.readingFormDataId,
                     date = LocalDate.now(),
+                    serial = state.value.serial,
                 ).collect { result ->
                     when (result) {
                         is Result.Success -> {

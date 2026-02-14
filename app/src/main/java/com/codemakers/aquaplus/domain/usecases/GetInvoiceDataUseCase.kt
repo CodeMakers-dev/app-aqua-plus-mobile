@@ -42,7 +42,7 @@ class GetInvoiceDataUseCase(
         
         // Only fetch config if we have the employeeRoute
         val employeeRouteConfig = employeeRouteRepository.getEmployeeRouteConfigById(
-            empresaId = employeeRoute.empresa.id ?: 0
+            empresaId = employeeRoute.empresa?.id ?: 0
         )
         
         if (employeeRouteConfig == null) return@withContext null

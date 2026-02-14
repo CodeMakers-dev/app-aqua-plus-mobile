@@ -31,7 +31,7 @@ class SaveInvoiceUseCase(
         if (employeeRoute == null) return@withContext null
         
         val employeeRouteConfig = employeeRouteRepository.getEmployeeRouteConfigById(
-            empresaId = employeeRoute.empresa.id ?: 0
+            empresaId = employeeRoute.empresa?.id ?: 0
         )
         
         if (employeeRouteConfig == null) return@withContext null

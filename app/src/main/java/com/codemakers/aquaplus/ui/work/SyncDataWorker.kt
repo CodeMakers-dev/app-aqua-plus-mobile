@@ -56,7 +56,7 @@ class SyncDataWorker(
 
                 request.add(
                     InvoiceRequest(
-                        code = employeeRoute.codFactura,
+                        code = employeeRoute.codFactura.orEmpty(),
                         idContador = employeeRoute.id,
                         precio = invoice.totals.totalToPay,
                         fechaEmision = readingFormData.date.toString(),

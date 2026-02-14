@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -173,6 +173,37 @@ fun ReadingFormContent(
                     containerColor = secondaryDarkColor
                 )
             )
+        },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(primaryDarkColor)
+                    .padding(16.dp)
+                    .imePadding()
+            ) {
+                Button(
+                    enabled = state.enableSave,
+                    onClick = onSaveAction,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = tertiaryDarkColor,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.LightGray
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Save,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = Color.White
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(text = stringResource(R.string.copy_save))
+                }
+            }
         }
     ) { paddingValues ->
         Column(
@@ -202,8 +233,14 @@ fun ReadingFormContent(
                         onValueChange = onSerialChange,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .let { if (state.serial.isEmpty()) it.focusRequester(focusRequestSerial) else it },
+                            .let {
+                                if (state.serial.isEmpty()) it.focusRequester(
+                                    focusRequestSerial
+                                ) else it
+                            },
                         enabled = !state.hasExistingReading,
+                        maxLines = 1,
+                        singleLine = true,
                         label = {
                             Text(
                                 text = stringResource(R.string.meter_reading_hint),
@@ -394,30 +431,6 @@ fun ReadingFormContent(
                         )
                     )
                 }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                enabled = state.enableSave,
-                onClick = onSaveAction,
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(16.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = tertiaryDarkColor,
-                    contentColor = Color.White,
-                    disabledContainerColor = Color.LightGray
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Save,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.White
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(text = stringResource(R.string.copy_save))
             }
         }
     }

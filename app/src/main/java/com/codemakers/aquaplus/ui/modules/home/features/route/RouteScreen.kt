@@ -256,6 +256,7 @@ fun RouteContent(
                     routes = if (selectedItem == 0) state.pendingRoutes else state.completedRoutes,
                     isInvoiceAvailable = state::isInvoiceAvailable,
                     isSynced = state::isSynced,
+                    getContadorSerial = state::getContadorSerial,
                     showSyncStatus = selectedItem == 1, // Show sync status only in completed routes
                     onNavigateToForm = onNavigateToForm,
                     onNavigateToInvoice = onNavigateToInvoice
@@ -270,6 +271,7 @@ fun RouteListContent(
     routes: List<EmployeeRoute>,
     isInvoiceAvailable: (employeeRouteId: Int) -> Boolean,
     isSynced: (employeeRouteId: Int) -> Boolean = { false },
+    getContadorSerial: (employeeRouteId: Int) -> String? = { null },
     showSyncStatus: Boolean = false,
     onNavigateToForm: (employeeRouteId: Int) -> Unit,
     onNavigateToInvoice: (employeeRouteId: Int) -> Unit,
@@ -327,13 +329,13 @@ fun RouteListContent(
                             .weight(1f),
                     ) {
                         Text(
-                            text = "${item.personaCliente.direccion.descripcion?.uppercase()}\n${item.personaCliente.direccion.corregimiento}, ${item.personaCliente.direccion.ciudad}, ${item.personaCliente.direccion.departamento}",
+                            text = "${item.personaCliente?.direccion?.descripcion?.uppercase()}\n${item.personaCliente?.direccion?.corregimiento}, ${item.personaCliente?.direccion?.ciudad}, ${item.personaCliente?.direccion?.departamento}",
                             color = Color.White,
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
 
                         )
                         Text(
-                            text = "${item.personaCliente.primerNombre} ${item.personaCliente.primerApellido}".toCapitalCase() + " - ${item.personaCliente.numeroCedula}",
+                            text = "${item.personaCliente?.primerNombre} ${item.personaCliente?.primerApellido}".toCapitalCase() + " - ${item.personaCliente?.numeroCedula}",
                             color = Color.White,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                         )
@@ -347,8 +349,9 @@ fun RouteListContent(
                                 ) {
                                     append("${stringResource(R.string.copy_serial)}: ")
                                 }
+                                val serial = getContadorSerial(item.id)
                                 withStyle(style = SpanStyle(color = Color.White)) {
-                                    append("${item.contador.serial} - ${item.contador.nombreTipoContador}")
+                                    append("${serial ?: item.contador?.serial ?: "N/A"} - ${item.contador?.nombreTipoContador}")
                                 }
                             },
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)

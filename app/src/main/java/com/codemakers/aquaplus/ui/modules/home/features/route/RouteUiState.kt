@@ -20,6 +20,9 @@ data class RouteUiState(
     fun isInvoiceAvailable(employeeRouteId: Int): Boolean =
         allData.any { it.employeeRouteId == employeeRouteId }
 
+    fun getContadorSerial(employeeRouteId: Int): String? =
+        allData.find { it.employeeRouteId == employeeRouteId }?.serial
+
     private fun isToday(employeeRouteId: Int): Boolean =
         allData.find { it.employeeRouteId == employeeRouteId }?.date?.isToday == true
 

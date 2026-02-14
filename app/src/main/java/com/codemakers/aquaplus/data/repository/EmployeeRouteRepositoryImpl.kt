@@ -130,6 +130,7 @@ class EmployeeRouteRepositoryImpl(
         observations: String,
         readingFormDataId: Long?,
         date: LocalDate,
+        serial: String,
     ): Result<Unit> {
         val personId = getPersonId()
         readingFormDataDao.saveNewReadingFormData(
@@ -140,6 +141,7 @@ class EmployeeRouteRepositoryImpl(
             readingFormDataId = readingFormDataId,
             date = date,
             personId = personId,
+            serial = serial,
         )
         return Result.Success(Unit)
     }
