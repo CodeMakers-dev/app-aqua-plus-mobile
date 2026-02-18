@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.codemakers.aquaplus.domain.models.InvoiceRequest
 import com.codemakers.aquaplus.domain.models.ReadRequest
+import com.codemakers.aquaplus.domain.usecases.DeleteOldSyncedReadingFormDataUseCase
 import com.codemakers.aquaplus.domain.usecases.GetAllReadingFormDataForSyncUseCase
 import com.codemakers.aquaplus.domain.usecases.GetEmployeeRouteAndConfigByIdUseCase
 import com.codemakers.aquaplus.domain.usecases.SendInvoiceUseCase
@@ -19,6 +20,7 @@ class SyncDataWorker(
     private val getAllReadingFormDataForSyncUseCase: GetAllReadingFormDataForSyncUseCase,
     private val getEmployeeRouteAndConfigByIdUseCase: GetEmployeeRouteAndConfigByIdUseCase,
     private val updateReadingFormDataIsSyncedUseCase: UpdateReadingFormDataIsSyncedUseCase,
+    private val deleteOldSyncedReadingFormDataUseCase: DeleteOldSyncedReadingFormDataUseCase,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -82,6 +84,8 @@ class SyncDataWorker(
                 hasAnySuccess = true
             }
         }
+
+        deleteOldSyncedReadingFormDataUseCase()
 
         return if (hasAnySuccess) Result.success() else Result.failure()
     }

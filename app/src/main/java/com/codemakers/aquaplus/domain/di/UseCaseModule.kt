@@ -18,6 +18,7 @@ import com.codemakers.aquaplus.domain.usecases.RecoveryPasswordUseCase
 import com.codemakers.aquaplus.domain.usecases.SaveInvoiceUseCase
 import com.codemakers.aquaplus.domain.usecases.SendInvoiceUseCase
 import com.codemakers.aquaplus.domain.usecases.UpdatePasswordUseCase
+import com.codemakers.aquaplus.domain.usecases.DeleteOldSyncedReadingFormDataUseCase
 import com.codemakers.aquaplus.domain.usecases.UpdateReadingFormDataIsSyncedUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -42,5 +43,6 @@ val useCaseModule = module {
     singleOf(::SaveInvoiceUseCase)
     singleOf(::HasUnsyncedReadingFormDataUseCase)
     singleOf(::SendInvoiceUseCase)
+    singleOf(::DeleteOldSyncedReadingFormDataUseCase)
 }
 

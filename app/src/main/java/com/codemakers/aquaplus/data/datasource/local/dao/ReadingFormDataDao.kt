@@ -1,5 +1,7 @@
 package com.codemakers.aquaplus.data.datasource.local.dao
 
+import android.util.Log
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmEmployeeRoute
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmReadingFormData
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
@@ -60,6 +62,22 @@ class ReadingFormDataDao(
             if (dataToUpDate != null) {
                 dataToUpDate.isSynced = true
             }
+        }
+    }
+
+    suspend fun deleteOldSyncedReadingFormData() {
+        Log.d("ReadingFormDataDao", "deleteOldSyncedReadingFormData")
+        val cutoffEpochDay = LocalDate.now().toEpochDay() - 1
+        realm.write {
+            val oldSyncedData = query<RealmReadingFormData>("isSynced == $0 AND dateEpochDay < $1", true, cutoffEpochDay).find()
+            oldSyncedData.forEach { readingFormData ->
+                Log.d("ReadingFormDataDao", "deleteOldSyncedReadingFormData: $readingFormData")
+                val employeeRoute = query<RealmEmployeeRoute>("id == $0 AND personId == $1", readingFormData.employeeRouteId, readingFormData.personId).first().find()
+                if (employeeRoute != null) {
+                    delete(employeeRoute)
+                }
+            }
+            delete(oldSyncedData)
         }
     }
 

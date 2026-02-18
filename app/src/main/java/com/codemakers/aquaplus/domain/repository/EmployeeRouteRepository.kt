@@ -61,4 +61,6 @@ interface EmployeeRouteRepository {
     suspend fun updateReadingFormDataIsSynced(
         employeeRouteId: Int,
     )
+
+    suspend fun deleteOldSyncedReadingFormData()
 }

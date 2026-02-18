@@ -164,4 +164,8 @@ class EmployeeRouteRepositoryImpl(
         val personId = getPersonId()
         readingFormDataDao.updateReadingFormDataIsSynced(employeeRouteId = employeeRouteId, personId = personId)
     }
+
+    override suspend fun deleteOldSyncedReadingFormData() {
+        readingFormDataDao.deleteOldSyncedReadingFormData()
+    }
 }
