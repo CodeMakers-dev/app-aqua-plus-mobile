@@ -8,9 +8,11 @@ data class InvoiceRequestDto(
     @SerializedName("codigo") val code: String,
     @SerializedName("idEmpresaClienteContador") val idContador: Int,
     @SerializedName("precio") val precio: Double,
+    @SerializedName("idEstadoMedidor") val meterStateId: Int,
+    @SerializedName("consumo") val consumo: Double,
+    @SerializedName("serial") val serial: String,
     @SerializedName("fechaEmision") val fechaEmision: String,
     @SerializedName("usuarioCreacion") val usuarioCreacion: String,
-    @SerializedName("codEstado") val codEstado: String,
     @SerializedName("lectura") val lectura: ReadRequestDto
 )
 
@@ -19,6 +21,4 @@ data class ReadRequestDto(
     @SerializedName("lectura") val meterReading: String,
     @SerializedName("descripcion") val description: String,
     @SerializedName("consumoAnormal") val abnormalConsumption: Boolean,
-    @SerializedName("idEstadoMedidor") val meterStateId: Int?,
-    @SerializedName("serial") val serial: String?,
 )

@@ -59,15 +59,15 @@ class SyncDataWorker(
                         code = employeeRoute.codFactura.orEmpty(),
                         idContador = employeeRoute.id,
                         precio = invoice.totals.totalToPay,
+                        meterStateId = readingFormData.meterStateId ?: 0,
+                        serial = readingFormData.serial.orEmpty(),
+                        consumo = (readingFormData.meterReading.toDoubleOrNull() ?: 0.0) - (employeeRoute.contador?.ultimaLectura ?: 0.0),
                         fechaEmision = readingFormData.date.toString(),
                         usuarioCreacion = "",
-                        codEstado = "PEN",
                         lectura = ReadRequest(
                             meterReading = readingFormData.meterReading,
                             description = readingFormData.observations,
-                            abnormalConsumption = readingFormData.abnormalConsumption == true,
-                            meterStateId = readingFormData.meterStateId,
-                            serial = readingFormData.serial,
+                            abnormalConsumption = readingFormData.abnormalConsumption == true
                         ),
                     )
                 )

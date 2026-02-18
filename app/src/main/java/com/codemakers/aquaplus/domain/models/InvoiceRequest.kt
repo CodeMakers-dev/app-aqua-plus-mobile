@@ -7,9 +7,11 @@ data class InvoiceRequest(
     val code: String,
     val idContador: Int,
     val precio: Double,
+    val meterStateId: Int,
+    val serial: String,
+    val consumo: Double,
     val fechaEmision: String,
     val usuarioCreacion: String,
-    val codEstado: String,
     val lectura: ReadRequest,
 )
 
@@ -17,17 +19,17 @@ data class ReadRequest(
     val meterReading: String,
     val description: String,
     val abnormalConsumption: Boolean,
-    val meterStateId: Int?,
-    val serial: String?,
 )
 
 fun InvoiceRequest.toData() = InvoiceRequestDto(
     code = code,
     idContador = idContador,
     precio = precio,
+    meterStateId = meterStateId,
+    serial = serial,
+    consumo = consumo,
     fechaEmision = fechaEmision,
     usuarioCreacion = usuarioCreacion,
-    codEstado = codEstado,
     lectura = lectura.toData()
 )
 
@@ -35,6 +37,4 @@ fun ReadRequest.toData() = ReadRequestDto(
     meterReading = meterReading,
     description = description,
     abnormalConsumption = abnormalConsumption,
-    meterStateId = meterStateId,
-    serial = serial,
 )
