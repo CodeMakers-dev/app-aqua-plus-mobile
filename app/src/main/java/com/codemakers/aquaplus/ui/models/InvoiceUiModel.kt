@@ -4,14 +4,15 @@ import com.codemakers.aquaplus.domain.models.DeudaAbonoSaldo
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.ReadingFormData
+import com.codemakers.aquaplus.ui.extensions.containsAnyOf
 import com.codemakers.aquaplus.ui.extensions.roundTo2Decimals
 import com.codemakers.aquaplus.ui.extensions.toCapitalCase
 import com.codemakers.aquaplus.ui.extensions.toLocalDate
 import java.time.LocalDate
 
-const val ACUCONBAS = "ACUCONBAS"
-const val ACUCONSUN = "ACUCONSUN"
-const val ACUCONCOM = "ACUCONCOM"
+const val ACUCONBAS = "BAS"
+const val ACUCONSUN = "SUN"
+const val ACUCONCOM = "COM"
 
 data class Client(
     val name: String,
@@ -189,16 +190,16 @@ data class Invoice(
         reading = ReadingInfo(
             prevReading = route.contador?.ultimaLectura ?: 0.0,
             prevDate = route.contador?.historicoConsumo?.lastOrNull()?.fechaLectura?.toLocalDate(),
-            currentReading = data.meterReading.toDouble() ?: 0.0,
+            currentReading = data.meterReading.toDouble(),
             currentDate = data.date,
-            consumptionM3 = ((data.meterReading.toDouble()
-                ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0)).roundTo2Decimals(),
+            consumptionM3 = ((data.meterReading.toDouble()) - (route.contador?.ultimaLectura
+                ?: 0.0)).roundTo2Decimals(),
             lastPaymentValue = route.ultimaFactura?.precio,
             lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
         fees = config.config?.let { cfg ->
             val consumption =
-                (data.meterReading.toDouble() ?: 0.0) - (route.contador?.ultimaLectura
+                (data.meterReading.toDouble()) - (route.contador?.ultimaLectura
                     ?: 0.0)
             val params = cfg.parametrosEmpresa
             val consuBasico = params?.consuBasico?.toDoubleOrNull()
@@ -214,7 +215,7 @@ data class Invoice(
             }
 
             cfg.tarifasEmpresa?.map { tarifa ->
-                if (tarifa.tipoTarifa?.codigo == "OTR") {
+                if (tarifa.tipoTarifa?.codigo?.contains("OTR") == true) {
                     FeeSection(
                         id = tarifa.id,
                         title = tarifa.tipoTarifa.nombre.orEmpty(),
@@ -233,10 +234,10 @@ data class Invoice(
                     )
                 } else {
                     val activeConceptCode = tarifa.conceptos
-                        ?.filter { it.tipoConcepto?.codigo in consumptionCodes }
+                        ?.filter { it.tipoConcepto?.codigo.containsAnyOf(consumptionCodes) }
                         ?.let { codes ->
-                            codes.find { it.tipoConcepto?.codigo == targetConceptCode }?.tipoConcepto?.codigo
-                                ?: codes.find { it.tipoConcepto?.codigo == ACUCONBAS }?.tipoConcepto?.codigo
+                            codes.find { it.tipoConcepto?.codigo?.contains(targetConceptCode) == true }?.tipoConcepto?.codigo
+                                ?: codes.find { it.tipoConcepto?.codigo?.contains(ACUCONBAS) == true }?.tipoConcepto?.codigo
                         }
 
                     FeeSection(
@@ -244,8 +245,11 @@ data class Invoice(
                         title = tarifa.tipoTarifa?.nombre.orEmpty(),
                         code = tarifa.tipoTarifa?.codigo.orEmpty(),
                         conceptos = tarifa.conceptos?.map { concept ->
-                            val isActive = concept.tipoConcepto?.codigo == activeConceptCode
-                                    || concept.tipoConcepto?.codigo !in consumptionCodes
+                            val isActive =
+                                concept.tipoConcepto?.codigo?.contains(activeConceptCode.orEmpty()) == true
+                                        || !concept.tipoConcepto?.codigo.containsAnyOf(
+                                    consumptionCodes
+                                )
 
                             val valorMc = if (isActive && concept.indCalcularMc == true) {
                                 tarifa.valorMc?.find { mc ->

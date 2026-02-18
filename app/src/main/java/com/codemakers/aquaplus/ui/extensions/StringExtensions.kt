@@ -16,3 +16,6 @@ fun String.toLocalDate(): LocalDate? = try {
 } catch (e: Exception) {
     null
 }
+
+fun String?.containsAnyOf(codes: Set<String>): Boolean =
+    this != null && codes.any { code -> this.contains(code) }
