@@ -214,7 +214,11 @@ data class Invoice(
                 else -> ACUCONBAS
             }
 
-            cfg.tarifasEmpresa?.map { tarifa ->
+            cfg.tarifasEmpresa?.mapNotNull { tarifa ->
+                val idTipoTarifa = tarifa.tipoTarifa?.id ?: -1
+                if (route.contador?.tarifaContador?.map { it.idTipoTarifa }?.contains(idTipoTarifa) == true) {
+                    return@mapNotNull null
+                }
                 if (tarifa.tipoTarifa?.codigo?.contains("OTR") == true) {
                     FeeSection(
                         id = tarifa.id,
