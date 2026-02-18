@@ -16,6 +16,3 @@ fun String.toLocalDate(): LocalDate? = try {
 } catch (e: Exception) {
     null
 }
-
-fun String.toDoubleWithReplace(): Double? =
-    this.toDouble()

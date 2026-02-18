@@ -9,15 +9,16 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.9.2"
 activityCompose = "1.10.1"
-composeBom = "2025.09.00"
+composeBom = "2026.02.00"
 koin-bom = "4.1.1"
 appCompatVersion = "1.7.1"
 navigationComposeVersion = "2.9.4"
 print = "1.1.0"
+qrose = "1.3.0"
 retrofitVersion = "3.0.0"
 okhttp3LoggingVersion = "5.1.0"
 roomVersion = "2.7.2"
-chuckerHttpVersion = "4.2.0"
+chuckerHttpVersion = "4.3.0"
 realm = "3.2.9"
 realmlib = "3.0.0"
 lottie = "6.6.9"
@@ -52,6 +53,7 @@ koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-core = { module = "io.insert-koin:koin-core" }
 
+qrose = { group = "com.simonsickle", name = "composed-barcodes", version.ref = "qrose" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofitVersion" }
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofitVersion" }
 okhttp3-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp3LoggingVersion" }

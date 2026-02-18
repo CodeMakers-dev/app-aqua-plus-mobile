@@ -1,6 +1,7 @@
 package com.codemakers.aquaplus.ui.modules.home.features.invoice
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -76,6 +77,8 @@ import com.codemakers.aquaplus.ui.theme.AquaPlusTheme
 import com.codemakers.aquaplus.ui.theme.Border
 import com.codemakers.aquaplus.ui.theme.NoteBg
 import com.codemakers.aquaplus.ui.theme.primaryColor
+import com.simonsickle.compose.barcodes.Barcode
+import com.simonsickle.compose.barcodes.BarcodeType
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import java.time.LocalDate
@@ -422,6 +425,21 @@ fun InvoiceContent(invoice: Invoice) {
             lineHeight = 14.sp,
             textAlign = TextAlign.Center
         )
+
+        /**Example barcode**/
+        val productCode = "9780201379624"
+        if (BarcodeType.EAN_13.isValueValid(productCode)) {
+            Barcode(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally),
+                width = 150.dp,
+                height = 30.dp,
+                resolutionFactor = 10,
+                type = BarcodeType.EAN_13,
+                value = productCode,
+            )
+            Spacer(Modifier.height(32.dp))
+        }
     }
 }
 

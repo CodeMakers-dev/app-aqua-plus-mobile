@@ -9,7 +9,7 @@ import org.koin.dsl.module
 import retrofit2.Retrofit
 
 val apiModule = module {
-    single { get<Retrofit>().create(AuthApi::class.java) }
+    single { get<Retrofit>(qualifier = qualifier("syncRetrofit")).create(AuthApi::class.java) }
     single { get<Retrofit>().create(UserApi::class.java) }
     single { get<Retrofit>().create(EmployeeRouteApi::class.java) }
     single { get<Retrofit>(qualifier = qualifier("syncRetrofit")).create(InvoiceApi::class.java) }

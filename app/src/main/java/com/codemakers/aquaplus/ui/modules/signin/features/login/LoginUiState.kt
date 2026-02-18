@@ -2,8 +2,8 @@ package com.codemakers.aquaplus.ui.modules.signin.features.login
 
 data class LoginUiState(
     val isLoading: Boolean = false,
-    val username: String = "juan",
-    val password: String = "ADMIN1.#12",
+    val username: String = "enrique",
+    val password: String = "ADMIN1.#",
     val showPass: Boolean = false,
     val usernameRequired: Boolean = false,
     val passwordRequired: Boolean = false,

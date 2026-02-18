@@ -6,7 +6,6 @@ import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.ReadingFormData
 import com.codemakers.aquaplus.ui.extensions.roundTo2Decimals
 import com.codemakers.aquaplus.ui.extensions.toCapitalCase
-import com.codemakers.aquaplus.ui.extensions.toDoubleWithReplace
 import com.codemakers.aquaplus.ui.extensions.toLocalDate
 import java.time.LocalDate
 
@@ -190,16 +189,16 @@ data class Invoice(
         reading = ReadingInfo(
             prevReading = route.contador?.ultimaLectura ?: 0.0,
             prevDate = route.contador?.historicoConsumo?.lastOrNull()?.fechaLectura?.toLocalDate(),
-            currentReading = data.meterReading.toDoubleWithReplace() ?: 0.0,
+            currentReading = data.meterReading.toDouble() ?: 0.0,
             currentDate = data.date,
-            consumptionM3 = ((data.meterReading.toDoubleWithReplace()
+            consumptionM3 = ((data.meterReading.toDouble()
                 ?: 0.0) - (route.contador?.ultimaLectura ?: 0.0)).roundTo2Decimals(),
             lastPaymentValue = route.ultimaFactura?.precio,
             lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
         fees = config.config?.let { cfg ->
             val consumption =
-                (data.meterReading.toDoubleWithReplace() ?: 0.0) - (route.contador?.ultimaLectura
+                (data.meterReading.toDouble() ?: 0.0) - (route.contador?.ultimaLectura
                     ?: 0.0)
             val params = cfg.parametrosEmpresa
             val consuBasico = params?.consuBasico?.toDoubleOrNull()
