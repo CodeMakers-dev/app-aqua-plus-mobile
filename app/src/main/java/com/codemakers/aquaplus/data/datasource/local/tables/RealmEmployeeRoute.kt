@@ -26,6 +26,7 @@ open class RealmEmployeeRoute : RealmObject {
     var empresa: RealmEmpresa? = null
     var contador: RealmContador? = null
     var codFactura: String = ""
+    var codConvenio: String? = null
     var ultimaFactura: RealmUltimaFactura? = null
     var personaCliente: RealmPersonaCliente? = null
 }
@@ -146,6 +147,7 @@ fun RealmEmployeeRoute.toDomain(): EmployeeRoute =
         empresa = empresa!!.toDomain(),
         contador = contador!!.toDomain(),
         codFactura = codFactura,
+        codConvenio = codConvenio,
         ultimaFactura = ultimaFactura?.toDomain(),
         personaCliente = personaCliente!!.toDomain(),
     )

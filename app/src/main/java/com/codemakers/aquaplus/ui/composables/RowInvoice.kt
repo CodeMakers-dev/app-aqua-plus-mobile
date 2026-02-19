@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -34,13 +35,14 @@ fun KeyValueRow(label: String, value: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun InfoCard(
-    title: String, content:
-    @Composable ColumnScope.() -> Unit
+    title: String,
+    cornerShape: Dp = 10.dp,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(cornerShape)
     ) {
         Column(Modifier.padding(8.dp)) {
             if (title.isNotBlank()) {

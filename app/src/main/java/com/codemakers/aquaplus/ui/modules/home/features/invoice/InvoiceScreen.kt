@@ -1,7 +1,6 @@
 package com.codemakers.aquaplus.ui.modules.home.features.invoice
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,10 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codemakers.aquaplus.domain.models.DeudaAbonoSaldo
+import com.codemakers.aquaplus.domain.models.DeudaCliente
 import com.codemakers.aquaplus.ui.composables.BarsHistory
 import com.codemakers.aquaplus.ui.composables.Base64Image
 import com.codemakers.aquaplus.ui.composables.ConceptSection
-import com.codemakers.aquaplus.ui.composables.DebtSection
 import com.codemakers.aquaplus.ui.composables.InfoCard
 import com.codemakers.aquaplus.ui.composables.KeyValueRow
 import com.codemakers.aquaplus.ui.composables.LoadingWidget
@@ -186,17 +185,15 @@ fun InvoiceContent(invoice: Invoice) {
 
             }
         }
-
         Spacer(Modifier.height(8.dp))
-
         Text(
             text = "FACTURA DE SERVICIO N° ${invoice.codInvoice}",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
         )
-
         Spacer(Modifier.height(8.dp))
-        SectionHeader("INFORMACIÓN CLIENTE")
 
+        // Información del cliente
+        SectionHeader("INFORMACIÓN CLIENTE")
         TwoPane(
             left = {
                 InfoCard(title = "") {
@@ -213,11 +210,10 @@ fun InvoiceContent(invoice: Invoice) {
                 }
             }
         )
-
         Spacer(Modifier.height(8.dp))
 
+        // Información del medidor
         SectionHeader("INFORMACIÓN DEL MEDIDOR")
-
         TwoPane(
             left = {
                 InfoCard(title = "") {
@@ -239,19 +235,16 @@ fun InvoiceContent(invoice: Invoice) {
                 }
             }
         )
-
         Spacer(Modifier.height(8.dp))
 
+        // Datos de consumo
         SectionHeader("DATOS DEL CONSUMO")
-
         TwoPane(
             left = {
                 InfoCard(title = "") {
                     KeyValueRow(
                         "Lectura Anterior",
-                        "${invoice.reading.prevReading} m³ (${
-                            invoice.reading.prevDate?.format(dateFmt) ?: "---"
-                        })"
+                        "${invoice.reading.prevReading} m³ (${invoice.reading.prevDate?.format(dateFmt)})"
                     )
                     KeyValueRow("Promedio consumo", "${invoice.meter.average} m³")
                 }
@@ -270,11 +263,10 @@ fun InvoiceContent(invoice: Invoice) {
                 }
             }
         )
-
         Spacer(Modifier.height(8.dp))
 
+        // Datos de consumo
         SectionHeader("INFORMACIÓN FACTURA")
-
         TwoPane(
             left = {
                 InfoCard(title = "") {
@@ -293,30 +285,22 @@ fun InvoiceContent(invoice: Invoice) {
 
             }
         )
+        Spacer(Modifier.height(8.dp))
 
+        // Conceptos
         invoice.fees.forEachIndexed { index, fee ->
-            Spacer(Modifier.height(8.dp))
             SectionHeader(fee.title)
-            if (fee.code == "OTR") {
-                DebtSection(
-                    fee = fee,
-                    lastIndex = invoice.fees.lastIndex,
-                )
-            } else {
-                ConceptSection(
-                    fee = fee,
-                    lastIndex = invoice.fees.lastIndex,
-                )
-            }
+            ConceptSection(
+                fee = fee,
+                lastIndex = invoice.fees.lastIndex,
+            )
+            Spacer(Modifier.height(8.dp))
         }
 
+        // Historial
         if (invoice.history.isNotEmpty()) {
-            Spacer(Modifier.height(8.dp))
-
             SectionHeader("HISTÓRICO DE CONSUMO (m³)")
-
             Spacer(Modifier.height(8.dp))
-
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -326,24 +310,56 @@ fun InvoiceContent(invoice: Invoice) {
             ) {
                 BarsHistory(invoice.history.sortedBy { it.mes })
             }
+            Spacer(Modifier.height(8.dp))
         }
 
-        Spacer(Modifier.height(8.dp))
+        if (!invoice.deudaCliente.isNullOrEmpty()) {
+            SectionHeader("INFORMACIÓN DE DEUDA")
+            invoice.deudaCliente.forEachIndexed { index, deuda ->
+                TwoPane(
+                    left = {
+                        InfoCard(title = "", cornerShape = 0.dp) {
+                            KeyValueRow("Tipo de deuda", deuda.nombreTipoDeuda.orEmpty())
+                            KeyValueRow("Código tipo deuda", deuda.codigoTipoDeuda.orEmpty())
+                            KeyValueRow("Número de cuotas", (deuda.numeroCuotas ?: 0).toString())
+                            KeyValueRow("Valor cuota", (deuda.valorCuota ?: 0.0).cop())
+                        }
+                    },
+                    right = {
+                        InfoCard(title = "", cornerShape = 0.dp) {
+                            KeyValueRow(
+                                "Abonos realizados",
+                                (deuda.abonosRealizados ?: 0).toString()
+                            )
+                            KeyValueRow(
+                                "Cuotas canceladas",
+                                (deuda.cuotasCanceladas ?: 0).toString()
+                            )
+                            KeyValueRow(
+                                "Cuotas pendientes",
+                                (deuda.cuotasPendientes ?: 0).toString()
+                            )
+                            KeyValueRow("Nuevo saldo", (deuda.nuevoSaldo ?: 0.0).cop())
+                        }
+                    },
+                    gap = 0.dp
+                )
+                if (index != invoice.deudaCliente.lastIndex) {
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Border)
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
 
         // Payment Summary Card
         SectionHeader("DETALLE DE PAGO")
-
         Spacer(Modifier.height(8.dp))
-
         PaymentSummaryCard(fees = invoice.fees)
-
         Spacer(Modifier.height(8.dp))
 
         // Payment Summary Card
         SectionHeader("INFORMACIÓN DE PAGO")
-
         Spacer(Modifier.height(8.dp))
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -362,9 +378,7 @@ fun InvoiceContent(invoice: Invoice) {
                     )
                 }
             }
-
             Spacer(Modifier.width(8.dp))
-
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -390,6 +404,26 @@ fun InvoiceContent(invoice: Invoice) {
             }
         }
         Spacer(Modifier.height(8.dp))
+
+        // Barcode
+        if (!invoice.codConvenio.isNullOrEmpty() && BarcodeType.CODE_128.isValueValid(invoice.codConvenio)) {
+            Barcode(
+                modifier = Modifier.fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
+                height = 30.dp,
+                resolutionFactor = 10,
+                type = BarcodeType.CODE_128,
+                value = invoice.codConvenio,
+            )
+            Text(
+                text = invoice.codConvenio,
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
         if (invoice.observations.isNotEmpty()) {
             Text(
                 "Observaciones: ${invoice.observations}",
@@ -426,25 +460,11 @@ fun InvoiceContent(invoice: Invoice) {
             textAlign = TextAlign.Center
         )
 
-        /**Example barcode**/
-        val productCode = "9780201379624"
-        if (BarcodeType.EAN_13.isValueValid(productCode)) {
-            Barcode(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally),
-                width = 150.dp,
-                height = 30.dp,
-                resolutionFactor = 10,
-                type = BarcodeType.EAN_13,
-                value = productCode,
-            )
-            Spacer(Modifier.height(32.dp))
-        }
     }
 }
 
 /* ---------- Preview con datos de ejemplo (como en la imagen) ---------- */
-@Preview(showBackground = true, widthDp = 328, heightDp = 2700)
+@Preview(showBackground = true, widthDp = 328, heightDp = 2000)
 @Composable
 private fun AquaPlusInvoicePreview() {
     val invoice = Invoice(
@@ -465,6 +485,7 @@ private fun AquaPlusInvoicePreview() {
         companyNit = "900.123-456-7",
         companyAddress = "Calle 123#45-67",
         codInvoice = "123456789",
+        codConvenio = "123456789",
         client = Client(
             name = "Juan carlos rodriguez Rodriguez",
             idLabel = "CC",
@@ -578,6 +599,30 @@ private fun AquaPlusInvoicePreview() {
             deudaTotal = 0.0,
             moraActual = 0.0,
             abonosTotal = 0.0
+        ),
+        deudaCliente = listOf(
+            DeudaCliente(
+                nombreTipoDeuda = "Factura Vencida",
+                codigoTipoDeuda = "FACVEN",
+                numeroCuotas = 0,
+                valorCuota = 0.0,
+                abonosRealizados = 0,
+                cuotasCanceladas = 0,
+                cuotasPendientes = 0,
+                nuevoSaldo = 94200.0,
+                idTipoDeuda = 1
+            ),
+            DeudaCliente(
+                nombreTipoDeuda = "Factura Vencida",
+                codigoTipoDeuda = "FACVEN",
+                numeroCuotas = 0,
+                valorCuota = 0.0,
+                abonosRealizados = 0,
+                cuotasCanceladas = 0,
+                cuotasPendientes = 0,
+                nuevoSaldo = 94200.0,
+                idTipoDeuda = 1
+            )
         ),
     )
 

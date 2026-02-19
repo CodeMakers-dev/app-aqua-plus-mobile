@@ -187,6 +187,7 @@ class EmployeeRouteDao(
                 id = data.empresaClienteContador.id
                 this.personId = personId
                 codFactura = data.empresaClienteContador.codFactura
+                codConvenio = data.empresaClienteContador.codConvenio
                 empresa = empresaData
                 contador = contadorData
                 personaCliente = personaClienteData

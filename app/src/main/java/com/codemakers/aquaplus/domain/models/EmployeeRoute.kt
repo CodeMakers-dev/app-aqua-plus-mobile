@@ -8,6 +8,7 @@ data class EmployeeRoute(
     val empresa: Empresa?,
     val contador: Contador?,
     val codFactura: String?,
+    val codConvenio: String?,
     val ultimaFactura: UltimaFactura?,
     val personaCliente: PersonaCliente?
 )

@@ -28,6 +28,7 @@ data class EmpresaClienteContadorDto(
     val empresa: EmpresaDto,
     val contador: ContadorDto,
     val codFactura: String,
+    val codConvenio: String?,
     val ultimaFactura: UltimaFacturaDto?,
     val personaCliente: PersonaClienteDto,
 )
@@ -151,6 +152,7 @@ fun EmpresaClienteContadorDto.toDomain(): EmployeeRoute =
         empresa = empresa.toDomain(),
         contador = contador.toDomain(),
         codFactura = codFactura,
+        codConvenio = codConvenio,
         ultimaFactura = ultimaFactura?.toDomain(),
         personaCliente = personaCliente.toDomain(),
     )

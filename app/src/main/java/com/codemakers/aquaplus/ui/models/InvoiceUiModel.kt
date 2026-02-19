@@ -1,6 +1,7 @@
 package com.codemakers.aquaplus.ui.models
 
 import com.codemakers.aquaplus.domain.models.DeudaAbonoSaldo
+import com.codemakers.aquaplus.domain.models.DeudaCliente
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.ReadingFormData
@@ -10,9 +11,9 @@ import com.codemakers.aquaplus.ui.extensions.toCapitalCase
 import com.codemakers.aquaplus.ui.extensions.toLocalDate
 import java.time.LocalDate
 
-const val ACUCONBAS = "BAS"
-const val ACUCONSUN = "SUN"
-const val ACUCONCOM = "COM"
+const val CONBAS = "BAS"
+const val CONSUN = "SUN"
+const val CONCOM = "COM"
 
 data class Client(
     val name: String,
@@ -126,6 +127,8 @@ data class Invoice(
     val verificationCode: String,
     val observations: String,
     val deudaAbonoSaldo: DeudaAbonoSaldo?,
+    val deudaCliente: List<DeudaCliente>?,
+    val codConvenio: String?,
 ) {
 
     val totals: Totals
@@ -155,6 +158,7 @@ data class Invoice(
         companyQrCode = config.config?.empresa?.codigoQr?.imagen,
         methodsPayment = config.config?.empresa?.puntosPago?.map { it.imagen },
         codInvoice = route.codFactura.orEmpty(),
+        codConvenio = route.codConvenio.orEmpty(),
         companyFooter = config.config?.empresa?.piePagina,
         companyFooterNote = config.config?.empresa?.avisoFactura,
         client = Client(
@@ -206,20 +210,21 @@ data class Invoice(
             val consuSuntuario = params?.consuSuntuario?.toDoubleOrNull()
             val consuComplementario = params?.consuComplementario?.toDoubleOrNull()
 
-            val consumptionCodes = setOf(ACUCONBAS, ACUCONSUN, ACUCONCOM)
+            val consumptionCodes = setOf(CONBAS, CONSUN, CONCOM)
             val targetConceptCode = when {
-                consuBasico != null && consumption <= consuBasico -> ACUCONBAS
-                consuBasico != null && consuSuntuario != null && consumption > consuBasico && consumption < consuSuntuario -> ACUCONSUN
-                consuComplementario != null && consumption >= consuComplementario -> ACUCONCOM
-                else -> ACUCONBAS
+                consuBasico != null && consumption <= consuBasico -> CONBAS
+                consuBasico != null && consuSuntuario != null && consumption > consuBasico && consumption < consuSuntuario -> CONSUN
+                consuComplementario != null && consumption >= consuComplementario -> CONCOM
+                else -> CONBAS
             }
 
             cfg.tarifasEmpresa?.mapNotNull { tarifa ->
                 val idTipoTarifa = tarifa.tipoTarifa?.id ?: -1
-                if (route.contador?.tarifaContador?.map { it.idTipoTarifa }?.contains(idTipoTarifa) == true) {
+                if (route.contador?.tarifaContador?.map { it.idTipoTarifa }
+                        ?.contains(idTipoTarifa) == true) {
                     return@mapNotNull null
                 }
-                if (tarifa.tipoTarifa?.codigo?.contains("OTR") == true) {
+                /*if (tarifa.tipoTarifa?.codigo?.contains("OTR") == true) {
                     FeeSection(
                         id = tarifa.id,
                         title = tarifa.tipoTarifa.nombre.orEmpty(),
@@ -236,50 +241,49 @@ data class Invoice(
                             )
                         }
                     )
-                } else {
-                    val activeConceptCode = tarifa.conceptos
-                        ?.filter { it.tipoConcepto?.codigo.containsAnyOf(consumptionCodes) }
-                        ?.let { codes ->
-                            codes.find { it.tipoConcepto?.codigo?.contains(targetConceptCode) == true }?.tipoConcepto?.codigo
-                                ?: codes.find { it.tipoConcepto?.codigo?.contains(ACUCONBAS) == true }?.tipoConcepto?.codigo
-                        }
+                } else {*/
+                val activeConceptCode = tarifa.conceptos
+                    ?.filter { it.tipoConcepto?.codigo.containsAnyOf(consumptionCodes) }
+                    ?.let { codes ->
+                        codes.find { it.tipoConcepto?.codigo?.contains(targetConceptCode) == true }?.tipoConcepto?.codigo
+                            ?: codes.find { it.tipoConcepto?.codigo?.contains(CONBAS) == true }?.tipoConcepto?.codigo
+                    }
 
-                    FeeSection(
-                        id = tarifa.id,
-                        title = tarifa.tipoTarifa?.nombre.orEmpty(),
-                        code = tarifa.tipoTarifa?.codigo.orEmpty(),
-                        conceptos = tarifa.conceptos?.map { concept ->
-                            val isActive =
-                                concept.tipoConcepto?.codigo?.contains(activeConceptCode.orEmpty()) == true
-                                        || !concept.tipoConcepto?.codigo.containsAnyOf(
-                                    consumptionCodes
-                                )
-
-                            val valorMc = if (isActive && concept.indCalcularMc == true) {
-                                tarifa.valorMc?.find { mc ->
-                                    mc.tipoUso?.id == route.contador?.idTipoUso && mc.estrato == route.contador?.estrato
-                                }
-                            } else null
-
-                            ConceptDetail(
-                                id = concept.id,
-                                title = concept.tipoConcepto?.descripcion.orEmpty(),
-                                code = concept.tipoConcepto?.codigo.orEmpty(),
-                                indCalcularMc = if (isActive) concept.indCalcularMc else false,
-                                stratumValue = concept.valoresEstrato?.find { valueStratum -> valueStratum.estrato == route.contador?.estrato }
-                                    ?.let { stratum ->
-                                        StratumValueDetail(
-                                            value = stratum.valor ?: 0.0,
-                                            stratum = stratum.estrato ?: 0,
-                                        )
-                                    },
-                                value = if (isActive) concept.valor else 0.0,
-                                consumption = if (isActive) consumption else null,
-                                valorMcValue = valorMc?.valor,
+                FeeSection(
+                    id = tarifa.id,
+                    title = tarifa.tipoTarifa?.nombre.orEmpty(),
+                    code = tarifa.tipoTarifa?.codigo.orEmpty(),
+                    conceptos = tarifa.conceptos?.map { concept ->
+                        val isActive =
+                            concept.tipoConcepto?.codigo?.contains(activeConceptCode.orEmpty()) == true
+                                    || !concept.tipoConcepto?.codigo.containsAnyOf(
+                                consumptionCodes
                             )
-                        }
-                    )
-                }
+
+                        val valorMc = if (isActive && concept.indCalcularMc == true) {
+                            tarifa.valorMc?.find { mc ->
+                                mc.tipoUso?.id == route.contador?.idTipoUso && mc.estrato == route.contador?.estrato
+                            }
+                        } else null
+
+                        ConceptDetail(
+                            id = concept.id,
+                            title = concept.tipoConcepto?.descripcion.orEmpty(),
+                            code = concept.tipoConcepto?.codigo.orEmpty(),
+                            indCalcularMc = if (isActive) concept.indCalcularMc else false,
+                            stratumValue = concept.valoresEstrato?.find { valueStratum -> valueStratum.estrato == route.contador?.estrato }
+                                ?.let { stratum ->
+                                    StratumValueDetail(
+                                        value = stratum.valor ?: 0.0,
+                                        stratum = stratum.estrato ?: 0,
+                                    )
+                                },
+                            value = if (isActive) concept.valor else 0.0,
+                            consumption = if (isActive) consumption else null,
+                            valorMcValue = valorMc?.valor,
+                        )
+                    }
+                )
             }.orEmpty()
         }.orEmpty(),
         history = route.contador?.historicoConsumo?.mapNotNull {
@@ -294,5 +298,6 @@ data class Invoice(
         verificationCode = "Pendiente",
         observations = data.observations,
         deudaAbonoSaldo = route.contador?.deudaAbonoSaldo,
+        deudaCliente = route.personaCliente?.deudaCliente,
     )
 }
