@@ -9,7 +9,6 @@ data class InvoiceRequestDto(
     @SerializedName("idEmpresaClienteContador") val idContador: Int,
     @SerializedName("precio") val precio: Double,
     @SerializedName("idEstadoMedidor") val meterStateId: Int,
-    @SerializedName("consumo") val consumo: Double,
     @SerializedName("serial") val serial: String,
     @SerializedName("fechaEmision") val fechaEmision: String,
     @SerializedName("usuarioCreacion") val usuarioCreacion: String,

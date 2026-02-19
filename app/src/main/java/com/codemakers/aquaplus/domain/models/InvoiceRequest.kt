@@ -9,7 +9,6 @@ data class InvoiceRequest(
     val precio: Double,
     val meterStateId: Int,
     val serial: String,
-    val consumo: Double,
     val fechaEmision: String,
     val usuarioCreacion: String,
     val lectura: ReadRequest,
@@ -27,7 +26,6 @@ fun InvoiceRequest.toData() = InvoiceRequestDto(
     precio = precio,
     meterStateId = meterStateId,
     serial = serial,
-    consumo = consumo,
     fechaEmision = fechaEmision,
     usuarioCreacion = usuarioCreacion,
     lectura = lectura.toData()
