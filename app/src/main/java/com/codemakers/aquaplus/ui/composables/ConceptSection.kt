@@ -2,6 +2,7 @@ package com.codemakers.aquaplus.ui.composables
 
 import androidx.compose.runtime.Composable
 import com.codemakers.aquaplus.ui.extensions.cop
+import com.codemakers.aquaplus.ui.extensions.roundTo2Decimals
 import com.codemakers.aquaplus.ui.extensions.toCapitalCase
 import com.codemakers.aquaplus.ui.models.FeeSection
 
@@ -19,7 +20,7 @@ fun ConceptSection(
         TableRow(
             cells = listOf(
                 concept.title.toCapitalCase(),
-                concept.consumptionTotal?.let { "$it m³" } ?: "-",
+                concept.consumptionTotal?.let { "${it.roundTo2Decimals()} m³" } ?: "-",
                 concept.tarifa?.cop().orEmpty(),
                 concept.total.cop()
             ),

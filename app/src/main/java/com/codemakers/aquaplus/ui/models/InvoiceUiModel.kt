@@ -202,46 +202,26 @@ data class Invoice(
             lastPaymentDate = route.ultimaFactura?.fecha?.toLocalDate(),
         ),
         fees = config.config?.let { cfg ->
-            val consumption =
-                (data.meterReading.toDouble()) - (route.contador?.ultimaLectura
-                    ?: 0.0)
-            val params = cfg.parametrosEmpresa
-            val consuBasico = params?.consuBasico?.toDoubleOrNull()
-            val consuSuntuario = params?.consuSuntuario?.toDoubleOrNull()
-            val consuComplementario = params?.consuComplementario?.toDoubleOrNull()
-
+            val consumption = (data.meterReading.toDouble()) - (route.contador?.ultimaLectura ?: 0.0)
             val consumptionCodes = setOf(CONBAS, CONSUN, CONCOM)
-            val targetConceptCode = when {
-                consuBasico != null && consumption <= consuBasico -> CONBAS
-                consuBasico != null && consuSuntuario != null && consumption > consuBasico && consumption < consuSuntuario -> CONSUN
-                consuComplementario != null && consumption >= consuComplementario -> CONCOM
-                else -> CONBAS
-            }
 
             cfg.tarifasEmpresa?.mapNotNull { tarifa ->
+                val consuBasico = tarifa.rangoConsumo?.consuBasico?.toDoubleOrNull()
+                val consuSuntuario = tarifa.rangoConsumo?.consuSuntuario?.toDoubleOrNull()
+                val consuComplementario = tarifa.rangoConsumo?.consuComplementario?.toDoubleOrNull()
+
+                val targetConceptCode = when {
+                    consuBasico != null && consumption <= consuBasico -> CONBAS
+                    consuComplementario != null && consumption <= consuComplementario -> CONCOM
+                    consuSuntuario != null && consumption > consuSuntuario -> CONSUN
+                    else -> CONBAS
+                }
+
                 val idTipoTarifa = tarifa.tipoTarifa?.id ?: -1
-                if (route.contador?.tarifaContador?.map { it.idTipoTarifa }
-                        ?.contains(idTipoTarifa) == true) {
+                if (route.contador?.tarifaContador?.map { it.idTipoTarifa }?.contains(idTipoTarifa) == true) {
                     return@mapNotNull null
                 }
-                /*if (tarifa.tipoTarifa?.codigo?.contains("OTR") == true) {
-                    FeeSection(
-                        id = tarifa.id,
-                        title = tarifa.tipoTarifa.nombre.orEmpty(),
-                        code = tarifa.tipoTarifa.codigo,
-                        conceptos = route.personaCliente?.deudaCliente?.map { deuda ->
-                            ConceptDetail(
-                                id = null,
-                                title = deuda.nombreTipoDeuda.orEmpty(),
-                                code = deuda.codigoTipoDeuda.orEmpty(),
-                                indCalcularMc = false,
-                                stratumValue = null,
-                                value = deuda.nuevoSaldo,
-                                consumption = null,
-                            )
-                        }
-                    )
-                } else {*/
+
                 val activeConceptCode = tarifa.conceptos
                     ?.filter { it.tipoConcepto?.codigo.containsAnyOf(consumptionCodes) }
                     ?.let { codes ->
@@ -254,16 +234,10 @@ data class Invoice(
                     title = tarifa.tipoTarifa?.nombre.orEmpty(),
                     code = tarifa.tipoTarifa?.codigo.orEmpty(),
                     conceptos = tarifa.conceptos?.map { concept ->
-                        val isActive =
-                            concept.tipoConcepto?.codigo?.contains(activeConceptCode.orEmpty()) == true
-                                    || !concept.tipoConcepto?.codigo.containsAnyOf(
-                                consumptionCodes
-                            )
+                        val isActive = concept.tipoConcepto?.codigo?.contains(activeConceptCode.orEmpty()) == true || !concept.tipoConcepto?.codigo.containsAnyOf(consumptionCodes)
 
                         val valorMc = if (isActive && concept.indCalcularMc == true) {
-                            tarifa.valorMc?.find { mc ->
-                                mc.tipoUso?.id == route.contador?.idTipoUso && mc.estrato == route.contador?.estrato
-                            }
+                            tarifa.valorMc?.find { mc -> mc.tipoUso?.id == route.contador?.idTipoUso && mc.estrato == route.contador?.estrato }
                         } else null
 
                         ConceptDetail(

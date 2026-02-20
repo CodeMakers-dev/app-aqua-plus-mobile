@@ -5,6 +5,7 @@ import com.codemakers.aquaplus.domain.models.Config
 import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.EstadoMedidor
 import com.codemakers.aquaplus.domain.models.ParametrosEmpresa
+import com.codemakers.aquaplus.domain.models.RangoConsumo
 import com.codemakers.aquaplus.domain.models.TarifaEmpresa
 import com.codemakers.aquaplus.domain.models.TipoConcepto
 import com.codemakers.aquaplus.domain.models.TipoTarifa
@@ -40,6 +41,13 @@ open class RealmTarifaEmpresa : EmbeddedRealmObject {
     var valorMc: RealmList<RealmValorMc>? = null
     var conceptos: RealmList<RealmConcepto>? = null
     var tipoTarifa: RealmTipoTarifa? = null
+    var rangoConsumo: RealmRangoConsumo? = null
+}
+
+open class RealmRangoConsumo : EmbeddedRealmObject {
+    var consuBasico: String? = null
+    var consuSuntuario: String? = null
+    var consuComplementario: String? = null
 }
 
 open class RealmConcepto : EmbeddedRealmObject {
@@ -124,7 +132,14 @@ fun RealmTarifaEmpresa.toDomain(): TarifaEmpresa = TarifaEmpresa(
     empresa = empresa,
     valorMc = valorMc?.map { it.toDomain() },
     conceptos = conceptos?.map { it.toDomain() },
-    tipoTarifa = tipoTarifa?.toDomain()
+    tipoTarifa = tipoTarifa?.toDomain(),
+    rangoConsumo = rangoConsumo?.toDomain()
+)
+
+fun RealmRangoConsumo.toDomain(): RangoConsumo = RangoConsumo(
+    consuBasico = consuBasico,
+    consuSuntuario = consuSuntuario,
+    consuComplementario = consuComplementario
 )
 
 fun RealmConcepto.toDomain(): Concepto = Concepto(

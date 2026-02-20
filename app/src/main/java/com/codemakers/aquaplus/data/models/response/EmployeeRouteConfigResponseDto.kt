@@ -6,6 +6,7 @@ import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
 import com.codemakers.aquaplus.domain.models.EstadoMedidor
 import com.codemakers.aquaplus.domain.models.GenericEmpresa
 import com.codemakers.aquaplus.domain.models.ParametrosEmpresa
+import com.codemakers.aquaplus.domain.models.RangoConsumo
 import com.codemakers.aquaplus.domain.models.TarifaEmpresa
 import com.codemakers.aquaplus.domain.models.TipoConcepto
 import com.codemakers.aquaplus.domain.models.TipoTarifa
@@ -36,7 +37,15 @@ data class TarifaEmpresaDto(
     val empresa: Int? = null,
     val valorMc: List<ValorMcDto>? = null,
     val conceptos: List<ConceptoDto>? = null,
-    val tipoTarifa: TipoTarifaDto? = null
+    val tipoTarifa: TipoTarifaDto? = null,
+    val rangoConsumo: RangoConsumoDto? = null
+)
+
+@Serializable
+data class RangoConsumoDto(
+    val consuBasico: String? = null,
+    val consuSuntuario: String? = null,
+    val consuComplementario: String? = null
 )
 
 @Serializable
@@ -136,7 +145,14 @@ fun TarifaEmpresaDto.toDomain(): TarifaEmpresa = TarifaEmpresa(
     empresa = empresa,
     valorMc = valorMc?.map { it.toDomain() },
     conceptos = conceptos?.map { it.toDomain() },
-    tipoTarifa = tipoTarifa?.toDomain()
+    tipoTarifa = tipoTarifa?.toDomain(),
+    rangoConsumo = rangoConsumo?.toDomain()
+)
+
+fun RangoConsumoDto.toDomain(): RangoConsumo = RangoConsumo(
+    consuBasico = consuBasico,
+    consuSuntuario = consuSuntuario,
+    consuComplementario = consuComplementario
 )
 
 fun ConceptoDto.toDomain(): Concepto = Concepto(

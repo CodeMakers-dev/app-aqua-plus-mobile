@@ -13,6 +13,7 @@ import com.codemakers.aquaplus.data.datasource.local.tables.RealmEstadoMedidor
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmGenericEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmHistoricoConsumo
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmParametrosEmpresa
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmRangoConsumo
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmPersonaCliente
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaContador
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaEmpresa
@@ -295,6 +296,13 @@ class EmployeeRouteDao(
                                 codigo = tarifasEmpresa.tipoTarifa?.codigo
                                 nombre = tarifasEmpresa.tipoTarifa?.nombre
                                 descripcion = tarifasEmpresa.tipoTarifa?.descripcion
+                            }
+                            rangoConsumo = tarifasEmpresa.rangoConsumo?.let { rangoConsumo ->
+                                RealmRangoConsumo().apply {
+                                    consuBasico = rangoConsumo.consuBasico
+                                    consuSuntuario = rangoConsumo.consuSuntuario
+                                    consuComplementario = rangoConsumo.consuComplementario
+                                }
                             }
                             conceptos = realmListOf<RealmConcepto>().apply {
                                 val conceptosList = tarifasEmpresa.conceptos?.map { concepto ->

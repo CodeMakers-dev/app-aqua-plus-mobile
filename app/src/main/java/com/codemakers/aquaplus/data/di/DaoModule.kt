@@ -22,6 +22,7 @@ import com.codemakers.aquaplus.data.datasource.local.tables.RealmHistoricoConsum
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmInvoice
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmParametrosEmpresa
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmPersonaCliente
+import com.codemakers.aquaplus.data.datasource.local.tables.RealmRangoConsumo
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmReadingFormData
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaContador
 import com.codemakers.aquaplus.data.datasource.local.tables.RealmTarifaEmpresa
@@ -74,10 +75,11 @@ val daoModule = module {
                 RealmGenericEmpresa::class,
                 RealmInvoice::class,
                 RealmAuthSession::class,
+                RealmRangoConsumo::class,
             )
         )
             .name("acueducto-app.realm")
-            .schemaVersion(12)
+            .schemaVersion(13)
             //.deleteRealmIfMigrationNeeded()
             // .migration(MyMigration())
             .build()

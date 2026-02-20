@@ -22,7 +22,15 @@ data class TarifaEmpresa(
     val empresa: Int? = null,
     val valorMc: List<ValorMc>? = null,
     val conceptos: List<Concepto>? = null,
-    val tipoTarifa: TipoTarifa? = null
+    val tipoTarifa: TipoTarifa? = null,
+    val rangoConsumo: RangoConsumo? = null
+)
+
+@Serializable
+data class RangoConsumo(
+    val consuBasico: String? = null,
+    val consuSuntuario: String? = null,
+    val consuComplementario: String? = null
 )
 
 @Serializable
