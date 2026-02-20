@@ -1,19 +1,12 @@
 package com.codemakers.aquaplus.data.di
 
 import android.content.Context
-import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import com.chuckerteam.chucker.api.ChuckerCollector
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.codemakers.aquaplus.BuildConfig
 import com.codemakers.aquaplus.data.common.NoAuth
-import com.codemakers.aquaplus.data.repository.REFRESH_TOKEN
 import com.codemakers.aquaplus.data.repository.TOKEN
-import com.codemakers.aquaplus.data.repository.USER
 import com.codemakers.aquaplus.domain.repository.PreferencesRepository
-import com.codemakers.aquaplus.ui.modules.signin.SignInActivity
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import org.koin.core.qualifier.qualifier
@@ -21,9 +14,7 @@ import org.koin.dsl.module
 import retrofit2.Invocation
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.net.HttpURLConnection
 import java.util.concurrent.TimeUnit
-import kotlin.collections.remove
 
 val networkModule = module {
     single { provideConverterFactory() }

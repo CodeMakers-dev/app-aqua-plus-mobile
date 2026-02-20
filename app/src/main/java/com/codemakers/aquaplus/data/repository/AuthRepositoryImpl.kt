@@ -49,7 +49,7 @@ class AuthRepositoryImpl(
         },
         action = {
             val response = authApi.refreshToken(refreshToken)
-            preferencesRepository.setString(REFRESH_TOKEN, response.response.token)
+            preferencesRepository.setString(TOKEN, response.response.token)
             val personId = userRepository.getProfile()?.person?.id ?: 0
             authSessionDao.updateToken(personId = personId, token = response.response.token)
             Result.Success(response.response.toDomain())
