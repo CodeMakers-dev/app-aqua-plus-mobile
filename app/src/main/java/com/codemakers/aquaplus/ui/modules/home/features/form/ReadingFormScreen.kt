@@ -150,6 +150,18 @@ fun ReadingFormContent(
     val focusManager = LocalFocusManager.current
     var showBarcodeScanner by remember { mutableStateOf(false) }
     var showScannerDisabledMessage by remember { mutableStateOf(false) }
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = Color.LightGray,
+        unfocusedBorderColor = Color.DarkGray,
+        cursorColor = Color.White,
+        focusedLabelColor = Color.LightGray,
+        unfocusedLabelColor = Color.DarkGray,
+        focusedContainerColor = Color(0xFF3A3A4C),
+        unfocusedContainerColor = Color(0xFF3A3A4C),
+        focusedTextColor = Color.White,
+        unfocusedTextColor = Color.White,
+        disabledTextColor = Color.White
+    )
 
     Scaffold(
         topBar = {
@@ -284,18 +296,7 @@ fun ReadingFormContent(
                                 }
                             }
                         },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.LightGray,
-                            unfocusedBorderColor = Color.DarkGray,
-                            cursorColor = Color.White,
-                            focusedLabelColor = Color.LightGray,
-                            unfocusedLabelColor = Color.DarkGray,
-                            focusedContainerColor = Color(0xFF3A3A4C),
-                            unfocusedContainerColor = Color(0xFF3A3A4C),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            disabledTextColor = Color.White // Texto en blanco cuando deshabilitado
-                        )
+                        colors = textFieldColors
                     )
 
                     OutlinedTextField(
@@ -309,18 +310,7 @@ fun ReadingFormContent(
                                 color = Color.LightGray
                             )
                         },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.LightGray,
-                            unfocusedBorderColor = Color.DarkGray,
-                            cursorColor = Color.White,
-                            focusedLabelColor = Color.LightGray,
-                            unfocusedLabelColor = Color.DarkGray,
-                            focusedContainerColor = Color(0xFF3A3A4C),
-                            unfocusedContainerColor = Color(0xFF3A3A4C),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            disabledTextColor = Color.White
-                        )
+                        colors = textFieldColors
                     )
 
                     OutlinedTextField(
@@ -346,25 +336,14 @@ fun ReadingFormContent(
                                 focusRequestObservations.requestFocus()
                             }
                         ),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.LightGray,
-                            unfocusedBorderColor = Color.DarkGray,
-                            cursorColor = Color.White,
-                            focusedLabelColor = Color.LightGray,
-                            unfocusedLabelColor = Color.DarkGray,
-                            focusedContainerColor = Color(0xFF3A3A4C),
-                            unfocusedContainerColor = Color(0xFF3A3A4C),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            disabledTextColor = Color.White
-                        )
+                        colors = textFieldColors
                     )
 
                     // Opciones para estado del medidor desde la configuración
                     val meterStateOptions = state.config?.config?.estadosMedidor.orEmpty()
                     if (meterStateOptions.isNotEmpty()) {
                         GenericDropdown(
-                            items = state.config?.config?.estadosMedidor.orEmpty(),
+                            items = meterStateOptions,
                             selectedItem = state.meterStateId?.let { id ->
                                 state.config?.config?.estadosMedidor?.find { it.id == id }
                             },
@@ -421,18 +400,7 @@ fun ReadingFormContent(
                                 focusManager.clearFocus()
                             }
                         ),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.LightGray,
-                            unfocusedBorderColor = Color.DarkGray,
-                            cursorColor = Color.White,
-                            focusedLabelColor = Color.LightGray,
-                            unfocusedLabelColor = Color.DarkGray,
-                            focusedContainerColor = Color(0xFF3A3A4C),
-                            unfocusedContainerColor = Color(0xFF3A3A4C),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            disabledTextColor = Color.White
-                        )
+                        colors = textFieldColors
                     )
                 }
             }
@@ -444,7 +412,7 @@ fun ReadingFormContent(
             if (state.hasExistingReading) {
                 focusManager.clearFocus()
             } else {
-                delay(200)
+                delay(50)
                 if (state.serial.isEmpty()) {
                     focusRequestSerial.requestFocus()
                 } else {

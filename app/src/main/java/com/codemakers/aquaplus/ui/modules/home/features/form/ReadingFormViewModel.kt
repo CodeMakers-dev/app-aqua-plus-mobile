@@ -4,11 +4,15 @@ import androidx.lifecycle.viewModelScope
 import com.codemakers.aquaplus.base.BaseViewModel
 import com.codemakers.aquaplus.domain.common.Result
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
+import com.codemakers.aquaplus.domain.models.EmployeeRouteConfig
+import com.codemakers.aquaplus.domain.models.ReadingFormData
 import com.codemakers.aquaplus.domain.usecases.CreateOrUpdateReadingFormData
 import com.codemakers.aquaplus.domain.usecases.GetEmployeeRouteByIdUseCase
 import com.codemakers.aquaplus.domain.usecases.GetReadingFormDataByEmployeeRouteId
 import com.codemakers.aquaplus.domain.usecases.SaveInvoiceUseCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -176,43 +180,63 @@ class ReadingFormViewModel(
     //Validations
 
     private fun loadDataFromId(employeeRouteId: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
 
             try {
-                getEmployeeRouteByIdUseCase(employeeRouteId = employeeRouteId).collect { result ->
-                    when (result) {
-                        is Result.Success -> {
-                            val route = result.data.first
-                            val config = result.data.second
+                coroutineScope {
+                    val routeDeferred = async {
+                        var res: Result<Pair<EmployeeRoute?, EmployeeRouteConfig?>>? = null
+                        getEmployeeRouteByIdUseCase(employeeRouteId = employeeRouteId).collect { res = it }
+                        res ?: Result.Exception(IllegalStateException("Sin resultado de ruta"))
+                    }
+                    val readingFormDataDeferred = async {
+                        var res: Result<ReadingFormData?>? = null
+                        getReadingFormDataByEmployeeRouteId(employeeRouteId = employeeRouteId).collect { res = it }
+                        res ?: Result.Exception(IllegalStateException("Sin resultado del formulario"))
+                    }
+
+                    val routeResult = routeDeferred.await()
+                    val readingFormDataResult = readingFormDataDeferred.await()
+
+                    when {
+                        routeResult is Result.Error -> _state.update {
+                            it.copy(isLoading = false, error = routeResult.error.message)
+                        }
+                        routeResult is Result.Exception -> _state.update {
+                            it.copy(isLoading = false, error = routeResult.error.message)
+                        }
+                        readingFormDataResult is Result.Error -> _state.update {
+                            it.copy(isLoading = false, error = readingFormDataResult.error.message)
+                        }
+                        readingFormDataResult is Result.Exception -> _state.update {
+                            it.copy(isLoading = false, error = readingFormDataResult.error.message)
+                        }
+                        routeResult is Result.Success && readingFormDataResult is Result.Success -> {
+                            val route = routeResult.data.first
+                            val config = routeResult.data.second
+                            val readingFormData = readingFormDataResult.data
+                            val initialMeterStateId = route?.contador?.idEstadoContador
+                            val meterStateId = readingFormData?.meterStateId ?: initialMeterStateId
+                            val meterReading = getMeterReadingForState(
+                                meterStateId = meterStateId,
+                                projectedReading = route?.contador?.lecturaProyectada,
+                                fallbackReading = readingFormData?.meterReading.orEmpty()
+                            )
 
                             _state.update {
-                                var newState = it.copy(
+                                it.copy(
                                     route = route,
-                                    serial = route?.contador?.serial ?: "",
                                     config = config,
+                                    serial = readingFormData?.serial ?: route?.contador?.serial ?: "",
+                                    readingFormData = readingFormData,
+                                    meterStateId = meterStateId,
+                                    meterReading = meterReading,
+                                    abnormalConsumption = readingFormData?.abnormalConsumption,
+                                    observations = readingFormData?.observations ?: "",
+                                    isLoading = false
                                 )
-
-                                newState
                             }
-                            loadReadingFormData(
-                                employeeRouteId = employeeRouteId,
-                                route = route,
-                            )
-                        }
-
-                        is Result.Error -> _state.update {
-                            it.copy(
-                                isLoading = false,
-                                error = result.error.message,
-                            )
-                        }
-
-                        is Result.Exception -> _state.update {
-                            it.copy(
-                                isLoading = false,
-                                error = result.error.message,
-                            )
                         }
                     }
                 }
@@ -221,63 +245,6 @@ class ReadingFormViewModel(
                     it.copy(
                         isLoading = false,
                         error = "Error al cargar datos: ${e.message}",
-                    )
-                }
-            }
-        }
-    }
-
-    private fun loadReadingFormData(
-        employeeRouteId: Int,
-        route: EmployeeRoute?,
-    ) {
-        val initialMeterStateId = route?.contador?.idEstadoContador
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                getReadingFormDataByEmployeeRouteId(employeeRouteId = employeeRouteId).collect { result ->
-                    when (result) {
-                        is Result.Success -> _state.update { currentState ->
-                            val meterStateId = currentState.meterStateId
-                            val projectedReading = currentState.route?.contador?.lecturaProyectada
-
-                            // Use helper method to determine meter reading
-                            val meterReading = getMeterReadingForState(
-                                meterStateId = meterStateId ?: initialMeterStateId,
-                                projectedReading = projectedReading,
-                                fallbackReading = result.data?.meterReading.orEmpty()
-                            )
-
-                            currentState.copy(
-                                meterStateId = result.data?.meterStateId ?: initialMeterStateId,
-                                serial = result.data?.serial ?: route?.contador?.serial ?: "",
-                                readingFormData = result.data,
-                                meterReading = meterReading,
-                                abnormalConsumption = result.data?.abnormalConsumption,
-                                observations = result.data?.observations ?: "",
-                                isLoading = false
-                            )
-                        }
-
-                        is Result.Error -> _state.update {
-                            it.copy(
-                                isLoading = false,
-                                error = result.error.message,
-                            )
-                        }
-
-                        is Result.Exception -> _state.update {
-                            it.copy(
-                                isLoading = false,
-                                error = result.error.message,
-                            )
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Error al cargar formulario: ${e.message}",
                     )
                 }
             }
