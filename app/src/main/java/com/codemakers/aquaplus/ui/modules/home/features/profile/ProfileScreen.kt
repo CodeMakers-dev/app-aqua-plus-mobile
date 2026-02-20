@@ -153,7 +153,7 @@ fun ProfileContent(
                     base64String = state.profile.imageBase64,
                     contentDescription = "Profile Picture",
                     modifier = Modifier
-                        .size(150.dp)
+                        .size(80.dp)
                         .clip(CircleShape)
                 )
             } else {
@@ -161,7 +161,7 @@ fun ProfileContent(
                     imageVector = Icons.Default.Person,
                     contentDescription = "No Profile Picture",
                     modifier = Modifier
-                        .size(150.dp)
+                        .size(80.dp)
                         .clip(CircleShape),
                     tint = Color.White
                 )
