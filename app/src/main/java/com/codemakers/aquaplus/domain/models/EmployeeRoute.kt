@@ -18,7 +18,7 @@ data class UltimaFactura(
     val fecha: String?,
     val codigo: String?,
     val precio: Double?,
-    val lectura: Int?
+    val lectura: Double?
 )
 
 

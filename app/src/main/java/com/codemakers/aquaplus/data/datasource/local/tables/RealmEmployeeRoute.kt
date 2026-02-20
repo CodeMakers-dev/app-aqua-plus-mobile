@@ -35,7 +35,7 @@ open class RealmUltimaFactura : EmbeddedRealmObject {
     var fecha: String? = null
     var codigo: String? = null
     var precio: Double? = null
-    var lectura: Int? = null
+    var lectura: Double? = null
 }
 
 

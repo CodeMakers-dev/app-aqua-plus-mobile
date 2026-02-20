@@ -241,10 +241,11 @@ fun InvoiceContent(invoice: Invoice) {
         SectionHeader("DATOS DEL CONSUMO")
         TwoPane(
             left = {
+                val dateLastReading = invoice.reading.prevDate.takeIf { it != null }?.format(dateFmt)
                 InfoCard(title = "") {
                     KeyValueRow(
                         "Lectura Anterior",
-                        "${invoice.reading.prevReading} m³ (${invoice.reading.prevDate?.format(dateFmt)})"
+                        "${invoice.reading.prevReading} m³" +  dateLastReading?.let { "($it)" }.orEmpty()
                     )
                     KeyValueRow("Promedio consumo", "${invoice.meter.average} m³")
                 }
@@ -253,11 +254,7 @@ fun InvoiceContent(invoice: Invoice) {
                 InfoCard(title = "") {
                     KeyValueRow(
                         "Lectura Actual",
-                        "${invoice.reading.currentReading} m³ (${
-                            invoice.reading.currentDate.format(
-                                dateFmt
-                            )
-                        })"
+                        "${invoice.reading.currentReading} m³ (${invoice.reading.currentDate.format(dateFmt)})"
                     )
                     KeyValueRow("Consumo", "${invoice.reading.consumptionM3} m³")
                 }

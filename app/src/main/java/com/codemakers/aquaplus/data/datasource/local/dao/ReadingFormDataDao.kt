@@ -70,6 +70,7 @@ class ReadingFormDataDao(
         val cutoffEpochDay = LocalDate.now().toEpochDay() - 1
         realm.write {
             val oldSyncedData = query<RealmReadingFormData>("isSynced == $0 AND dateEpochDay < $1", true, cutoffEpochDay).find()
+            Log.d("ReadingFormDataDao", "deleteOldSyncedReadingFormData: $oldSyncedData")
             oldSyncedData.forEach { readingFormData ->
                 Log.d("ReadingFormDataDao", "deleteOldSyncedReadingFormData: $readingFormData")
                 val employeeRoute = query<RealmEmployeeRoute>("id == $0 AND personId == $1", readingFormData.employeeRouteId, readingFormData.personId).first().find()

@@ -78,7 +78,7 @@ val daoModule = module {
         )
             .name("acueducto-app.realm")
             .schemaVersion(12)
-            .deleteRealmIfMigrationNeeded()
+            //.deleteRealmIfMigrationNeeded()
             // .migration(MyMigration())
             .build()
         Realm.open(config)

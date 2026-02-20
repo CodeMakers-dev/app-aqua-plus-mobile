@@ -192,8 +192,8 @@ data class Invoice(
             average = route.contador?.promedioConsumo ?: 0.0
         ),
         reading = ReadingInfo(
-            prevReading = route.contador?.ultimaLectura ?: 0.0,
-            prevDate = route.contador?.historicoConsumo?.lastOrNull()?.fechaLectura?.toLocalDate(),
+            prevReading = route.ultimaFactura?.lectura ?: 0.0,
+            prevDate = route.ultimaFactura?.fecha?.toLocalDate(),
             currentReading = data.meterReading.toDouble(),
             currentDate = data.date,
             consumptionM3 = ((data.meterReading.toDouble()) - (route.contador?.ultimaLectura
