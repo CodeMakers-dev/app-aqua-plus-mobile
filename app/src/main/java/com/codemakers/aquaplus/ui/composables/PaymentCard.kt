@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.codemakers.aquaplus.ui.extensions.cop
+import com.codemakers.aquaplus.ui.extensions.toCapitalCase
 import com.codemakers.aquaplus.ui.models.FeeSection
 import com.codemakers.aquaplus.ui.theme.primaryColor
 
@@ -118,8 +119,8 @@ fun PaymentFeeCard(
     ) {
         // Header with fee name
         Text(
-            text = name,
-            style = MaterialTheme.typography.bodySmall.copy(
+            text = name.toCapitalCase(),
+            style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.SemiBold
             ),
             textAlign = TextAlign.Start,
@@ -129,7 +130,7 @@ fun PaymentFeeCard(
         // Amount
         Text(
             text = amount.cop(),
-            style = MaterialTheme.typography.bodySmall.copy(
+            style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Bold,
                 color = primaryColor
             ),

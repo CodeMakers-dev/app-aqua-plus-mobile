@@ -191,7 +191,7 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
         Spacer(Modifier.height(8.dp))
         Text(
             text = "FACTURA DE SERVICIO N° ${invoice.codInvoice}",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
         )
         Spacer(Modifier.height(8.dp))
 
@@ -272,28 +272,6 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
         )
         Spacer(Modifier.height(8.dp))
 
-        // Datos de consumo
-        SectionHeader("INFORMACIÓN FACTURA")
-        TwoPane(
-            left = {
-                InfoCard(title = "") {
-                    KeyValueRow(
-                        "Fecha Ultimo pago",
-                        invoice.reading.lastPaymentDate?.format(dateFmt) ?: "---"
-                    )
-                    KeyValueRow("Valor Ultimo pago", "${invoice.reading.lastPaymentValue?.cop()}")
-                }
-            },
-            right = {
-                InfoCard(title = "") {
-                    KeyValueRow("Fecha Emisión", invoice.meta.issueDate.format(dateFmt))
-                    KeyValueRow("Pago oportuno", invoice.meta.dueDate.format(dateFmt))
-                }
-
-            }
-        )
-        Spacer(Modifier.height(8.dp))
-
         // Conceptos
         invoice.fees.forEachIndexed { index, fee ->
             SectionHeader(fee.title)
@@ -308,7 +286,6 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
         val sortedHistory = remember(invoice.history) { invoice.history.sortedBy { it.mes } }
         if (sortedHistory.isNotEmpty()) {
             SectionHeader("HISTÓRICO DE CONSUMO (m³)")
-            Spacer(Modifier.height(8.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -359,9 +336,25 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
             Spacer(Modifier.height(8.dp))
         }
 
+        // Datos de consumo
+        SectionHeader("INFORMACIÓN FACTURA")
+        TwoPane(
+            left = {
+                InfoCard(title = "") {
+                    KeyValueRow("Fecha Emisión", invoice.meta.issueDate.format(dateFmt))
+                }
+            },
+            right = {
+                InfoCard(title = "") {
+                    KeyValueRow("Pago oportuno", invoice.meta.dueDate.format(dateFmt))
+                }
+
+            }
+        )
+        Spacer(Modifier.height(8.dp))
+
         // Payment Summary Card
         SectionHeader("DETALLE DE PAGO")
-        Spacer(Modifier.height(8.dp))
         PaymentSummaryCard(fees = invoice.fees)
         Spacer(Modifier.height(8.dp))
 
@@ -378,7 +371,7 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text("Codigo QR", style = MaterialTheme.typography.bodyLarge)
+                    Text("Codigo QR", style = MaterialTheme.typography.bodyMedium)
                     Base64Image(
                         base64String = invoice.companyQrCode,
                         contentDescription = invoice.companyName,
@@ -392,7 +385,7 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Punto de Pago", style = MaterialTheme.typography.bodyLarge)
+                Text("Punto de Pago", style = MaterialTheme.typography.bodyMedium)
                 val paymentItems =
                     remember(invoice.methodsPayment) { invoice.methodsPayment.orEmpty().chunked(3) }
                 paymentItems.onEach { item ->

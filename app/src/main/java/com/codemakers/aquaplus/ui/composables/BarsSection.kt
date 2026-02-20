@@ -37,7 +37,7 @@ fun BarsHistory(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp),
+            .padding(top = 24.dp, bottom = 8.dp, start = 4.dp, end = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Bottom
     ) {
@@ -57,23 +57,26 @@ fun BarsHistory(
                         start = Offset(size.width / 2, size.height),
                         end = Offset(size.width / 2, 0f),
                         strokeWidth = size.width,
-                        cap = StrokeCap.Square
+                        cap = StrokeCap.Round
                     )
                 }
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text = item.mes?.substringBefore(" ").orEmpty(),
-                    fontSize = 10.sp,
-                    textAlign = TextAlign.Center
-                )
+                Spacer(Modifier.height(20.dp))
                 Text(
                     text = "${item.consumo} m³",
                     fontSize = 10.sp,
+                    lineHeight = 10.sp,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = item.mes?.substringBefore(" ").orEmpty(),
+                    fontSize = 9.sp,
+                    lineHeight = 10.sp,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = item.precio?.cop().orEmpty(),
-                    fontSize = 10.sp,
+                    fontSize = 8.sp,
+                    lineHeight = 10.sp,
                     textAlign = TextAlign.Center
                 )
             }

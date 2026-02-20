@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.codemakers.aquaplus.ui.theme.Border
 import com.codemakers.aquaplus.ui.theme.LightRow
 import com.codemakers.aquaplus.ui.theme.primaryColor
@@ -35,10 +35,11 @@ fun TableHeader(
         headers.forEachIndexed { i, text ->
             Text(
                 text = text,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
                 modifier = Modifier.weight(weights[i]),
-                textAlign = TextAlign.Center
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
             )
         }
     }
@@ -59,8 +60,10 @@ fun TableRow(
         cells.forEachIndexed { i, text ->
             Text(
                 text = text,
-                fontSize = 13.sp,
                 modifier = Modifier.weight(weights[i]),
+                style = MaterialTheme.typography.bodySmall.copy(
+                    textAlign = TextAlign.Center
+                ),
                 textAlign = if (i == 0) TextAlign.Start else TextAlign.Center
             )
         }
