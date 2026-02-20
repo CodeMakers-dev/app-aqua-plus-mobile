@@ -22,6 +22,7 @@ open class RealmReadingFormData : RealmObject {
     var serial: String = ""
     var meterStateId: Int? = null
     var dateEpochDay: Long = 0L
+    var usuarioCreacion: String = ""
     
     @Index
     var isSynced: Boolean = false
@@ -38,4 +39,5 @@ fun RealmReadingFormData.toDomain(): ReadingFormData = ReadingFormData(
     isSynced = isSynced,
     serial = serial,
     meterStateId = meterStateId,
+    usuarioCreacion = usuarioCreacion,
 )

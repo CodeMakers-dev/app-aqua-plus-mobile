@@ -16,4 +16,5 @@ data class ReadingFormData(
     val isSynced: Boolean,
     val serial: String?,
     val meterStateId: Int?,
+    val usuarioCreacion: String,
 )

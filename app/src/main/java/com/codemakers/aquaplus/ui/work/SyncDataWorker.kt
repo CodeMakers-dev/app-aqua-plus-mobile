@@ -64,7 +64,7 @@ class SyncDataWorker(
                         meterStateId = readingFormData.meterStateId ?: 0,
                         serial = readingFormData.serial.orEmpty(),
                         fechaEmision = readingFormData.date.toString(),
-                        usuarioCreacion = "",
+                        usuarioCreacion = readingFormData.usuarioCreacion,
                         lectura = ReadRequest(
                             meterReading = readingFormData.meterReading,
                             description = readingFormData.observations,

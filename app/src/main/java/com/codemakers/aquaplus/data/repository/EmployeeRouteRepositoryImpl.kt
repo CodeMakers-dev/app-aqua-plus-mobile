@@ -144,6 +144,7 @@ class EmployeeRouteRepositoryImpl(
         meterStateId: Int?
     ): Result<Unit> {
         val personId = getPersonId()
+        val usuarioCreacion = userRepository.getProfile()?.username.orEmpty()
         readingFormDataDao.saveNewReadingFormData(
             employeeRouteId = employeeRouteId,
             meterReading = meterReading,
@@ -153,7 +154,8 @@ class EmployeeRouteRepositoryImpl(
             date = date,
             personId = personId,
             serial = serial,
-            meterStateId = meterStateId
+            meterStateId = meterStateId,
+            usuarioCreacion = usuarioCreacion,
         )
         return Result.Success(Unit)
     }
