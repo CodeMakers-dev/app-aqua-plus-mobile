@@ -2,7 +2,6 @@ package com.codemakers.aquaplus.ui.modules.home.features.route
 
 import com.codemakers.aquaplus.domain.models.EmployeeRoute
 import com.codemakers.aquaplus.domain.models.ReadingFormData
-import com.codemakers.aquaplus.ui.extensions.isAfterToday
 import com.codemakers.aquaplus.ui.extensions.isToday
 
 data class RouteUiState(
@@ -17,17 +16,21 @@ data class RouteUiState(
     val search: String = "",
 ) {
 
+    private val allDataByRouteId: Map<Int, ReadingFormData> by lazy {
+        allData.associateBy { it.employeeRouteId }
+    }
+
     fun isInvoiceAvailable(employeeRouteId: Int): Boolean =
-        allData.any { it.employeeRouteId == employeeRouteId }
+        allDataByRouteId.containsKey(employeeRouteId)
 
     fun getContadorSerial(employeeRouteId: Int): String? =
-        allData.find { it.employeeRouteId == employeeRouteId }?.serial
+        allDataByRouteId[employeeRouteId]?.serial
 
     private fun isToday(employeeRouteId: Int): Boolean =
-        allData.find { it.employeeRouteId == employeeRouteId }?.date?.isToday == true
+        allDataByRouteId[employeeRouteId]?.date?.isToday == true
 
     fun isSynced(employeeRouteId: Int): Boolean =
-        allData.find { it.employeeRouteId == employeeRouteId }?.isSynced ?: false
+        allDataByRouteId[employeeRouteId]?.isSynced ?: false
 
     val pendingRoutes: List<EmployeeRoute>
         get() = routes.filter { !isInvoiceAvailable(it.id) }

@@ -24,15 +24,26 @@ fun Base64Image(
     base64String: String,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop
+    contentScale: ContentScale = ContentScale.Crop,
+    decodeSync: Boolean = false,
 ) {
-    val imageBitmap by produceState<ImageBitmap?>(null, base64String) {
-        value = withContext(Dispatchers.Default) {
-            try {
-                val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
-                BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)?.asImageBitmap()
-            } catch (e: Exception) {
-                null
+    val imageBitmap by produceState<ImageBitmap?>(
+        initialValue = if (decodeSync) {
+            runCatching {
+                val bytes = Base64.decode(base64String, Base64.DEFAULT)
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
+            }.getOrNull()
+        } else null,
+        key1 = base64String,
+    ) {
+        if (!decodeSync) {
+            value = withContext(Dispatchers.Default) {
+                try {
+                    val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
+                    BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)?.asImageBitmap()
+                } catch (e: Exception) {
+                    null
+                }
             }
         }
     }

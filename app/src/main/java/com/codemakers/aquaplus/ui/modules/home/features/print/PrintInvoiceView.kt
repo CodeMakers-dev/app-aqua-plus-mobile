@@ -25,7 +25,7 @@ class PrintInvoiceView @JvmOverloads constructor(
         if (invoice == null) return
         val view = ComposeView(context)
         view.setContent {
-            InvoiceContent(invoice)
+            InvoiceContent(invoice, decodeImagesSync = true)
         }
         this.addView(view)
     }

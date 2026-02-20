@@ -1,5 +1,6 @@
 package com.codemakers.aquaplus.ui.modules.home.features.invoice
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -75,8 +77,8 @@ import com.codemakers.aquaplus.ui.theme.AquaPlusTheme
 import com.codemakers.aquaplus.ui.theme.Border
 import com.codemakers.aquaplus.ui.theme.NoteBg
 import com.codemakers.aquaplus.ui.theme.primaryColor
-import com.simonsickle.compose.barcodes.Barcode
-import com.simonsickle.compose.barcodes.BarcodeType
+import io.github.alexzhirkevich.qrose.oned.BarcodeType
+import io.github.alexzhirkevich.qrose.oned.rememberBarcodePainter
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import java.time.LocalDate
@@ -146,7 +148,7 @@ fun InvoiceScreen(employeeRouteId: Int) {
 }
 
 @Composable
-fun InvoiceContent(invoice: Invoice) {
+fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
     val printDate = remember { Date() }
     // Top: Logo & NIT
     Column {
@@ -159,7 +161,8 @@ fun InvoiceContent(invoice: Invoice) {
                         modifier = Modifier
                             .size(60.dp)
                             .clip(CircleShape),
-                        contentScale = ContentScale.Fit
+                        contentScale = ContentScale.Fit,
+                        decodeSync = decodeImagesSync
                     )
                     Spacer(Modifier.width(8.dp))
                 }
@@ -199,7 +202,10 @@ fun InvoiceContent(invoice: Invoice) {
                 InfoCard(title = "") {
                     KeyValueRow("Nombre", invoice.client.name)
                     KeyValueRow("Identificación", invoice.client.id)
-                    if (invoice.meter.nameTypeUse.isNotEmpty()) KeyValueRow("Uso", invoice.meter.nameTypeUse)
+                    if (invoice.meter.nameTypeUse.isNotEmpty()) KeyValueRow(
+                        "Uso",
+                        invoice.meter.nameTypeUse
+                    )
                 }
             },
             right = {
@@ -239,11 +245,13 @@ fun InvoiceContent(invoice: Invoice) {
         SectionHeader("DATOS DEL CONSUMO")
         TwoPane(
             left = {
-                val dateLastReading = invoice.reading.prevDate.takeIf { it != null }?.format(dateFmt)
+                val dateLastReading =
+                    invoice.reading.prevDate.takeIf { it != null }?.format(dateFmt)
                 InfoCard(title = "") {
                     KeyValueRow(
                         "Lectura Anterior",
-                        "${invoice.reading.prevReading} m³" +  dateLastReading?.let { "($it)" }.orEmpty()
+                        "${invoice.reading.prevReading} m³ " + dateLastReading?.let { "($it)" }
+                            .orEmpty()
                     )
                     KeyValueRow("Promedio consumo", "${invoice.meter.average} m³")
                 }
@@ -252,7 +260,11 @@ fun InvoiceContent(invoice: Invoice) {
                 InfoCard(title = "") {
                     KeyValueRow(
                         "Lectura Actual",
-                        "${invoice.reading.currentReading} m³ (${invoice.reading.currentDate.format(dateFmt)})"
+                        "${invoice.reading.currentReading} m³ (${
+                            invoice.reading.currentDate.format(
+                                dateFmt
+                            )
+                        })"
                     )
                     KeyValueRow("Consumo", "${invoice.reading.consumptionM3} m³")
                 }
@@ -369,8 +381,9 @@ fun InvoiceContent(invoice: Invoice) {
                     Text("Codigo QR", style = MaterialTheme.typography.bodyLarge)
                     Base64Image(
                         base64String = invoice.companyQrCode,
-                        contentDescription = "Company Picture",
-                        modifier = Modifier.size(120.dp)
+                        contentDescription = invoice.companyName,
+                        modifier = Modifier.size(120.dp),
+                        decodeSync = decodeImagesSync
                     )
                 }
             }
@@ -380,7 +393,8 @@ fun InvoiceContent(invoice: Invoice) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text("Punto de Pago", style = MaterialTheme.typography.bodyLarge)
-                val paymentItems = remember(invoice.methodsPayment) { invoice.methodsPayment.orEmpty().chunked(3) }
+                val paymentItems =
+                    remember(invoice.methodsPayment) { invoice.methodsPayment.orEmpty().chunked(3) }
                 paymentItems.onEach { item ->
                     Row(
                         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -392,7 +406,8 @@ fun InvoiceContent(invoice: Invoice) {
                                 contentDescription = "Company Picture",
                                 modifier = Modifier
                                     .size(90.dp)
-                                    .padding(4.dp)
+                                    .padding(4.dp),
+                                decodeSync = decodeImagesSync
                             )
                         }
                     }
@@ -402,14 +417,17 @@ fun InvoiceContent(invoice: Invoice) {
         Spacer(Modifier.height(8.dp))
 
         // Barcode
-        if (!invoice.codConvenio.isNullOrEmpty() && BarcodeType.CODE_128.isValueValid(invoice.codConvenio)) {
-            Barcode(
-                modifier = Modifier.fillMaxWidth()
-                    .align(Alignment.CenterHorizontally),
-                height = 30.dp,
-                resolutionFactor = 10,
-                type = BarcodeType.CODE_128,
-                value = invoice.codConvenio,
+        if (!invoice.codConvenio.isNullOrEmpty()) {
+            Image(
+                painter = rememberBarcodePainter(
+                    data = invoice.codConvenio,
+                    type = BarcodeType.Code128,
+                    onError = { ColorPainter(Color.Transparent) }
+                ),
+                contentDescription = invoice.codConvenio,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
             )
             Text(
                 text = invoice.codConvenio,

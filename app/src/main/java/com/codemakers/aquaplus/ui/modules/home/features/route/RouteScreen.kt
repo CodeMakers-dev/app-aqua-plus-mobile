@@ -129,10 +129,9 @@ fun RouteContent(
         if (state.allRoutes.isEmpty()) {
             Column(
                 modifier = Modifier
-                    .padding(paddingValues)
                     .fillMaxSize()
                     .background(primaryDarkColor)
-                    .padding(all = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -259,15 +258,18 @@ fun RouteContent(
                         coroutineScope.launch { pagerState.animateScrollToPage(index) }
                     }
                 )
+                val stableIsInvoiceAvailable = remember(state.allData) { state::isInvoiceAvailable }
+                val stableIsSynced = remember(state.allData) { state::isSynced }
+                val stableGetContadorSerial = remember(state.allData) { state::getContadorSerial }
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
                     RouteListContent(
                         routes = if (page == 0) state.pendingRoutes else state.completedRoutes,
-                        isInvoiceAvailable = state::isInvoiceAvailable,
-                        isSynced = state::isSynced,
-                        getContadorSerial = state::getContadorSerial,
+                        isInvoiceAvailable = stableIsInvoiceAvailable,
+                        isSynced = stableIsSynced,
+                        getContadorSerial = stableGetContadorSerial,
                         showSyncStatus = page == 1, // Show sync status only in completed routes
                         onNavigateToForm = onNavigateToForm,
                         onNavigateToInvoice = onNavigateToInvoice
