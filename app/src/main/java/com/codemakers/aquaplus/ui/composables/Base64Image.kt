@@ -6,14 +6,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.codemakers.aquaplus.ui.theme.AquaPlusTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun Base64Image(
@@ -22,19 +26,20 @@ fun Base64Image(
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop
 ) {
-    val imageBitmap = remember(base64String) {
-        try {
-            val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
-            BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)?.asImageBitmap()
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-            null
+    val imageBitmap by produceState<ImageBitmap?>(null, base64String) {
+        value = withContext(Dispatchers.Default) {
+            try {
+                val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
+                BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)?.asImageBitmap()
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 
     if (imageBitmap != null) {
         Image(
-            bitmap = imageBitmap,
+            bitmap = imageBitmap!!,
             contentDescription = contentDescription,
             modifier = modifier,
             contentScale = contentScale

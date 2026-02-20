@@ -36,7 +36,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,7 +76,7 @@ fun ReadingFormScreen(
     val viewModel = koinViewModel<ReadingFormViewModel>(
         parameters = { parametersOf(employeeRouteId) }
     )
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     var showConfirmDialog by remember { mutableStateOf(false) }
 
     ReadingFormContent(
@@ -379,10 +379,11 @@ fun ReadingFormContent(
                     }
 
                     // Opciones para consumo anormal
-                    val abnormalConsumptionOptions = listOf(
-                        stringResource(R.string.abnormal_consumption_high) to true,
-                        stringResource(R.string.abnormal_consumption_low) to false
-                    )
+                    val highLabel = stringResource(R.string.abnormal_consumption_high)
+                    val lowLabel = stringResource(R.string.abnormal_consumption_low)
+                    val abnormalConsumptionOptions = remember(highLabel, lowLabel) {
+                        listOf(highLabel to true, lowLabel to false)
+                    }
 
                     GenericDropdown(
                         items = abnormalConsumptionOptions,

@@ -35,8 +35,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,13 +66,15 @@ import com.codemakers.aquaplus.ui.theme.secondaryDarkColor
 import com.codemakers.aquaplus.ui.theme.tertiaryDarkColor
 import org.koin.androidx.compose.koinViewModel
 
+private val routeTabs = listOf("Pendientes", "Completadas")
+
 @Composable
 fun RouteScreen(
     viewModel: RouteViewModel = koinViewModel(),
     onNavigateToForm: (employeeRouteId: Int) -> Unit,
     onNavigateToInvoice: (employeeRouteId: Int) -> Unit,
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     RouteContent(
@@ -249,7 +251,7 @@ fun RouteContent(
                 }
                 ClickableTabs(
                     selectedItem = selectedItem,
-                    tabsList = listOf("Pendientes", "Completadas"),
+                    tabsList = routeTabs,
                     onClick = { selectedItem = it }
                 )
                 RouteListContent(
@@ -328,32 +330,41 @@ fun RouteListContent(
                         modifier = Modifier
                             .weight(1f),
                     ) {
+                        val addressText = remember(item.id) {
+                            "${item.personaCliente?.direccion?.descripcion?.uppercase()}\n${item.personaCliente?.direccion?.corregimiento}, ${item.personaCliente?.direccion?.ciudad}, ${item.personaCliente?.direccion?.departamento}"
+                        }
+                        val clientText = remember(item.id) {
+                            "${item.personaCliente?.primerNombre} ${item.personaCliente?.primerApellido}".toCapitalCase() + " - ${item.personaCliente?.numeroCedula}"
+                        }
                         Text(
-                            text = "${item.personaCliente?.direccion?.descripcion?.uppercase()}\n${item.personaCliente?.direccion?.corregimiento}, ${item.personaCliente?.direccion?.ciudad}, ${item.personaCliente?.direccion?.departamento}",
+                            text = addressText,
                             color = Color.White,
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-
                         )
                         Text(
-                            text = "${item.personaCliente?.primerNombre} ${item.personaCliente?.primerApellido}".toCapitalCase() + " - ${item.personaCliente?.numeroCedula}",
+                            text = clientText,
                             color = Color.White,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                         )
-                        Text(
-                            text = buildAnnotatedString {
+                        val serialLabel = stringResource(R.string.copy_serial)
+                        val serial = getContadorSerial(item.id)
+                        val serialText = remember(item.id, serial) {
+                            buildAnnotatedString {
                                 withStyle(
                                     style = SpanStyle(
                                         fontWeight = FontWeight.Bold,
                                         color = Color.LightGray
                                     )
                                 ) {
-                                    append("${stringResource(R.string.copy_serial)}: ")
+                                    append("$serialLabel: ")
                                 }
-                                val serial = getContadorSerial(item.id)
                                 withStyle(style = SpanStyle(color = Color.White)) {
                                     append("${serial ?: item.contador?.serial ?: "N/A"} - ${item.contador?.nombreTipoContador}")
                                 }
-                            },
+                            }
+                        }
+                        Text(
+                            text = serialText,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                         )
                     }

@@ -1,6 +1,5 @@
 package com.codemakers.aquaplus.ui.modules.home.features.invoice
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -86,7 +85,6 @@ import java.util.Date
 
 private val dateFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun InvoiceScreen(employeeRouteId: Int) {
     val viewModel = koinViewModel<InvoiceViewModel>(
@@ -120,7 +118,8 @@ fun InvoiceScreen(employeeRouteId: Int) {
                 .fillMaxSize()
                 .background(Color.White)
                 .verticalScroll(scroll)
-                .padding(16.dp)
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
             if (showPrintPreview) {
                 InvoicePrint(state.invoice) { captureView.value = it }
@@ -130,7 +129,7 @@ fun InvoiceScreen(employeeRouteId: Int) {
         }
     }
 
-    LoadingWidget(isLoading = state.isLoading or showPrintPreview)
+    LoadingWidget(isLoading = state.isLoading || showPrintPreview)
 
     LaunchedEffect(captureView.value) {
         if (captureView.value != null) {
@@ -148,6 +147,7 @@ fun InvoiceScreen(employeeRouteId: Int) {
 
 @Composable
 fun InvoiceContent(invoice: Invoice) {
+    val printDate = remember { Date() }
     // Top: Logo & NIT
     Column {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -199,14 +199,13 @@ fun InvoiceContent(invoice: Invoice) {
                 InfoCard(title = "") {
                     KeyValueRow("Nombre", invoice.client.name)
                     KeyValueRow("Identificación", invoice.client.id)
-                    KeyValueRow("Codigo cliente", invoice.client.code)
+                    if (invoice.meter.nameTypeUse.isNotEmpty()) KeyValueRow("Uso", invoice.meter.nameTypeUse)
                 }
             },
             right = {
                 InfoCard(title = "") {
                     KeyValueRow("Dirección", invoice.client.address)
                     KeyValueRow("Ciudad", invoice.client.city)
-                    KeyValueRow("Uso", invoice.meter.nameTypeUse)
                 }
             }
         )
@@ -224,14 +223,13 @@ fun InvoiceContent(invoice: Invoice) {
                             invoice.meter.installDate.format(dateFmt) ?: "---"
                         )
                     }
-                    KeyValueRow("Estado", invoice.meter.state)
+                    KeyValueRow("Estrato", invoice.meter.stratum.toString())
                 }
             },
             right = {
                 InfoCard(title = "") {
                     KeyValueRow("Tipo", invoice.meter.type)
-                    KeyValueRow("Estrato", invoice.meter.stratum.toString())
-                    KeyValueRow("Matrícula", invoice.meter.registration)
+                    KeyValueRow("Estado", invoice.meter.state)
                 }
             }
         )
@@ -295,7 +293,8 @@ fun InvoiceContent(invoice: Invoice) {
         }
 
         // Historial
-        if (invoice.history.isNotEmpty()) {
+        val sortedHistory = remember(invoice.history) { invoice.history.sortedBy { it.mes } }
+        if (sortedHistory.isNotEmpty()) {
             SectionHeader("HISTÓRICO DE CONSUMO (m³)")
             Spacer(Modifier.height(8.dp))
             Card(
@@ -305,7 +304,7 @@ fun InvoiceContent(invoice: Invoice) {
                 shape = RoundedCornerShape(10.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                BarsHistory(invoice.history.sortedBy { it.mes })
+                BarsHistory(sortedHistory)
             }
             Spacer(Modifier.height(8.dp))
         }
@@ -381,8 +380,8 @@ fun InvoiceContent(invoice: Invoice) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text("Punto de Pago", style = MaterialTheme.typography.bodyLarge)
-                val items = invoice.methodsPayment.orEmpty().chunked(3)
-                items.onEach { item ->
+                val paymentItems = remember(invoice.methodsPayment) { invoice.methodsPayment.orEmpty().chunked(3) }
+                paymentItems.onEach { item ->
                     Row(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier = Modifier.fillMaxWidth()
@@ -451,7 +450,7 @@ fun InvoiceContent(invoice: Invoice) {
         }
 
         Text(
-            "${invoice.companyFooter.unescapeNewlines()} ${Date()}",
+            "${invoice.companyFooter.unescapeNewlines()} $printDate",
             fontSize = 11.sp,
             lineHeight = 14.sp,
             textAlign = TextAlign.Center

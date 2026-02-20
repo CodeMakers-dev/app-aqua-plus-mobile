@@ -19,6 +19,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,14 +37,16 @@ fun PaymentSummaryCard(
     modifier: Modifier = Modifier
 ) {
     // Agrupar fees por tipo y calcular totales
-    val feeGroups = fees.groupBy { it.title }
-        .mapValues { (_, feeList) ->
-            feeList.sumOf { fee ->
-                fee.conceptos?.sumOf { it.total } ?: 0.0
+    val feeGroups = remember(fees) {
+        fees.groupBy { it.title }
+            .mapValues { (_, feeList) ->
+                feeList.sumOf { fee ->
+                    fee.conceptos?.sumOf { it.total } ?: 0.0
+                }
             }
-        }
+    }
 
-    val totalAmount = feeGroups.values.sum()
+    val totalAmount = remember(feeGroups) { feeGroups.values.sum() }
 
     Card(
         modifier = modifier.fillMaxWidth(),
