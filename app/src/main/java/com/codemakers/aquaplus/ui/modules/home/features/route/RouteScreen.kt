@@ -35,13 +35,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -175,7 +177,8 @@ fun RouteContent(
                 }
             }
         } else {
-            var selectedItem by rememberSaveable { mutableIntStateOf(0) }
+            val pagerState = rememberPagerState(pageCount = { routeTabs.size })
+            val coroutineScope = rememberCoroutineScope()
             Column(
                 modifier = Modifier
                     .background(primaryDarkColor)
@@ -250,19 +253,26 @@ fun RouteContent(
                     }
                 }
                 ClickableTabs(
-                    selectedItem = selectedItem,
+                    selectedItem = pagerState.currentPage,
                     tabsList = routeTabs,
-                    onClick = { selectedItem = it }
+                    onClick = { index ->
+                        coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                    }
                 )
-                RouteListContent(
-                    routes = if (selectedItem == 0) state.pendingRoutes else state.completedRoutes,
-                    isInvoiceAvailable = state::isInvoiceAvailable,
-                    isSynced = state::isSynced,
-                    getContadorSerial = state::getContadorSerial,
-                    showSyncStatus = selectedItem == 1, // Show sync status only in completed routes
-                    onNavigateToForm = onNavigateToForm,
-                    onNavigateToInvoice = onNavigateToInvoice
-                )
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    RouteListContent(
+                        routes = if (page == 0) state.pendingRoutes else state.completedRoutes,
+                        isInvoiceAvailable = state::isInvoiceAvailable,
+                        isSynced = state::isSynced,
+                        getContadorSerial = state::getContadorSerial,
+                        showSyncStatus = page == 1, // Show sync status only in completed routes
+                        onNavigateToForm = onNavigateToForm,
+                        onNavigateToInvoice = onNavigateToInvoice
+                    )
+                }
             }
         }
     }
