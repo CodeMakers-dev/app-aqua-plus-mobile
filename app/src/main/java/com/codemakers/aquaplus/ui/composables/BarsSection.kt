@@ -58,7 +58,8 @@ fun BarsHistory(
     data: List<HistoryEntry>,
     maxBarHeight: Dp = 120.dp,
     barWidth: Dp = 30.dp,
-    showPriceInK: Boolean = false
+    showPriceInK: Boolean = false,
+    showPrice: Boolean = true
 ) {
     val maxValue = max(1, data.maxOfOrNull { it.consumo ?: 0 } ?: 1)
     val average = if (data.isEmpty()) 0f else data.mapNotNull { it.consumo }.average().toFloat()
@@ -71,12 +72,8 @@ fun BarsHistory(
             .fillMaxWidth()
             .padding(top = 24.dp, bottom = 8.dp, start = 4.dp, end = 4.dp)
     ) {
-        // Zona de barras con overlay de línea de promedio
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(maxBarHeight)
-        ) {
+        // Barras con consumo flotando justo encima de cada una
+        Box(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -85,21 +82,31 @@ fun BarsHistory(
                 data.forEachIndexed { index, item ->
                     val isLast = index == lastIndex
                     val barColor = if (isLast) lastBarColor else secondaryColor
-                    Canvas(
-                        modifier = Modifier
-                            .height(((item.consumo ?: 0).toFloat() / maxValue) * maxBarHeight)
-                            .width(barWidth)
-                    ) {
-                        drawRect(color = barColor)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "${item.consumo}",
+                            fontSize = 8.sp,
+                            lineHeight = 8.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.width(barWidth)
+                        )
+                        Canvas(
+                            modifier = Modifier
+                                .height(((item.consumo ?: 0).toFloat() / maxValue) * maxBarHeight)
+                                .width(barWidth)
+                        ) {
+                            drawRect(color = barColor)
+                        }
                     }
                 }
             }
 
-            // Línea horizontal de promedio
+            // Línea horizontal de promedio anclada a la zona de barras
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(maxBarHeight)
+                    .align(Alignment.BottomCenter)
             ) {
                 val avgY = size.height * (1f - avgRatio)
                 drawLine(
@@ -125,34 +132,30 @@ fun BarsHistory(
                 ) {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "${item.consumo}",
-                        fontSize = 10.sp,
-                        lineHeight = 10.sp,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
                         text = monthName(item.mes),
                         fontSize = 9.sp,
                         lineHeight = 10.sp,
                         textAlign = TextAlign.Center
                     )
-                    if (showPriceInK) {
-                        val k = item.precio?.div(1000)
-                        if (k != null) {
+                    if (showPrice) {
+                        if (showPriceInK) {
+                            val k = item.precio?.div(1000)
+                            if (k != null) {
+                                Text(
+                                    text = "${"%,.0f".format(k)}k",
+                                    fontSize = 8.sp,
+                                    lineHeight = 10.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        } else {
                             Text(
-                                text = "${"%,.0f".format(k)}k",
+                                text = item.precio?.cop().orEmpty(),
                                 fontSize = 8.sp,
                                 lineHeight = 10.sp,
                                 textAlign = TextAlign.Center
                             )
                         }
-                    } else {
-                        Text(
-                            text = item.precio?.cop().orEmpty(),
-                            fontSize = 8.sp,
-                            lineHeight = 10.sp,
-                            textAlign = TextAlign.Center
-                        )
                     }
                 }
             }
@@ -213,7 +216,8 @@ fun BarsHistoryPreview2() {
         ) {
             BarsHistory(
                 data = sampleData,
-                showPriceInK = true
+                showPriceInK = true,
+                showPrice = false
             )
         }
     }

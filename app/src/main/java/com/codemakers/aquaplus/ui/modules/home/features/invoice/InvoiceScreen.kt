@@ -245,43 +245,66 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
             shape = RoundedCornerShape(10.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            BarsHistory(data = sortedHistory, showPriceInK = true)
+            BarsHistory(data = sortedHistory, showPrice = false)
         }
         Spacer(Modifier.height(8.dp))
 
         // Deuda
         SectionHeader("INFORMACIÓN DE DEUDA")
-        invoice.deudaCliente?.forEachIndexed { index, deuda ->
+        val deudaList = invoice.deudaCliente?.takeIf { it.isNotEmpty() }
+        if (deudaList == null) {
             TwoPane(
                 left = {
                     InfoCard(title = "", cornerShape = 0.dp) {
-                        KeyValueRow("Tipo de deuda", deuda.nombreTipoDeuda.orEmpty())
-                        KeyValueRow("Código tipo deuda", deuda.codigoTipoDeuda.orEmpty())
-                        KeyValueRow("Número de cuotas", (deuda.numeroCuotas ?: 0).toString())
-                        KeyValueRow("Valor cuota", (deuda.valorCuota ?: 0.0).cop())
+                        KeyValueRow("Tipo de deuda", "-")
+                        KeyValueRow("Código tipo deuda", "-")
+                        KeyValueRow("Número de cuotas", "-")
+                        KeyValueRow("Valor cuota", "-")
                     }
                 },
                 right = {
                     InfoCard(title = "", cornerShape = 0.dp) {
-                        KeyValueRow(
-                            "Abonos realizados",
-                            (deuda.abonosRealizados ?: 0).toString()
-                        )
-                        KeyValueRow(
-                            "Cuotas canceladas",
-                            (deuda.cuotasCanceladas ?: 0).toString()
-                        )
-                        KeyValueRow(
-                            "Cuotas pendientes",
-                            (deuda.cuotasPendientes ?: 0).toString()
-                        )
-                        KeyValueRow("Nuevo saldo", (deuda.nuevoSaldo ?: 0.0).cop())
+                        KeyValueRow("Abonos realizados", "-")
+                        KeyValueRow("Cuotas canceladas", "-")
+                        KeyValueRow("Cuotas pendientes", "-")
+                        KeyValueRow("Nuevo saldo", "-")
                     }
                 },
                 gap = 0.dp
             )
-            if (index != invoice.deudaCliente.lastIndex) {
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Border)
+        } else {
+            deudaList.forEachIndexed { index, deuda ->
+                TwoPane(
+                    left = {
+                        InfoCard(title = "", cornerShape = 0.dp) {
+                            KeyValueRow("Tipo de deuda", deuda.nombreTipoDeuda.orEmpty())
+                            KeyValueRow("Código tipo deuda", deuda.codigoTipoDeuda.orEmpty())
+                            KeyValueRow("Número de cuotas", (deuda.numeroCuotas ?: 0).toString())
+                            KeyValueRow("Valor cuota", (deuda.valorCuota ?: 0.0).cop())
+                        }
+                    },
+                    right = {
+                        InfoCard(title = "", cornerShape = 0.dp) {
+                            KeyValueRow(
+                                "Abonos realizados",
+                                (deuda.abonosRealizados ?: 0).toString()
+                            )
+                            KeyValueRow(
+                                "Cuotas canceladas",
+                                (deuda.cuotasCanceladas ?: 0).toString()
+                            )
+                            KeyValueRow(
+                                "Cuotas pendientes",
+                                (deuda.cuotasPendientes ?: 0).toString()
+                            )
+                            KeyValueRow("Nuevo saldo", (deuda.nuevoSaldo ?: 0.0).cop())
+                        }
+                    },
+                    gap = 0.dp
+                )
+                if (index != deudaList.lastIndex) {
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Border)
+                }
             }
         }
         Spacer(Modifier.height(8.dp))
