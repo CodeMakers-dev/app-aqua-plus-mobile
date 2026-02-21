@@ -304,7 +304,7 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
 
         // Footer
         FooterInvoice(invoice = invoice)
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(24.dp))
 
         // Tirilla de pago
         PaySlipComposable(invoice = invoice)
