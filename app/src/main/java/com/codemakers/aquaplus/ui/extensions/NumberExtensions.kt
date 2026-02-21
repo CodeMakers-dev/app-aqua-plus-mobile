@@ -15,3 +15,7 @@ fun Double.cop(): String {
     nf.currency = Currency.getInstance("COP")
     return nf.format(this)
 }
+
+fun Int.toTwoDigitsString(): String {
+    return String.format("%02d", this)
+}

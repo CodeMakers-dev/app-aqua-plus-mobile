@@ -9,6 +9,7 @@ import com.codemakers.aquaplus.ui.extensions.containsAnyOf
 import com.codemakers.aquaplus.ui.extensions.roundTo2Decimals
 import com.codemakers.aquaplus.ui.extensions.toCapitalCase
 import com.codemakers.aquaplus.ui.extensions.toLocalDate
+import com.codemakers.aquaplus.ui.extensions.toTwoDigitsString
 import java.time.LocalDate
 
 const val CONBAS = "BAS"
@@ -131,6 +132,17 @@ data class Invoice(
     val deudaCliente: List<DeudaCliente>?,
     val codConvenio: String?,
 ) {
+
+    val totalAmount = fees.sumOf { fee ->
+        fee.conceptos?.sumOf { it.total } ?: 0.0
+    }
+
+    val historyAll: List<HistoryEntry>
+        get() = history + HistoryEntry(
+            mes = reading.currentDate.year.toString() + "-" + reading.currentDate.monthValue.toTwoDigitsString(),
+            precio = totalAmount,
+            consumo = reading.consumptionM3.toInt(),
+        )
 
     val totals: Totals
         get() {

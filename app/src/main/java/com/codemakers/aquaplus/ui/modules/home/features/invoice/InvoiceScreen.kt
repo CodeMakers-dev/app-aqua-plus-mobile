@@ -1,5 +1,6 @@
 package com.codemakers.aquaplus.ui.modules.home.features.invoice
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -73,6 +74,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.collections.plus
 
 private val dateFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
@@ -231,7 +233,10 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
         }
 
         // Historial
-        val sortedHistory = remember(invoice.history) { invoice.history.sortedBy { it.mes } }
+        val sortedHistory = remember(invoice.historyAll) {
+            invoice.historyAll.sortedBy { it.mes }
+        }
+        Log.d("InvoiceScreen", "sortedHistory: $sortedHistory")
         SectionHeader("HISTÓRICO DE CONSUMO (m³)")
         Card(
             modifier = Modifier.fillMaxWidth(),
