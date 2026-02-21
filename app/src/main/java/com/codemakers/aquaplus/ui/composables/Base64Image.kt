@@ -24,7 +24,7 @@ fun Base64Image(
     base64String: String,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop,
+    contentScale: ContentScale = ContentScale.Inside,
     decodeSync: Boolean = false,
 ) {
     val imageBitmap by produceState<ImageBitmap?>(

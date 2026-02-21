@@ -8,11 +8,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,7 +49,9 @@ fun PaymentSummaryCard(
     val totalAmount = remember(feeGroups) { feeGroups.values.sum() }
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -61,12 +62,14 @@ fun PaymentSummaryCard(
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight()
+                    .wrapContentHeight()
             ) {
                 FlowRow(
-                    modifier = Modifier.fillMaxWidth(),      // el ancho que quieras
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     feeGroups.forEach { item ->
                         PaymentFeeCard(
@@ -77,12 +80,13 @@ fun PaymentSummaryCard(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
             // Total section
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .wrapContentHeight()
                     .background(Color(0xFFE8F5E8), RoundedCornerShape(8.dp))
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -113,8 +117,7 @@ fun PaymentFeeCard(
     amount: Double,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.wrapContentHeight(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Header with fee name

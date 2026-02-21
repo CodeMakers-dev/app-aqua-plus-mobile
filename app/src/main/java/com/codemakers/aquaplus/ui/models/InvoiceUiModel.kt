@@ -39,7 +39,8 @@ data class MeterInfo(
     val nameTypeUse: String,
     val state: String,
     val registration: String,
-    val average: Double
+    val average: Double,
+    val nuid: Long?,
 )
 
 data class ReadingInfo(
@@ -189,7 +190,8 @@ data class Invoice(
             nameTypeUse = route.contador?.nombreTipoUso.orEmpty(),
             state = config.config?.estadosMedidor?.find { it.id == data.meterStateId }?.descripcion.orEmpty(),
             registration = route.contador?.matricula.orEmpty(),
-            average = route.contador?.promedioConsumo ?: 0.0
+            average = route.contador?.promedioConsumo ?: 0.0,
+            nuid = route.contador?.nuid ?: 0L,
         ),
         reading = ReadingInfo(
             prevReading = route.ultimaFactura?.lectura ?: 0.0,
