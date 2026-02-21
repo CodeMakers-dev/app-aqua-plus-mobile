@@ -245,7 +245,7 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
             shape = RoundedCornerShape(10.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            BarsHistory(sortedHistory)
+            BarsHistory(data = sortedHistory, showPriceInK = true)
         }
         Spacer(Modifier.height(8.dp))
 

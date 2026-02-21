@@ -34,12 +34,31 @@ import kotlin.math.max
 private val lastBarColor = Color(0xFFFF8C00)
 private val averageLineColor = Color(0xFFFF8C00)
 
+private fun monthName(mes: String?): String {
+    val month = mes?.substringAfterLast("-")?.trimStart('0') ?: return ""
+    return when (month) {
+        "1" -> "Ene"
+        "2" -> "Feb"
+        "3" -> "Mar"
+        "4" -> "Abr"
+        "5" -> "May"
+        "6" -> "Jun"
+        "7" -> "Jul"
+        "8" -> "Ago"
+        "9" -> "Sep"
+        "10" -> "Oct"
+        "11" -> "Nov"
+        "12" -> "Dic"
+        else -> mes.substringBefore(" ")
+    }
+}
+
 @Composable
 fun BarsHistory(
     data: List<HistoryEntry>,
     maxBarHeight: Dp = 120.dp,
     barWidth: Dp = 30.dp,
-    barSpacing: Dp = 24.dp
+    showPriceInK: Boolean = false
 ) {
     val maxValue = max(1, data.maxOfOrNull { it.consumo ?: 0 } ?: 1)
     val average = if (data.isEmpty()) 0f else data.mapNotNull { it.consumo }.average().toFloat()
@@ -71,15 +90,8 @@ fun BarsHistory(
                             .height(((item.consumo ?: 0).toFloat() / maxValue) * maxBarHeight)
                             .width(barWidth)
                     ) {
-                        drawLine(
-                            color = barColor,
-                            start = Offset(size.width / 2, size.height),
-                            end = Offset(size.width / 2, 0f),
-                            strokeWidth = size.width,
-                            cap = StrokeCap.Square
-                        )
+                        drawRect(color = barColor)
                     }
-                    Spacer(Modifier.width(barSpacing))
                 }
             }
 
@@ -88,7 +100,6 @@ fun BarsHistory(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(maxBarHeight)
-                    .padding(bottom = 34.dp)
             ) {
                 val avgY = size.height * (1f - avgRatio)
                 drawLine(
@@ -114,25 +125,36 @@ fun BarsHistory(
                 ) {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "${item.consumo} m³",
+                        text = "${item.consumo}",
                         fontSize = 10.sp,
                         lineHeight = 10.sp,
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = item.mes?.substringBefore(" ").orEmpty(),
+                        text = monthName(item.mes),
                         fontSize = 9.sp,
                         lineHeight = 10.sp,
                         textAlign = TextAlign.Center
                     )
-                    Text(
-                        text = item.precio?.cop().orEmpty(),
-                        fontSize = 8.sp,
-                        lineHeight = 10.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    if (showPriceInK) {
+                        val k = item.precio?.div(1000)
+                        if (k != null) {
+                            Text(
+                                text = "${"%,.0f".format(k)}k",
+                                fontSize = 8.sp,
+                                lineHeight = 10.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = item.precio?.cop().orEmpty(),
+                            fontSize = 8.sp,
+                            lineHeight = 10.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
-                Spacer(Modifier.width(barSpacing))
             }
         }
 
@@ -151,13 +173,13 @@ fun BarsHistory(
 fun BarsHistoryPreview() {
     AquaPlusTheme {
         val sampleData = listOf(
-            HistoryEntry(consumo = 101, mes = "Ago 2024", precio = 120000.0),
-            HistoryEntry(consumo = 50, mes = "Sep 2024", precio = 65000.0),
-            HistoryEntry(consumo = 46, mes = "Oct 2024", precio = 58000.0),
-            HistoryEntry(consumo = 77, mes = "Nov 2024", precio = 95000.0),
-            HistoryEntry(consumo = 40, mes = "Dic 2024", precio = 50000.0),
-            HistoryEntry(consumo = 33, mes = "Ene 2025", precio = 42000.0),
-            HistoryEntry(consumo = 71, mes = "Feb 2025", precio = 88000.0),
+            HistoryEntry(consumo = 101, mes = "2026-01", precio = 120000.0),
+            HistoryEntry(consumo = 50, mes = "2026-02", precio = 65000.0),
+            HistoryEntry(consumo = 46, mes = "2026-03", precio = 58000.0),
+            HistoryEntry(consumo = 77, mes = "2026-04", precio = 95000.0),
+            HistoryEntry(consumo = 40, mes = "2026-05", precio = 50000.0),
+            HistoryEntry(consumo = 33, mes = "2026-06", precio = 42000.0),
+            HistoryEntry(consumo = 71, mes = "2026-07", precio = 88000.0),
         )
         Column(
             modifier = Modifier
@@ -166,6 +188,33 @@ fun BarsHistoryPreview() {
 
         ) {
             BarsHistory(data = sampleData)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BarsHistoryPreview2() {
+    AquaPlusTheme {
+        val sampleData = listOf(
+            HistoryEntry(consumo = 25, mes = "2026-01", precio = 100000.0),
+            HistoryEntry(consumo = 13, mes = "2026-02", precio = 52000.0),
+            HistoryEntry(consumo = 17, mes = "2026-03", precio = 68000.0),
+            HistoryEntry(consumo = 15, mes = "2026-04", precio = 60000.0),
+            HistoryEntry(consumo = 20, mes = "2026-05", precio = 80000.0),
+            HistoryEntry(consumo = 287, mes = "2026-06", precio = 1148000.0),
+            HistoryEntry(consumo = 77, mes = "2026-07", precio = 149761.50),
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+
+        ) {
+            BarsHistory(
+                data = sampleData,
+                showPriceInK = true
+            )
         }
     }
 }
