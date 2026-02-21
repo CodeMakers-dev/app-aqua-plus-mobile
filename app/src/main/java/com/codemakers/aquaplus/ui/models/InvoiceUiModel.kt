@@ -222,6 +222,8 @@ data class Invoice(
                     return@mapNotNull null
                 }
 
+                val isAseoTarifa = tarifa.tipoTarifa?.codigo?.contains("ASE") == true
+
                 val activeConceptCode = tarifa.conceptos
                     ?.filter { it.tipoConcepto?.codigo.containsAnyOf(consumptionCodes) }
                     ?.let { codes ->
@@ -235,10 +237,13 @@ data class Invoice(
                     code = tarifa.tipoTarifa?.codigo.orEmpty(),
                     conceptos = tarifa.conceptos?.map { concept ->
                         val isActive = concept.tipoConcepto?.codigo?.contains(activeConceptCode.orEmpty()) == true || !concept.tipoConcepto?.codigo.containsAnyOf(consumptionCodes)
-
                         val valorMc = if (isActive && concept.indCalcularMc == true) {
                             tarifa.valorMc?.find { mc -> mc.tipoUso?.id == route.contador?.idTipoUso && mc.estrato == route.contador?.estrato }
                         } else null
+
+                        val valorConcepto = if (isAseoTarifa && concept.tipoConcepto?.codigo?.contains("CAVA") == true) {
+                            route.contador?.valorAforo ?: 0.0
+                        } else concept.valor
 
                         ConceptDetail(
                             id = concept.id,
@@ -252,7 +257,7 @@ data class Invoice(
                                         stratum = stratum.estrato ?: 0,
                                     )
                                 },
-                            value = if (isActive) concept.valor else 0.0,
+                            value = if (isActive) valorConcepto else 0.0,
                             consumption = if (isActive) consumption else null,
                             valorMcValue = valorMc?.valor,
                         )

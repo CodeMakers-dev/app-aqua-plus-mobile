@@ -141,6 +141,7 @@ class EmployeeRouteDao(
                 lecturaProyectada = data.empresaClienteContador.contador.lecturaProyectada
                 nombreTipoContador = data.empresaClienteContador.contador.nombreTipoContador
                 nombreEstadoContador = data.empresaClienteContador.contador.nombreEstadoContador
+                valorAforo = data.empresaClienteContador.contador.valorAforo
             }
 
             val direccionData = RealmDireccion().apply {

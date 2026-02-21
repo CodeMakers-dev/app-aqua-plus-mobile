@@ -75,6 +75,7 @@ open class RealmContador : EmbeddedRealmObject {
     var lecturaProyectada: Double? = null
     var nombreTipoContador: String = ""
     var nombreEstadoContador: String? = null
+    var valorAforo: Double? = null
 }
 
 open class RealmTarifaContador : EmbeddedRealmObject {
@@ -195,7 +196,8 @@ fun RealmContador.toDomain(): Contador = Contador(
     idEstadoContador = idEstadoContador,
     lecturaProyectada = lecturaProyectada,
     nombreTipoContador = nombreTipoContador,
-    nombreEstadoContador = nombreEstadoContador
+    nombreEstadoContador = nombreEstadoContador,
+    valorAforo = valorAforo
 )
 
 fun RealmTarifaContador.toDomain(): TarifaContador = TarifaContador(

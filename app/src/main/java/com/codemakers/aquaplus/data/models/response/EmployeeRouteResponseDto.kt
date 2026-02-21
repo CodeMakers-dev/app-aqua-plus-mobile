@@ -79,7 +79,8 @@ data class ContadorDto(
     val idEstadoContador: Int?,
     val lecturaProyectada: Double?,
     val nombreTipoContador: String,
-    val nombreEstadoContador: String?
+    val nombreEstadoContador: String?,
+    val valorAforo: Double?,
 )
 
 @Serializable
@@ -200,7 +201,8 @@ fun ContadorDto.toDomain(): Contador = Contador(
     idEstadoContador = idEstadoContador,
     lecturaProyectada = lecturaProyectada,
     nombreTipoContador = nombreTipoContador,
-    nombreEstadoContador = nombreEstadoContador
+    nombreEstadoContador = nombreEstadoContador,
+    valorAforo = valorAforo
 )
 
 fun TarifaContadorDto.toDomain(): TarifaContador = TarifaContador(

@@ -59,7 +59,8 @@ data class Contador(
     val idEstadoContador: Int?,
     val lecturaProyectada: Double?,
     val nombreTipoContador: String?,
-    val nombreEstadoContador: String?
+    val nombreEstadoContador: String?,
+    val valorAforo: Double? = null
 )
 
 @Serializable
