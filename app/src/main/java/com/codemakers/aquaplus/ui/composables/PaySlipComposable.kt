@@ -64,7 +64,7 @@ fun PaySlipComposable(
             text = "FACTURA DE SERVICIO N° ${invoice.codInvoice}",
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
         )
-        KeyValueRow("Código Usuario", invoice.client.code)
+        KeyValueSingleRow("Código Usuario", invoice.client.code)
         Spacer(Modifier.height(8.dp))
 
         SingleCard(
