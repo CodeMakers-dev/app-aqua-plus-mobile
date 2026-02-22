@@ -18,7 +18,6 @@ const val CONCOM = "COM"
 
 data class Client(
     val name: String,
-    val idLabel: String,
     val id: String,
     val address: String,
     val city: String,
@@ -176,15 +175,14 @@ data class Invoice(
         companyFooterNote = config.config?.empresa?.avisoFactura,
         client = Client(
             name = "${route.personaCliente?.primerNombre} ${route.personaCliente?.primerApellido}".toCapitalCase(),
-            idLabel = route.personaCliente?.codigo.orEmpty(),
             id = route.personaCliente?.numeroCedula.orEmpty(),
-            address = route.personaCliente?.direccion?.descripcion ?: "---",
+            address = route.personaCliente?.direccion?.descripcion ?: "-",
             city = listOfNotNull(
                 route.personaCliente?.direccion?.corregimiento?.takeIf { it.isNotBlank() },
                 route.personaCliente?.direccion?.ciudad,
                 route.personaCliente?.direccion?.departamento
             ).joinToString(", "),
-            code = route.personaCliente?.codigo.orEmpty()
+            code = route.personaCliente?.codigo?.takeIf { it.isNotBlank() } ?: "-"
         ),
         meta = InvoiceMeta(
             issueDate = LocalDate.now(),

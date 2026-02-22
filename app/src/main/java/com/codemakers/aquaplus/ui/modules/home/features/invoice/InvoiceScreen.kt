@@ -74,7 +74,6 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlin.collections.plus
 
 private val dateFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
@@ -159,15 +158,15 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
             left = {
                 InfoCard(title = "") {
                     KeyValueRow("Nombre", invoice.client.name)
-                    KeyValueRow("Identificación", invoice.client.id)
+                    KeyValueRow("Código Usuario", invoice.client.code)
                     KeyValueSingleRow("Estrato", invoice.meter.stratum.toString())
-                    KeyValueSingleRow("Uso", invoice.meter.nameTypeUse)
                 }
             },
             right = {
                 InfoCard(title = "") {
                     KeyValueRow("Dirección", invoice.client.address)
                     KeyValueRow("Ciudad", invoice.client.city)
+                    KeyValueSingleRow("Uso", invoice.meter.nameTypeUse)
                 }
             }
         )
@@ -245,7 +244,7 @@ fun InvoiceContent(invoice: Invoice, decodeImagesSync: Boolean = false) {
             shape = RoundedCornerShape(10.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            BarsHistory(data = sortedHistory, showPrice = false)
+            BarsHistory(data = sortedHistory, average = invoice.meter.average, showPrice = false)
         }
         Spacer(Modifier.height(8.dp))
 
@@ -360,7 +359,6 @@ private fun AquaPlusInvoicePreview() {
         codConvenio = "123456789",
         client = Client(
             name = "Juan carlos rodriguez Rodriguez",
-            idLabel = "CC",
             id = "2834276634",
             address = "Calle 123#45-67",
             city = "Suba, Bogotá, Cundinamarca",

@@ -56,21 +56,20 @@ private fun monthName(mes: String?): String {
 @Composable
 fun BarsHistory(
     data: List<HistoryEntry>,
+    average: Double,
     maxBarHeight: Dp = 120.dp,
     barWidth: Dp = 30.dp,
     showPriceInK: Boolean = false,
     showPrice: Boolean = true
 ) {
     val maxValue = max(1, data.maxOfOrNull { it.consumo ?: 0 } ?: 1)
-    val average = if (data.isEmpty()) 0f else data.mapNotNull { it.consumo }.average().toFloat()
     val lastIndex = data.lastIndex
-
-    val avgRatio = average / maxValue
+    val avgRatio = average.toFloat() / maxValue
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp, bottom = 8.dp, start = 4.dp, end = 4.dp)
+            .padding(top = 12.dp, bottom = 8.dp, start = 4.dp, end = 4.dp)
     ) {
         // Barras con consumo flotando justo encima de cada una
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -190,7 +189,7 @@ fun BarsHistoryPreview() {
                 .background(Color.White)
 
         ) {
-            BarsHistory(data = sampleData)
+            BarsHistory(data = sampleData, average = 50.0)
         }
     }
 }
@@ -216,6 +215,7 @@ fun BarsHistoryPreview2() {
         ) {
             BarsHistory(
                 data = sampleData,
+                average = 50.0,
                 showPriceInK = true,
                 showPrice = false
             )
